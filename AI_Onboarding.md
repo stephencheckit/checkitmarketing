@@ -150,6 +150,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 22, 2026 | **UI Consistency + Color Update** - Changed accent color from purple (#6366f1) to darker blue (#2563eb). Consistent icons across nav and page headers (Target/Building2/FileText). Removed redundant Dashboard from Enablement nav. Auto-expanding textareas on Positioning page. Verified mobile responsiveness across all pages. | AI |
 | Jan 22, 2026 | **ROI Tools & Calculators** - New `/tools` section with Paper to Digital ROI Calculator. Vertical-specific presets for Senior Living (US), Facilities Food Ops, NHS Pharmacies (UK), Multi-site Food Retail. Auto currency switching (USD/GBP). Real-time calculations for labor savings, audit prep, manager visibility, compliance risk. Investment summary with ROI and payback period. | AI |
 | Jan 22, 2026 | **Corporate Positioning + Unified Nav** - New positioning strategy document with 8 sections (mission, target markets, value prop, differentiators, messaging pillars, elevator pitches, objection handling, competitive stance). Unified MainNav component across all pages. League Spartan font. All tools now password-protected via route groups. | AI |
 | Jan 22, 2026 | **V6 Enablement Portal** - Full internal training platform with registration, learning modules, quiz certification, admin dashboard. Neon Postgres database with users, progress, and quiz_attempts tables. | AI |

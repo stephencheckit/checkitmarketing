@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { ClipboardCheck, Award, AlertTriangle, ChevronLeft, ChevronRight, RotateCcw, Home, Eye, EyeOff } from 'lucide-react';
 
 interface Question {
   id: string;
@@ -84,55 +85,54 @@ export default function QuizPage() {
   if (result) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className={`text-center p-8 rounded-2xl border ${
+        <div className={`text-center p-6 rounded-xl border ${
           result.passed 
             ? 'bg-success/10 border-success/30' 
             : 'bg-warning/10 border-warning/30'
         }`}>
           {result.passed ? (
             <>
-              <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
+              <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Award className="w-8 h-8 text-success" />
               </div>
-              <h1 className="text-3xl font-bold text-success mb-2">Congratulations!</h1>
-              <p className="text-lg mb-4">You&apos;re V6 Ready 🎉</p>
+              <h1 className="text-2xl font-bold text-success mb-2">Congratulations!</h1>
+              <p className="text-muted mb-4">You&apos;re V6 Ready 🎉</p>
             </>
           ) : (
             <>
-              <div className="w-20 h-20 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+              <div className="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-5">
+                <AlertTriangle className="w-8 h-8 text-warning" />
               </div>
-              <h1 className="text-3xl font-bold text-warning mb-2">Almost There!</h1>
-              <p className="text-lg mb-4">You need 80% to pass. Review and try again.</p>
+              <h1 className="text-2xl font-bold text-warning mb-2">Almost There!</h1>
+              <p className="text-muted mb-4">You need 80% to pass. Review and try again.</p>
             </>
           )}
           
-          <div className="text-5xl font-bold mb-2">{result.score}%</div>
-          <p className="text-muted mb-6">{result.correctCount} of {result.totalQuestions} correct</p>
+          <div className="text-4xl font-bold mb-2">{result.score}%</div>
+          <p className="text-sm text-muted mb-5">{result.correctCount} of {result.totalQuestions} correct</p>
           
-          <div className="flex justify-center gap-4">
+          <div className="flex justify-center gap-3 flex-wrap">
             {!result.passed && (
               <button
                 onClick={handleRetry}
-                className="px-6 py-3 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors"
               >
+                <RotateCcw className="w-4 h-4" />
                 Try Again
               </button>
             )}
             <button
               onClick={() => setShowReview(!showReview)}
-              className="px-6 py-3 bg-surface border border-border hover:border-accent/50 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border hover:border-accent/50 rounded-lg font-medium transition-colors"
             >
+              {showReview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               {showReview ? 'Hide Review' : 'Review Answers'}
             </button>
             <Link
               href="/dashboard"
-              className="px-6 py-3 bg-surface border border-border hover:border-accent/50 rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border hover:border-accent/50 rounded-lg font-medium transition-colors"
             >
+              <Home className="w-4 h-4" />
               Dashboard
             </Link>
           </div>
@@ -201,9 +201,12 @@ export default function QuizPage() {
   return (
     <div className="max-w-2xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">V6 Certification Quiz</h1>
-        <p className="text-muted">Answer all questions. You need 80% to pass.</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+          <ClipboardCheck className="w-7 h-7 text-accent" />
+          V6 Certification Quiz
+        </h1>
+        <p className="text-sm text-muted mt-1">Answer all questions. You need 80% to pass.</p>
       </div>
 
       {/* Progress */}
@@ -259,17 +262,18 @@ export default function QuizPage() {
         <button
           onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
           disabled={currentQuestion === 0}
-          className="px-4 py-2 text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-1 px-3 py-2 text-muted hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          ← Previous
+          <ChevronLeft className="w-4 h-4" />
+          Previous
         </button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {questions.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentQuestion(index)}
-              className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${
+              className={`w-7 h-7 rounded-full text-xs font-medium transition-all ${
                 index === currentQuestion
                   ? 'bg-accent text-white'
                   : answers[questions[index]?.id]
@@ -286,16 +290,17 @@ export default function QuizPage() {
           <button
             onClick={handleSubmit}
             disabled={!canSubmit || submitting}
-            className="px-6 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+            className="px-5 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
             {submitting ? 'Submitting...' : 'Submit Quiz'}
           </button>
         ) : (
           <button
             onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))}
-            className="px-4 py-2 text-accent hover:text-accent-hover transition-colors"
+            className="flex items-center gap-1 px-3 py-2 text-accent hover:text-accent-hover transition-colors"
           >
-            Next →
+            Next
+            <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>

@@ -1,0 +1,130 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@/lib/session';
+import { 
+  createContribution, 
+  getPendingContributions, 
+  getUserContributions,
+  getAllContributions,
+  initializeContributionsTables,
+  type TargetType,
+  type ContributionType,
+  type ContributionStatus
+} from '@/lib/db';
+
+// Initialize tables on first request
+let tablesInitialized = false;
+
+async function ensureTables() {
+  if (!tablesInitialized) {
+    await initializeContributionsTables();
+    tablesInitialized = true;
+  }
+}
+
+// GET /api/contributions - List contributions
+// Query params: view=my|pending|all, targetType, status
+export async function GET(request: NextRequest) {
+  try {
+    await ensureTables();
+    
+    const session = await getSession();
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const view = searchParams.get('view') || 'my';
+    const targetType = searchParams.get('targetType') as TargetType | null;
+    const status = searchParams.get('status') as ContributionStatus | null;
+
+    let contributions;
+
+    if (view === 'my') {
+      // User's own contributions
+      contributions = await getUserContributions(session.userId);
+    } else if (view === 'pending') {
+      // Admin: pending contributions for review
+      if (session.role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      contributions = await getPendingContributions();
+    } else if (view === 'all') {
+      // Admin: all contributions with optional filters
+      if (session.role !== 'admin') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+      contributions = await getAllContributions({
+        targetType: targetType || undefined,
+        status: status || undefined
+      });
+    } else {
+      contributions = await getUserContributions(session.userId);
+    }
+
+    return NextResponse.json({ contributions });
+  } catch (error) {
+    console.error('Error fetching contributions:', error);
+    return NextResponse.json({ error: 'Failed to fetch contributions' }, { status: 500 });
+  }
+}
+
+// POST /api/contributions - Create a new contribution
+export async function POST(request: NextRequest) {
+  try {
+    await ensureTables();
+    
+    const session = await getSession();
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { targetType, targetSection, contributionType, content, isAnonymous } = body;
+
+    // Validate required fields
+    if (!targetType || !contributionType || !content) {
+      return NextResponse.json(
+        { error: 'Missing required fields: targetType, contributionType, content' },
+        { status: 400 }
+      );
+    }
+
+    // Validate targetType
+    const validTargetTypes: TargetType[] = ['positioning', 'competitors', 'content'];
+    if (!validTargetTypes.includes(targetType)) {
+      return NextResponse.json(
+        { error: 'Invalid targetType. Must be: positioning, competitors, or content' },
+        { status: 400 }
+      );
+    }
+
+    // Validate contributionType
+    const validContributionTypes: ContributionType[] = ['intel', 'suggestion', 'question', 'correction'];
+    if (!validContributionTypes.includes(contributionType)) {
+      return NextResponse.json(
+        { error: 'Invalid contributionType. Must be: intel, suggestion, question, or correction' },
+        { status: 400 }
+      );
+    }
+
+    const contribution = await createContribution({
+      userId: session.userId,
+      targetType,
+      targetSection: targetSection || undefined,
+      contributionType,
+      content,
+      isAnonymous: isAnonymous || false
+    });
+
+    // Return status info so UI can show if it was auto-published
+    return NextResponse.json({ 
+      contribution,
+      message: contribution.status === 'auto_published' 
+        ? 'Intel auto-published to Competitors' 
+        : 'Contribution submitted for review'
+    });
+  } catch (error) {
+    console.error('Error creating contribution:', error);
+    return NextResponse.json({ error: 'Failed to create contribution' }, { status: 500 });
+  }
+}

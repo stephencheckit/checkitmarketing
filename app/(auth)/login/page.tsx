@@ -44,16 +44,17 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="inline-flex items-center justify-center mb-6">
+            <div className="h-12 px-4 py-2 bg-accent rounded-xl flex items-center justify-center">
+              <img 
+                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+                alt="Checkit" 
+                className="h-6"
+              />
             </div>
-            <span className="text-xl font-semibold tracking-tight">Checkit</span>
           </div>
           <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted">Sign in to continue your V6 training</p>
+          <p className="text-muted">Sign in to the Checkit Marketing Hub</p>
         </div>
 
         {/* Form */}

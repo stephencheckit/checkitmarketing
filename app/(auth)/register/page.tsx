@@ -20,6 +20,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
     department: '',
+    accessCode: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,16 +56,17 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="inline-flex items-center justify-center mb-6">
+            <div className="h-12 px-4 py-2 bg-accent rounded-xl flex items-center justify-center">
+              <img 
+                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+                alt="Checkit" 
+                className="h-6"
+              />
             </div>
-            <span className="text-xl font-semibold tracking-tight">Checkit</span>
           </div>
-          <h1 className="text-2xl font-bold mb-2">V6 Enablement Portal</h1>
-          <p className="text-muted">Get certified on the new Checkit Platform</p>
+          <h1 className="text-2xl font-bold mb-2">Checkit Marketing Hub</h1>
+          <p className="text-muted">Register to access marketing tools and enablement</p>
         </div>
 
         {/* Form */}
@@ -131,13 +133,27 @@ export default function RegisterPage() {
               id="password"
               type="password"
               required
-              minLength={8}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors"
               placeholder="••••••••"
             />
-            <p className="text-xs text-muted mt-1.5">Minimum 8 characters</p>
+          </div>
+
+          <div>
+            <label htmlFor="accessCode" className="block text-sm font-medium mb-2">
+              Access Code
+            </label>
+            <input
+              id="accessCode"
+              type="text"
+              required
+              value={formData.accessCode}
+              onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors uppercase"
+              placeholder="Enter access code"
+            />
+            <p className="text-xs text-muted mt-1.5">Contact your manager for the access code</p>
           </div>
 
           <button

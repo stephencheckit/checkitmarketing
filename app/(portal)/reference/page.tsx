@@ -1,37 +1,37 @@
 'use client';
 
 import { useState } from 'react';
+import { BookMarked, AlertTriangle, X, Check, Copy, CheckCircle } from 'lucide-react';
 
 export default function ReferencePage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Quick Reference</h1>
-        <p className="text-muted">Essential talking points and naming conventions at a glance.</p>
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+          <BookMarked className="w-7 h-7 text-accent" />
+          Quick Reference
+        </h1>
+        <p className="text-sm text-muted mt-1">Essential talking points and naming conventions at a glance.</p>
       </div>
 
       {/* Critical reminder */}
-      <div className="bg-warning/10 border border-warning/30 rounded-xl p-6">
+      <div className="bg-warning/10 border border-warning/30 rounded-xl p-5">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-warning/20 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+          <div className="w-10 h-10 bg-warning/20 rounded-lg flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-warning" />
           </div>
           <div>
             <h3 className="font-semibold text-warning mb-1">&quot;Nova UI&quot; is internal only</h3>
-            <p className="text-foreground">Customers should only hear <strong>&quot;Checkit Platform&quot;</strong>. Never use Nova, Control Center, or CAM/CWM externally.</p>
+            <p className="text-sm text-foreground">Customers should only hear <strong>&quot;Checkit Platform&quot;</strong>. Never use Nova, Control Center, or CAM/CWM externally.</p>
           </div>
         </div>
       </div>
 
       {/* Do/Don't cards */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-error/5 border border-error/20 rounded-xl p-6">
+      <div className="grid md:grid-cols-2 gap-4">
+        <div className="bg-error/5 border border-error/20 rounded-xl p-5">
           <h3 className="font-semibold text-error mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
+            <X className="w-5 h-5" />
             Don&apos;t Say
           </h3>
           <ul className="space-y-3">
@@ -44,11 +44,9 @@ export default function ReferencePage() {
           </ul>
         </div>
 
-        <div className="bg-success/5 border border-success/20 rounded-xl p-6">
+        <div className="bg-success/5 border border-success/20 rounded-xl p-5">
           <h3 className="font-semibold text-success mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
+            <Check className="w-5 h-5" />
             Say Instead
           </h3>
           <ul className="space-y-3">
@@ -64,7 +62,10 @@ export default function ReferencePage() {
 
       {/* Copyable phrases */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Ready-to-Use Phrases</h2>
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Copy className="w-5 h-5 text-accent" />
+          Ready-to-Use Phrases
+        </h2>
         <div className="space-y-3">
           <CopyableCard text="When you log into the Checkit Platform you'll immediately see your dashboard with recent alerts and monitoring charts." />
           <CopyableCard text="The Checkit Platform is where you manage users/teams, create work, connect devices/apps, and report." />
@@ -76,7 +77,7 @@ export default function ReferencePage() {
 
       {/* Naming reference */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Official Naming</h2>
+        <h2 className="text-lg font-semibold mb-4">Official Naming</h2>
         <div className="bg-surface border border-border rounded-xl overflow-hidden">
           <table className="w-full">
             <thead>
@@ -119,7 +120,7 @@ export default function ReferencePage() {
 
       {/* Platform hierarchy */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Platform Structure</h2>
+        <h2 className="text-lg font-semibold mb-4">Platform Structure</h2>
         <div className="bg-surface border border-border rounded-xl p-6">
           <div className="space-y-4">
             <div>
@@ -204,20 +205,16 @@ function CopyableCard({ text }: { text: string }) {
       <p className="text-sm">&quot;{text}&quot;</p>
       <button
         onClick={handleCopy}
-        className="text-xs text-muted hover:text-foreground transition-colors flex items-center gap-1 flex-shrink-0"
+        className="text-xs text-muted hover:text-foreground transition-colors flex items-center gap-1 shrink-0"
       >
         {copied ? (
           <>
-            <svg className="w-4 h-4 text-success" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
+            <CheckCircle className="w-4 h-4 text-success" />
             Copied
           </>
         ) : (
           <>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
+            <Copy className="w-4 h-4" />
             Copy
           </>
         )}

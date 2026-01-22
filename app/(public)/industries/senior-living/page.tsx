@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { 
   Building2,
-  ArrowRight,
   ArrowLeft,
   CheckCircle2,
   Shield,
@@ -13,6 +12,7 @@ import {
   ClipboardList,
   BarChart3
 } from 'lucide-react';
+import DemoRequestButton from '@/components/DemoRequestButton';
 
 const problems = [
   {
@@ -116,13 +116,7 @@ export default function SeniorLivingPage() {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <a
-                  href="mailto:sales@checkit.net?subject=Senior Living Demo Request"
-                  className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-                >
-                  Request a Demo
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <DemoRequestButton industry="Senior Living" />
               </div>
             </div>
             
@@ -265,13 +259,7 @@ export default function SeniorLivingPage() {
             compliance, safety, and operational excellence.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="mailto:sales@checkit.net?subject=Senior Living Demo Request"
-              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-            >
-              Schedule a Demo
-              <ArrowRight className="w-4 h-4" />
-            </a>
+            <DemoRequestButton industry="Senior Living" label="Schedule a Demo" />
             <Link
               href="/industries"
               className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface transition-colors"

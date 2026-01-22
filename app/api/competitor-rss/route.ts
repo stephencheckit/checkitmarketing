@@ -29,6 +29,12 @@ interface CompetitorFeed {
   error: string | null;
 }
 
+interface Competitor {
+  id: string;
+  name: string;
+  website: string;
+}
+
 // Common RSS feed paths to try
 const COMMON_FEED_PATHS = [
   '/feed',
@@ -46,6 +52,24 @@ const COMMON_FEED_PATHS = [
   '/news/feed',
   '/insights/feed',
   '/resources/feed',
+];
+
+// Common blog/content page paths to try scraping
+const COMMON_BLOG_PATHS = [
+  '/blog',
+  '/blog/',
+  '/resources',
+  '/resources/',
+  '/news',
+  '/news/',
+  '/insights',
+  '/insights/',
+  '/articles',
+  '/articles/',
+  '/learn',
+  '/knowledge',
+  '/content',
+  '/library',
 ];
 
 // Try to discover RSS feed from HTML
@@ -104,7 +128,184 @@ async function tryCommonPaths(baseUrl: string): Promise<{ url: string; method: s
   return null;
 }
 
-// Fetch and parse a competitor's RSS feed
+// Scrape blog page for articles when no RSS is available
+async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RSSFeedItem[]; method: string } | null> {
+  const url = new URL(baseUrl);
+  const base = `${url.protocol}//${url.host}`;
+  
+  for (const path of COMMON_BLOG_PATHS) {
+    try {
+      const blogUrl = `${base}${path}`;
+      const response = await fetch(blogUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+      
+      if (!response.ok) continue;
+      
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      
+      const items: RSSFeedItem[] = [];
+      
+      // Strategy 1: Look for article/post cards with common patterns
+      // Try various common selectors for blog listings
+      const selectors = [
+        'article',
+        '.post',
+        '.blog-post',
+        '.article',
+        '.card',
+        '.entry',
+        '[class*="post"]',
+        '[class*="article"]',
+        '[class*="blog"]',
+        '.resource-card',
+        '.content-card',
+        'li[class*="post"]',
+        '.news-item',
+        '.insight',
+      ];
+      
+      for (const selector of selectors) {
+        const elements = $(selector);
+        if (elements.length >= 3) {
+          // Found likely blog listing
+          elements.each((_, el) => {
+            const $el = $(el);
+            
+            // Try to find title - look for headings or links
+            let title = '';
+            let link = '';
+            
+            // Title from h2, h3, h4 or prominent link
+            const titleEl = $el.find('h1, h2, h3, h4').first();
+            if (titleEl.length) {
+              title = titleEl.text().trim();
+              const titleLink = titleEl.find('a').attr('href') || titleEl.closest('a').attr('href');
+              if (titleLink) link = titleLink;
+            }
+            
+            // If no title from heading, try first prominent link
+            if (!title) {
+              const linkEl = $el.find('a').first();
+              title = linkEl.text().trim();
+              link = linkEl.attr('href') || '';
+            }
+            
+            // Get link if not found yet
+            if (!link) {
+              link = $el.find('a').attr('href') || $el.attr('href') || '';
+            }
+            
+            // Make link absolute
+            if (link && !link.startsWith('http')) {
+              if (link.startsWith('/')) {
+                link = `${base}${link}`;
+              } else {
+                link = `${base}/${link}`;
+              }
+            }
+            
+            // Try to find date
+            let pubDate = '';
+            const dateEl = $el.find('time, [class*="date"], [class*="Date"], .meta, .published').first();
+            if (dateEl.length) {
+              pubDate = dateEl.attr('datetime') || dateEl.text().trim();
+            }
+            
+            // Try to find snippet/description
+            let snippet = '';
+            const descEl = $el.find('p, .excerpt, .description, .summary, [class*="excerpt"], [class*="desc"]').first();
+            if (descEl.length) {
+              snippet = descEl.text().trim().slice(0, 300);
+            }
+            
+            // Only add if we have title and link
+            if (title && link && title.length > 10 && title.length < 200) {
+              // Avoid duplicates and navigation items
+              const isDuplicate = items.some(i => i.title === title || i.link === link);
+              const isNav = title.toLowerCase().includes('menu') || 
+                           title.toLowerCase().includes('navigation') ||
+                           title.toLowerCase() === 'blog' ||
+                           title.toLowerCase() === 'home';
+              
+              if (!isDuplicate && !isNav) {
+                items.push({
+                  title,
+                  link,
+                  pubDate,
+                  contentSnippet: snippet,
+                });
+              }
+            }
+          });
+          
+          if (items.length >= 3) {
+            // Found enough articles, return
+            return { 
+              url: blogUrl, 
+              items: items.slice(0, 10), 
+              method: `scraped: ${path}` 
+            };
+          }
+        }
+      }
+      
+      // Strategy 2: Look for any links that look like blog posts
+      if (items.length < 3) {
+        $('a').each((_, el) => {
+          const $a = $(el);
+          const href = $a.attr('href') || '';
+          const text = $a.text().trim();
+          
+          // Check if link looks like a blog post URL
+          const isBlogPost = href.includes('/blog/') || 
+                            href.includes('/post/') || 
+                            href.includes('/article/') ||
+                            href.includes('/news/') ||
+                            href.includes('/insights/') ||
+                            href.match(/\/\d{4}\/\d{2}\//); // Date pattern in URL
+          
+          if (isBlogPost && text.length > 15 && text.length < 150) {
+            let fullLink = href;
+            if (!fullLink.startsWith('http')) {
+              fullLink = fullLink.startsWith('/') ? `${base}${fullLink}` : `${base}/${fullLink}`;
+            }
+            
+            const isDuplicate = items.some(i => i.title === text || i.link === fullLink);
+            if (!isDuplicate) {
+              items.push({
+                title: text,
+                link: fullLink,
+                pubDate: '',
+                contentSnippet: '',
+              });
+            }
+          }
+        });
+        
+        if (items.length >= 3) {
+          return { 
+            url: blogUrl, 
+            items: items.slice(0, 10), 
+            method: `scraped links: ${path}` 
+          };
+        }
+      }
+      
+    } catch {
+      // Continue to next path
+    }
+  }
+  
+  return null;
+}
+
+// Fetch and parse a competitor's RSS feed (with scraping fallback)
 async function fetchCompetitorFeed(
   competitorId: string,
   competitorName: string,
@@ -139,7 +340,7 @@ async function fetchCompetitorFeed(
         const feed = await parser.parseURL(discoveredFeed);
         if (feed && feed.items && feed.items.length > 0) {
           result.feedUrl = discoveredFeed;
-          result.feedDiscoveryMethod = 'HTML meta tag';
+          result.feedDiscoveryMethod = 'RSS: HTML meta tag';
           result.items = feed.items.slice(0, 10).map(item => ({
             title: item.title || 'Untitled',
             link: item.link || '',
@@ -155,12 +356,12 @@ async function fetchCompetitorFeed(
       }
     }
     
-    // Step 2: Try common feed paths
+    // Step 2: Try common RSS feed paths
     const commonPath = await tryCommonPaths(baseUrl);
     if (commonPath) {
       const feed = await parser.parseURL(commonPath.url);
       result.feedUrl = commonPath.url;
-      result.feedDiscoveryMethod = commonPath.method;
+      result.feedDiscoveryMethod = `RSS: ${commonPath.method}`;
       result.items = feed.items.slice(0, 10).map(item => ({
         title: item.title || 'Untitled',
         link: item.link || '',
@@ -172,7 +373,16 @@ async function fetchCompetitorFeed(
       return result;
     }
     
-    result.error = 'No RSS feed found';
+    // Step 3: Fallback - try scraping blog pages directly
+    const scrapedContent = await scrapeBlogPage(baseUrl);
+    if (scrapedContent && scrapedContent.items.length > 0) {
+      result.feedUrl = scrapedContent.url;
+      result.feedDiscoveryMethod = scrapedContent.method;
+      result.items = scrapedContent.items;
+      return result;
+    }
+    
+    result.error = 'No RSS feed or blog found';
   } catch (err) {
     result.error = err instanceof Error ? err.message : 'Failed to fetch feed';
   }
@@ -192,7 +402,7 @@ export async function GET() {
       });
     }
     
-    const competitors = battlecard.data.competitors;
+    const competitors = battlecard.data.competitors as Competitor[];
     
     // Fetch feeds in parallel (with some concurrency limit)
     const feedPromises = competitors.map(comp => 

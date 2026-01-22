@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { 
   Pill,
-  ArrowRight,
   ArrowLeft,
   CheckCircle2,
   Shield,
@@ -13,6 +12,7 @@ import {
   BarChart3,
   Lock
 } from 'lucide-react';
+import DemoRequestButton from '@/components/DemoRequestButton';
 
 const problems = [
   {
@@ -116,13 +116,7 @@ export default function NHSPharmaciesPage() {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <a
-                  href="mailto:sales@checkit.net?subject=NHS Pharmacy CAM+ Demo Request"
-                  className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-                >
-                  Request a Demo
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <DemoRequestButton industry="NHS Pharmacies" />
               </div>
             </div>
             
@@ -270,13 +264,7 @@ export default function NHSPharmaciesPage() {
             your compliance workflows.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="mailto:sales@checkit.net?subject=NHS Pharmacy CAM+ Demo Request"
-              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-            >
-              Schedule a Demo
-              <ArrowRight className="w-4 h-4" />
-            </a>
+            <DemoRequestButton industry="NHS Pharmacies" label="Schedule a Demo" />
             <Link
               href="/industries"
               className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface transition-colors"

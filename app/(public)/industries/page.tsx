@@ -27,9 +27,61 @@ import {
   Headphones,
   Cloud,
   CalendarCheck,
-  BadgeCheck
+  BadgeCheck,
+  ClipboardX,
+  Thermometer,
+  FileWarning,
+  Ban,
+  CircleDollarSign,
+  Timer
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Problems - Operational non-compliance and waste
+const problems = [
+  {
+    icon: ClipboardX,
+    title: 'Paper-Based Processes',
+    description: 'Manual logs are error-prone, easily falsified, and impossible to audit in real-time. Compliance gaps go unnoticed until inspections.',
+    stat: '40%',
+    statLabel: 'of paper records contain errors or gaps',
+  },
+  {
+    icon: Thermometer,
+    title: 'Unmonitored Equipment',
+    description: 'Fridges, freezers, and critical equipment fail silently. By the time someone notices, inventory is spoiled and compliance is breached.',
+    stat: '$35K',
+    statLabel: 'average loss per cold chain failure',
+  },
+  {
+    icon: FileWarning,
+    title: 'Audit Anxiety',
+    description: 'Scrambling to find records before inspections. Missing signatures, incomplete logs, and untraceable corrective actions.',
+    stat: '73%',
+    statLabel: 'of managers stress about audits',
+  },
+  {
+    icon: Ban,
+    title: 'Reactive Operations',
+    description: 'Problems discovered after the damage is done. No early warning systems, no predictive insights, no prevention.',
+    stat: '3x',
+    statLabel: 'more costly to fix than prevent',
+  },
+  {
+    icon: CircleDollarSign,
+    title: 'Hidden Waste',
+    description: 'Spoiled inventory, wasted labor hours on manual checks, duplicate efforts across shifts. Costs accumulate invisibly.',
+    stat: '15-25%',
+    statLabel: 'of operational costs are waste',
+  },
+  {
+    icon: Timer,
+    title: 'Staff Time Drain',
+    description: 'Hours spent on temperature logs, compliance paperwork, and chasing down records that could be automated.',
+    stat: '8+ hrs',
+    statLabel: 'per week on manual compliance tasks',
+  },
+];
 
 // Peace of Mind subscription benefits
 const subscriptionBenefits = [
@@ -229,8 +281,50 @@ export default function IndustriesPage() {
         </div>
       </section>
 
-      {/* Outcomes Section */}
+      {/* Problems Section */}
       <section className="py-16 lg:py-24 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-red-500/10 text-red-500 rounded-full mb-4">
+              <AlertTriangle className="w-4 h-4 inline mr-1" />
+              The Problem
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Operational Non-Compliance & Waste
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Manual processes, paper logs, and disconnected systems create compliance gaps, 
+              hidden waste, and operational blind spots that put your business at risk.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {problems.map((problem) => {
+              const Icon = problem.icon;
+              return (
+                <div key={problem.title} className="bg-surface border border-border rounded-xl p-6 hover:border-red-500/30 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-6 h-6 text-red-500" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-foreground mb-2">{problem.title}</h3>
+                      <p className="text-sm text-muted mb-4">{problem.description}</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-red-500">{problem.stat}</span>
+                        <span className="text-xs text-muted">{problem.statLabel}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Outcomes Section */}
+      <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">

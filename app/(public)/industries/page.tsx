@@ -377,8 +377,127 @@ export default function IndustriesPage() {
         </div>
       </section>
 
+      {/* Peace of Mind Subscription */}
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-accent/5 to-transparent">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">
+              <HeartHandshake className="w-4 h-4 inline mr-1" />
+              Peace of Mind Subscriptions
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Everything You Need, One Annual Fee
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              No capital investment, no surprises—hardware, calibration, support, and software 
+              all included in a predictable annual subscription.
+            </p>
+          </div>
+
+          {/* Key benefits */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            {subscriptionBenefits.map((benefit) => {
+              const Icon = benefit.icon;
+              return (
+                <div key={benefit.title} className="bg-surface border border-border rounded-xl p-6">
+                  <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-accent" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{benefit.title}</h3>
+                  <p className="text-sm text-muted">{benefit.description}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Subscription tiers comparison */}
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden">
+            <div className="grid md:grid-cols-3">
+              {/* Features column */}
+              <div className="p-6 bg-surface-elevated/50 border-b md:border-b-0 md:border-r border-border">
+                <h3 className="text-lg font-semibold text-foreground mb-6">What&apos;s Included</h3>
+                <ul className="space-y-4 text-sm">
+                  <li className="text-muted">Hardware supply & replacements</li>
+                  <li className="text-muted">Calibration (initial & ongoing)</li>
+                  <li className="text-muted">24/7/365 automated alerts</li>
+                  <li className="text-muted">Helpdesk & support portal</li>
+                  <li className="text-muted">Cloud platform & storage</li>
+                  <li className="text-muted">Software maintenance</li>
+                  <li className="text-muted">Preventative health checks</li>
+                  <li className="text-muted">Engineer site visits</li>
+                </ul>
+              </div>
+              
+              {/* Automated Monitoring tier */}
+              <div className="p-6 border-b md:border-b-0 md:border-r border-border">
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-foreground">Automated Monitoring</h3>
+                  <p className="text-sm text-muted">Essential monitoring solution</p>
+                </div>
+                <ul className="space-y-4 text-sm">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Single point</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><span className="text-muted">—</span> Per visit</li>
+                  <li className="flex items-center gap-2"><span className="text-muted">—</span> Additional</li>
+                </ul>
+              </div>
+              
+              {/* Automated Monitoring+ tier */}
+              <div className="p-6 bg-accent/5 relative">
+                <div className="absolute top-0 right-0 bg-accent text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
+                  Most Popular
+                </div>
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-accent">Automated Monitoring+</h3>
+                  <p className="text-sm text-muted">Premium support package</p>
+                </div>
+                <ul className="space-y-4 text-sm">
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Multi-point options</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Value props */}
+          <div className="mt-12 grid md:grid-cols-3 gap-6 text-center">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
+                <BadgeCheck className="w-6 h-6 text-success" />
+              </div>
+              <h4 className="font-semibold text-foreground mb-1">No Capital Outlay</h4>
+              <p className="text-sm text-muted">Start monitoring without major upfront investment</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
+                <CalendarCheck className="w-6 h-6 text-success" />
+              </div>
+              <h4 className="font-semibold text-foreground mb-1">Predictable Costs</h4>
+              <p className="text-sm text-muted">Simple annual fee with no surprise bills</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
+                <Headphones className="w-6 h-6 text-success" />
+              </div>
+              <h4 className="font-semibold text-foreground mb-1">Always Supported</h4>
+              <p className="text-sm text-muted">24/7/365 monitoring and rapid response</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Industries Grid */}
-      <section className="py-16 lg:py-20 bg-surface-elevated/50">
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">

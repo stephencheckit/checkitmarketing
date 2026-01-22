@@ -41,10 +41,16 @@ const industries = [
     description: 'Venues & food service'
   },
   { 
-    href: '/industries/plasma', 
-    label: 'Plasma', 
+    href: '/industries/medical', 
+    label: 'Medical', 
     icon: Droplets,
-    description: 'CAM+ for plasma centers'
+    description: 'Plasma, pharma & universities'
+  },
+  { 
+    href: '/industries/operations', 
+    label: 'Operations', 
+    icon: Building2,
+    description: 'Restaurants, hospitality & more'
   },
 ];
 

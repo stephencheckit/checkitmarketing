@@ -1,90 +1,114 @@
 import Link from 'next/link';
 import { 
-  Droplets,
+  Building2,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
-  Shield,
   Clock,
   AlertTriangle,
   Thermometer,
   FileCheck,
   BarChart3,
-  Bell,
-  Lock
+  UtensilsCrossed,
+  Hotel,
+  Coffee,
+  Warehouse
 } from 'lucide-react';
 
 const problems = [
   {
-    icon: Shield,
-    title: 'FDA/AABB Compliance',
-    description: 'Plasma collection centers operate under strict regulatory oversight. Any compliance gap can result in product loss or facility shutdown.'
-  },
-  {
-    icon: Thermometer,
-    title: 'Critical Temperature Control',
-    description: 'Plasma products require precise temperature maintenance throughout collection, processing, and storage. Manual monitoring creates risk.'
+    icon: AlertTriangle,
+    title: 'Inconsistent Compliance',
+    description: 'Without standardized processes, each location operates differently. Compliance gaps emerge and grow until they become incidents.'
   },
   {
     icon: Clock,
-    title: 'Documentation Burden',
-    description: 'Regulatory requirements demand complete, accurate records for every batch. Manual documentation is time-consuming and error-prone.'
+    title: 'Paper-Based Processes',
+    description: 'Manual logs and checklists are time-consuming, easy to forget, and difficult to audit. Records get lost or damaged.'
   },
   {
-    icon: AlertTriangle,
-    title: 'Out-of-Hours Equipment Failures',
-    description: 'Freezer failures outside operating hours can destroy thousands of dollars in plasma product. Response time is critical.'
+    icon: Thermometer,
+    title: 'Temperature Management',
+    description: 'Food storage, HVAC, and equipment monitoring require constant attention. Manual checks miss critical issues between readings.'
+  },
+  {
+    icon: Building2,
+    title: 'Multi-Site Visibility',
+    description: 'Regional and operations managers struggle to see what\'s happening across locations. Problems stay hidden until they escalate.'
   },
 ];
 
 const solutions = [
   {
-    icon: Thermometer,
-    title: 'Continuous Temperature Monitoring',
-    description: 'CAM+ sensors monitor freezers, refrigerators, and processing equipment 24/7. Automatic logging ensures complete temperature records.',
-    benefit: 'Protect product integrity around the clock'
-  },
-  {
-    icon: Bell,
-    title: 'Intelligent Alert System',
-    description: 'Instant alerts via SMS, email, and phone when temperatures drift out of range. Escalation paths ensure rapid response.',
-    benefit: 'Minutes to respond, not hours'
-  },
-  {
     icon: FileCheck,
-    title: 'Regulatory-Ready Documentation',
-    description: 'Every temperature reading logged automatically with full audit trail. Generate compliance reports for FDA, AABB, and client audits instantly.',
-    benefit: 'Always audit-ready'
+    title: 'Digital Checklists & Workflows',
+    description: 'Replace paper with intuitive digital workflows. Staff complete tasks on tablets or phones with built-in guidance and validation.',
+    benefit: 'Standardize operations across all locations'
+  },
+  {
+    icon: Thermometer,
+    title: 'Automated Monitoring',
+    description: 'Continuous monitoring of refrigeration, HVAC, and critical equipment. Automatic alerts when conditions drift out of range.',
+    benefit: 'Catch issues before they become incidents'
   },
   {
     icon: BarChart3,
-    title: 'Multi-Center Visibility',
-    description: 'Centralized dashboard shows compliance status across all your plasma centers. Benchmark performance and identify issues proactively.',
-    benefit: 'Enterprise-wide oversight'
+    title: 'Real-Time Dashboards',
+    description: 'See compliance status across all your locations instantly. Identify trends, compare performance, and address issues proactively.',
+    benefit: 'Complete visibility at every level'
+  },
+  {
+    icon: Clock,
+    title: 'Audit-Ready Records',
+    description: 'Every check timestamped and stored securely. Generate compliance reports in seconds. No more searching through paper logs.',
+    benefit: 'Be inspection-ready any time'
+  },
+];
+
+const segments = [
+  {
+    icon: UtensilsCrossed,
+    title: 'Restaurants',
+    description: 'Food safety compliance, temperature monitoring, and operational checklists for restaurant chains and QSRs.',
+  },
+  {
+    icon: Hotel,
+    title: 'Hospitality',
+    description: 'Guest safety, HVAC monitoring, and operational compliance for hotels, resorts, and hospitality venues.',
+  },
+  {
+    icon: Coffee,
+    title: 'Food & Beverage',
+    description: 'Production compliance, quality checks, and temperature management for F&B manufacturing and distribution.',
+  },
+  {
+    icon: Warehouse,
+    title: 'Facilities',
+    description: 'Environmental monitoring, maintenance workflows, and compliance tracking for commercial facilities.',
   },
 ];
 
 const differentiators = [
   {
-    title: 'Built for Plasma & Biologics',
-    description: 'CAM+ is designed specifically for the unique regulatory requirements and operational needs of plasma collection and biological products.'
+    title: 'Flexible for Any Operation',
+    description: 'CheckIt adapts to your processes, not the other way around. Configure workflows that match how your teams actually work.'
   },
   {
-    title: 'Enterprise-Grade Reliability',
-    description: 'Redundant sensors, cellular connectivity, and battery backup ensure continuous monitoring even during power outages.'
+    title: 'Scales With You',
+    description: 'From a handful of locations to hundreds, our platform handles growth without adding proportional overhead.'
   },
   {
-    title: 'Trusted by Industry Leaders',
-    description: 'Octapharma and Grifols rely on CAM+ for their plasma center operations. We understand the stakes.'
+    title: 'Rapid Deployment',
+    description: 'Intuitive interfaces mean minimal training. New locations go live fast with consistent processes from day one.'
   },
 ];
 
-export default function PlasmaPage() {
+export default function OperationsPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative py-16 lg:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 via-transparent to-transparent" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <Link 
             href="/industries" 
@@ -97,27 +121,27 @@ export default function PlasmaPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
-                  <Droplets className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
                 </div>
-                <span className="px-3 py-1 text-sm font-medium bg-red-500/10 text-red-400 rounded-full">
-                  CAM+ Platform
+                <span className="px-3 py-1 text-sm font-medium bg-slate-500/10 text-slate-400 rounded-full">
+                  V6 Platform
                 </span>
               </div>
               
               <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Critical Monitoring for{' '}
-                <span className="text-gradient">Plasma Centers</span>
+                Operational Excellence{' '}
+                <span className="text-gradient">Across Every Site</span>
               </h1>
               
               <p className="text-lg text-muted mb-8">
-                Protect your plasma inventory, maintain FDA/AABB compliance, and 
-                ensure product integrity with CAM+ automated monitoring.
+                From restaurants to hospitality, CheckIt helps multi-site operations 
+                maintain consistent compliance and visibility across all locations.
               </p>
               
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="mailto:sales@checkit.net?subject=Plasma Center CAM+ Demo Request"
+                  href="mailto:sales@checkit.net?subject=Operations Demo Request"
                   className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
                 >
                   Request a Demo
@@ -127,31 +151,20 @@ export default function PlasmaPage() {
             </div>
             
             <div className="bg-surface border border-border rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Compliance Coverage</h3>
-              <div className="space-y-3">
-                {[
-                  { label: 'FDA 21 CFR Part 606', desc: 'Blood establishment regulations' },
-                  { label: 'AABB Standards', desc: 'Blood bank accreditation' },
-                  { label: 'Client Audits', desc: 'Pharmaceutical customer requirements' },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-start gap-3 bg-surface-elevated rounded-lg p-3">
-                    <CheckCircle2 className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-medium text-foreground text-sm">{item.label}</span>
-                      <p className="text-xs text-muted">{item.desc}</p>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Use Cases</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {segments.map((segment) => {
+                  const Icon = segment.icon;
+                  return (
+                    <div key={segment.title} className="bg-surface-elevated rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Icon className="w-4 h-4 text-slate-400" />
+                        <span className="font-medium text-foreground text-sm">{segment.title}</span>
+                      </div>
+                      <p className="text-xs text-muted line-clamp-2">{segment.description}</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 pt-4 border-t border-border">
-                <h4 className="text-sm font-medium text-foreground mb-2">Trusted By</h4>
-                <div className="flex gap-4">
-                  {['Octapharma', 'Grifols'].map((customer) => (
-                    <span key={customer} className="text-xs text-muted bg-surface-elevated px-2 py-1 rounded">
-                      {customer}
-                    </span>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -166,8 +179,8 @@ export default function PlasmaPage() {
               The Challenges You Face
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Plasma collection operates at the intersection of healthcare and manufacturing, 
-              with regulatory requirements from multiple agencies.
+              Multi-site operations struggle with consistency, visibility, and 
+              the burden of paper-based compliance processes.
             </p>
           </div>
 
@@ -201,11 +214,11 @@ export default function PlasmaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              How CAM+ Solves It
+              How CheckIt Solves It
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Connected Automated Monitoring Plus delivers the reliability and 
-              documentation your plasma operations demand.
+              Our V6 platform brings consistency and visibility to multi-site 
+              operations without adding administrative burden.
             </p>
           </div>
 
@@ -243,19 +256,19 @@ export default function PlasmaPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Why CAM+ for Plasma
+              Why CheckIt for Operations
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              When product integrity and patient safety are at stake, you need 
-              monitoring you can trust completely.
+              We understand that every operation is different. Our platform is 
+              built to adapt to your needs, not force you into a box.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {differentiators.map((diff, index) => (
               <div key={diff.title} className="text-center">
-                <div className="w-12 h-12 mx-auto rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-                  <span className="text-xl font-bold text-red-400">{index + 1}</span>
+                <div className="w-12 h-12 mx-auto rounded-full bg-slate-500/10 flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-slate-400">{index + 1}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
                   {diff.title}
@@ -273,15 +286,15 @@ export default function PlasmaPage() {
       <section className="py-16 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Protect Your Plasma Inventory?
+            Ready to Standardize Your Operations?
           </h2>
           <p className="text-muted mb-8 max-w-2xl mx-auto">
-            See how CAM+ can help your plasma centers maintain compliance 
-            and protect product integrity around the clock.
+            See how CheckIt can help you maintain consistency and visibility 
+            across all your locations.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <a
-              href="mailto:sales@checkit.net?subject=Plasma Center CAM+ Demo Request"
+              href="mailto:sales@checkit.net?subject=Operations Demo Request"
               className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
             >
               Schedule a Demo

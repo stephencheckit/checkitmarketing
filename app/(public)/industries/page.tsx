@@ -50,13 +50,22 @@ const industries = [
     color: 'from-purple-500 to-purple-600'
   },
   {
-    href: '/industries/plasma',
-    name: 'Plasma',
+    href: '/industries/medical',
+    name: 'Medical',
     icon: Droplets,
-    description: 'FDA/AABB compliant monitoring for plasma collection centers',
-    customers: ['Octapharma', 'Grifols'],
+    description: 'Compliance monitoring for plasma centers, pharma, and university labs',
+    customers: ['Octapharma', 'Grifols', 'University Labs'],
     product: 'CAM+',
     color: 'from-red-500 to-red-600'
+  },
+  {
+    href: '/industries/operations',
+    name: 'Operations',
+    icon: Building2,
+    description: 'Operational compliance for restaurants, hospitality, and more',
+    customers: ['Restaurants', 'Hotels', 'Hospitality'],
+    product: 'V6',
+    color: 'from-slate-500 to-slate-600'
   },
 ];
 

@@ -1,0 +1,302 @@
+import Link from 'next/link';
+import { 
+  Building2,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  Shield,
+  Clock,
+  AlertTriangle,
+  Users,
+  FileCheck,
+  Thermometer,
+  ClipboardList,
+  BarChart3
+} from 'lucide-react';
+
+const problems = [
+  {
+    icon: AlertTriangle,
+    title: 'Paper-Based Compliance',
+    description: 'Manual logs and checklists are time-consuming, error-prone, and difficult to audit. Staff spend hours on documentation instead of resident care.'
+  },
+  {
+    icon: Shield,
+    title: 'Regulatory Pressure',
+    description: 'CQC inspections and state compliance requirements demand complete, accurate records. Missing or incomplete documentation puts your license at risk.'
+  },
+  {
+    icon: Clock,
+    title: 'Inconsistent Task Completion',
+    description: 'Without real-time visibility, managers can\'t ensure critical safety checks are completed on time across all shifts and locations.'
+  },
+  {
+    icon: Users,
+    title: 'Staff Turnover & Training',
+    description: 'High turnover means constantly training new staff on compliance procedures. Paper systems make onboarding slow and inconsistent.'
+  },
+];
+
+const solutions = [
+  {
+    icon: ClipboardList,
+    title: 'Digital Checklists & Workflows',
+    description: 'Replace paper with intuitive digital workflows. Staff complete checks on tablets or phones, with built-in guidance and validation.',
+    benefit: 'Reduce documentation time by up to 50%'
+  },
+  {
+    icon: Thermometer,
+    title: 'Automated Temperature Monitoring',
+    description: 'Continuous monitoring of medication storage, food holding, and critical equipment. Automatic alerts when temperatures drift out of range.',
+    benefit: 'Catch issues before they become violations'
+  },
+  {
+    icon: FileCheck,
+    title: 'Audit-Ready Documentation',
+    description: 'Every check is timestamped, signed, and stored securely. Generate complete compliance reports in seconds, not hours.',
+    benefit: 'Be inspection-ready 24/7'
+  },
+  {
+    icon: BarChart3,
+    title: 'Real-Time Dashboards',
+    description: 'See compliance status across all communities instantly. Identify trends, compare performance, and proactively address issues.',
+    benefit: 'Multi-site visibility at a glance'
+  },
+];
+
+const differentiators = [
+  {
+    title: 'Purpose-Built for Senior Living',
+    description: 'Not a generic solution adapted for care. Built from the ground up for the unique compliance and operational needs of senior living communities.'
+  },
+  {
+    title: 'Implementation That Works',
+    description: 'We understand the realities of care operations. Phased rollout, hands-on training, and support that ensures adoption across all staff levels.'
+  },
+  {
+    title: 'Proven at Scale',
+    description: 'Trusted by leading operators including Morningstar, PLC, and Atria. Hundreds of communities rely on CheckIt daily.'
+  },
+];
+
+export default function SeniorLivingPage() {
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative py-16 lg:py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-transparent" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <Link 
+            href="/industries" 
+            className="inline-flex items-center gap-2 text-muted hover:text-foreground mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            All Industries
+          </Link>
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <span className="px-3 py-1 text-sm font-medium bg-blue-500/10 text-blue-400 rounded-full">
+                  V6 Platform
+                </span>
+              </div>
+              
+              <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+                Senior Living Compliance,{' '}
+                <span className="text-gradient">Simplified</span>
+              </h1>
+              
+              <p className="text-lg text-muted mb-8">
+                From medication storage to food safety, CheckIt helps senior living communities 
+                maintain compliance, protect residents, and give staff more time for care.
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href="mailto:sales@checkit.net?subject=Senior Living Demo Request"
+                  className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
+                >
+                  Request a Demo
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+            
+            <div className="bg-surface border border-border rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Trusted By</h3>
+              <div className="grid grid-cols-3 gap-4">
+                {['Morningstar', 'PLC', 'Atria'].map((customer) => (
+                  <div key={customer} className="bg-surface-elevated rounded-lg p-4 text-center">
+                    <span className="text-sm font-medium text-muted">{customer}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted mt-4 text-center">
+                Hundreds of communities across the US rely on CheckIt
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problems Section */}
+      <section className="py-16 lg:py-20 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              The Challenges You Face
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              Senior living operators juggle resident safety, regulatory compliance, 
+              and operational efficiency—often with outdated tools.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {problems.map((problem) => {
+              const Icon = problem.icon;
+              return (
+                <div key={problem.title} className="bg-surface border border-border rounded-xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-error" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {problem.title}
+                      </h3>
+                      <p className="text-muted text-sm">
+                        {problem.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Solutions Section */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              How CheckIt Solves It
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              Our V6 platform transforms compliance from a burden into an advantage, 
+              giving you confidence and your staff more time for residents.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {solutions.map((solution) => {
+              const Icon = solution.icon;
+              return (
+                <div key={solution.title} className="bg-surface border border-border rounded-xl p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-5 h-5 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-2">
+                        {solution.title}
+                      </h3>
+                      <p className="text-muted text-sm mb-3">
+                        {solution.description}
+                      </p>
+                      <div className="flex items-center gap-2 text-sm text-success">
+                        <CheckCircle2 className="w-4 h-4" />
+                        {solution.benefit}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Different Section */}
+      <section className="py-16 lg:py-20 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Why CheckIt for Senior Living
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              We&apos;re not just another software vendor. We understand the unique 
+              challenges of senior care operations.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {differentiators.map((diff, index) => (
+              <div key={diff.title} className="text-center">
+                <div className="w-12 h-12 mx-auto rounded-full bg-accent/10 flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-accent">{index + 1}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {diff.title}
+                </h3>
+                <p className="text-sm text-muted">
+                  {diff.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-foreground mb-4">
+            Ready to Transform Your Compliance?
+          </h2>
+          <p className="text-muted mb-8 max-w-2xl mx-auto">
+            Join hundreds of senior living communities that trust CheckIt for 
+            compliance, safety, and operational excellence.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="mailto:sales@checkit.net?subject=Senior Living Demo Request"
+              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
+            >
+              Schedule a Demo
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <Link
+              href="/industries"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
+            >
+              View All Industries
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <img 
+              src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+              alt="Checkit" 
+              className="h-5 opacity-60"
+            />
+            <p className="text-sm text-muted">
+              &copy; {new Date().getFullYear()} Checkit. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

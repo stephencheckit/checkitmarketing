@@ -32,6 +32,15 @@ checkitmarketing/
 │   │   ├── login/page.tsx
 │   │   ├── register/page.tsx
 │   │   └── layout.tsx
+│   ├── (public)/                  # Public-facing microsite (no auth)
+│   │   ├── industries/            # Industry landing pages
+│   │   │   ├── page.tsx           # Industries overview/hub
+│   │   │   ├── senior-living/     # Senior Living (V6)
+│   │   │   ├── nhs-pharmacies/    # NHS Pharmacies (CAM+)
+│   │   │   ├── food-retail/       # Food Retail (V6)
+│   │   │   ├── food-facilities/   # Food Facilities (V6)
+│   │   │   └── plasma/            # Plasma (CAM+)
+│   │   └── layout.tsx             # Public layout with PublicNav
 │   ├── (marketing)/               # Protected marketing tools
 │   │   ├── dashboard/page.tsx     # Main landing dashboard
 │   │   ├── positioning/page.tsx   # Corporate Positioning Strategy
@@ -65,7 +74,8 @@ checkitmarketing/
 │   ├── page.tsx                   # Redirects to /positioning or /login
 │   └── layout.tsx                 # Root layout (League Spartan font)
 ├── components/
-│   ├── MainNav.tsx                # Unified navigation (all pages)
+│   ├── MainNav.tsx                # Unified navigation (authenticated pages)
+│   ├── PublicNav.tsx              # Public microsite navigation
 │   ├── PortalNav.tsx              # Legacy (unused)
 │   └── ModuleContent.tsx          # Learning module content
 ├── lib/
@@ -137,6 +147,42 @@ Full sales enablement workflow with contribution system:
 - **Closing** (`/closing`) - Negotiation tactics, mutual action plans, contracting, closing techniques, customer handoff
 - All pages support "Add Insight" contributions from field reps
 
+### Industries Microsite (`/industries`) - NEW
+Public-facing landing pages for 5 key markets (no authentication required):
+
+1. **Senior Living** (`/industries/senior-living`) - V6 Platform
+   - Customers: Morningstar, PLC, Atria
+   - Focus: CQC/state compliance, resident safety, food safety
+
+2. **NHS Pharmacies** (`/industries/nhs-pharmacies`) - CAM+ Platform
+   - Focus: GPhC compliance, controlled drugs monitoring, fridge temps
+
+3. **Food Retail** (`/industries/food-retail`) - V6 Platform
+   - Customers: BP, John Lewis Partners
+   - Focus: Food-to-go, gas stations, convenience retail compliance
+
+4. **Food Facilities** (`/industries/food-facilities`) - V6 Platform
+   - Customers: OVG, ISS
+   - Focus: Venues, stadiums, event-day food service operations
+
+5. **Plasma** (`/industries/plasma`) - CAM+ Platform
+   - Customers: Octapharma, Grifols
+   - Focus: FDA/AABB compliance, plasma center operations
+
+Each page includes:
+- Hero section with product badge (V6 or CAM+)
+- Problems We Solve (4 industry-specific pain points)
+- Our Solutions (4 solutions with benefits)
+- Why We're Different (3 differentiators)
+- Customer logos / trust indicators
+- CTA to request demo
+
+Features:
+- Fully public (no login required)
+- Separate PublicNav with Industries dropdown
+- Mobile responsive
+- Consistent dark theme with industry-specific accent colors
+
 ## Getting Started
 
 ```bash
@@ -152,6 +198,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 22, 2026 | **Industries Microsite** - Public-facing landing pages for 5 key markets: Senior Living (V6), NHS Pharmacies (CAM+), Food Retail (V6), Food Facilities (V6), Plasma (CAM+). New `(public)` route group with no auth required. New `PublicNav` component with Industries dropdown and Request Demo CTA. Each page includes hero, problems, solutions, differentiators, and CTA sections. Mobile responsive with industry-specific accent colors. URLs: `/industries`, `/industries/senior-living`, etc. | AI |
 | Jan 22, 2026 | **Navigation Restructure** - Reorganized nav from flat items + Enablement dropdown into 3 logical groups: Marketing (Positioning, Competitors, Content), Sales (Discovery, Solutioning, Closing, Tools), Training (Learn, Quiz, Reference). Dashboard standalone. Removed duplicate dashboard from (marketing) route group. Consistent hover interactions and cursor-pointer across all nav elements. | AI |
 | Jan 22, 2026 | **Main Dashboard + Voice Recording** - New comprehensive Dashboard as main landing after login with welcome greeting, quick stats (contributions, progress, certification), quick links to all tools, enablement section with progress bar. Added voice recording to ContributionModal with OpenAI Whisper transcription. Fixed modal z-index issues with React Portal. Updated gradients to be more blue per user preference. Dashboard now first nav item. | AI |
 | Jan 22, 2026 | **UI Consistency + Color Update** - Changed accent color from purple (#6366f1) to darker blue (#2563eb). Consistent icons across nav and page headers (Target/Building2/FileText). Removed redundant Dashboard from Enablement nav. Auto-expanding textareas on Positioning page. Verified mobile responsiveness across all pages. | AI |

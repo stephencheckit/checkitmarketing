@@ -118,6 +118,7 @@ Sales enablement tools to quantify business value:
   - Facilities Food Ops - Stadiums, venues, event-day operations
   - NHS Pharmacies (UK) - GPhC compliance, controlled drugs, fridge temps
   - Multi-site Food Retail - BP, Greggs, John Lewis (UK/EU)
+  - Plasma & Blood Products (US) - Octapharma, Grifols, university plasma centers, FDA/AABB compliance
 - Auto currency switching (USD/GBP)
 - Real-time calculations with investment summary
 - Coming soon: Temperature Monitoring ROI, Compliance Risk Calculator

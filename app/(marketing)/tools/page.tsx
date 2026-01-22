@@ -39,6 +39,7 @@ const verticals = [
   { id: 'facilities-food', name: 'Facilities Food Ops', icon: '🏟️' },
   { id: 'nhs-pharmacy', name: 'NHS Pharmacies (UK)', icon: '💊' },
   { id: 'food-retail', name: 'Multi-site Food Retail', icon: '🛒' },
+  { id: 'plasma-blood', name: 'Plasma & Blood Products (US)', icon: '🩸' },
 ];
 
 export default function ToolsPage() {

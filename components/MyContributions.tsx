@@ -84,13 +84,18 @@ export default function MyContributions({ isOpen, onClose }: MyContributionsProp
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-[100] overflow-y-auto"
       onClick={onClose}
     >
-      <div 
-        className="bg-surface-elevated border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      
+      {/* Modal container - centers the modal */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div 
+          className="relative bg-surface-elevated border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">My Contributions</h2>
@@ -210,6 +215,7 @@ export default function MyContributions({ isOpen, onClose }: MyContributionsProp
             </span>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

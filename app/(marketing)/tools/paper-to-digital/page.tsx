@@ -70,6 +70,22 @@ const verticalPresets = [
     description: 'BP, Greggs, John Lewis food service',
   },
   {
+    id: 'plasma-blood',
+    name: 'Plasma & Blood Products (US)',
+    icon: '🩸',
+    defaults: {
+      locations: 30,
+      tasksPerDay: 55,
+      avgHourlyWage: 22,
+      minutesPerTask: 5,
+      auditFrequency: 6,
+      auditPrepHours: 48,
+      complianceRiskCost: 150000,
+      refrigerationUnits: 20,
+    },
+    description: 'Octapharma, Grifols, university plasma centers - FDA/AABB compliance',
+  },
+  {
     id: 'custom',
     name: 'Custom',
     icon: '⚙️',

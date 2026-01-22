@@ -282,13 +282,18 @@ export default function ContributionModal({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-[100] overflow-y-auto"
       onClick={handleClose}
     >
-      <div 
-        className="bg-surface-elevated border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+      
+      {/* Modal container */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div 
+          className="relative bg-surface-elevated border border-border rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface-elevated">
           <div className="flex items-center gap-3">
@@ -500,6 +505,7 @@ export default function ContributionModal({
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

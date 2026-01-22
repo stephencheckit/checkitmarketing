@@ -165,9 +165,13 @@ Public-facing landing pages for 5 key markets (no authentication required):
    - Customers: OVG, ISS
    - Focus: Venues, stadiums, event-day food service operations
 
-5. **Plasma** (`/industries/plasma`) - CAM+ Platform
-   - Customers: Octapharma, Grifols
-   - Focus: FDA/AABB compliance, plasma center operations
+5. **Medical** (`/industries/medical`) - CAM+ Platform
+   - Customers: Octapharma, Grifols, University Labs
+   - Focus: Plasma centers, pharma, universities - FDA/AABB/GxP compliance
+
+6. **Operations** (`/industries/operations`) - V6 Platform
+   - Segments: Restaurants, Hospitality, Food & Beverage, Facilities
+   - Focus: Catch-all for multi-site operational compliance
 
 Each page includes:
 - Hero section with product badge (V6 or CAM+)
@@ -198,7 +202,8 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
-| Jan 22, 2026 | **Industries Microsite** - Public-facing landing pages for 5 key markets: Senior Living (V6), NHS Pharmacies (CAM+), Food Retail (V6), Food Facilities (V6), Plasma (CAM+). New `(public)` route group with no auth required. New `PublicNav` component with Industries dropdown and Request Demo CTA. Each page includes hero, problems, solutions, differentiators, and CTA sections. Mobile responsive with industry-specific accent colors. URLs: `/industries`, `/industries/senior-living`, etc. | AI |
+| Jan 22, 2026 | **Industries Microsite Update** - Renamed Plasma to Medical (broader scope: plasma, pharma, universities). Added new Operations page as catch-all (restaurants, hospitality, F&B, facilities). Now 6 industry pages total. | AI |
+| Jan 22, 2026 | **Industries Microsite** - Public-facing landing pages for key markets: Senior Living (V6), NHS Pharmacies (CAM+), Food Retail (V6), Food Facilities (V6), Medical (CAM+), Operations (V6). New `(public)` route group with no auth required. New `PublicNav` component with Industries dropdown and Request Demo CTA. Each page includes hero, problems, solutions, differentiators, and CTA sections. Mobile responsive with industry-specific accent colors. URLs: `/industries`, `/industries/senior-living`, etc. | AI |
 | Jan 22, 2026 | **Navigation Restructure** - Reorganized nav from flat items + Enablement dropdown into 3 logical groups: Marketing (Positioning, Competitors, Content), Sales (Discovery, Solutioning, Closing, Tools), Training (Learn, Quiz, Reference). Dashboard standalone. Removed duplicate dashboard from (marketing) route group. Consistent hover interactions and cursor-pointer across all nav elements. | AI |
 | Jan 22, 2026 | **Main Dashboard + Voice Recording** - New comprehensive Dashboard as main landing after login with welcome greeting, quick stats (contributions, progress, certification), quick links to all tools, enablement section with progress bar. Added voice recording to ContributionModal with OpenAI Whisper transcription. Fixed modal z-index issues with React Portal. Updated gradients to be more blue per user preference. Dashboard now first nav item. | AI |
 | Jan 22, 2026 | **UI Consistency + Color Update** - Changed accent color from purple (#6366f1) to darker blue (#2563eb). Consistent icons across nav and page headers (Target/Building2/FileText). Removed redundant Dashboard from Enablement nav. Auto-expanding textareas on Positioning page. Verified mobile responsiveness across all pages. | AI |

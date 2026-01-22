@@ -323,12 +323,80 @@ export default function IndustriesPage() {
         </div>
       </section>
 
-      {/* Outcomes Section */}
+      {/* Product Components - The Solution */}
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">
-              The Outcomes We Drive
+              The Solution
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Sensors + Apps + Platform
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Three integrated components that work together to deliver automated monitoring, 
+              streamlined operations, and complete visibility.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {productComponents.map((component, index) => {
+              const Icon = component.icon;
+              return (
+                <div key={component.title} className="relative">
+                  {/* Connection line */}
+                  {index < 2 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border z-0">
+                      <ArrowRight className="absolute -right-2 -top-2 w-4 h-4 text-muted" />
+                    </div>
+                  )}
+                  
+                  <div className="bg-surface border border-border rounded-2xl p-6 h-full relative z-10">
+                    {/* Header */}
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${component.color} flex items-center justify-center mb-4`}>
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-foreground mb-1">{component.title}</h3>
+                    <p className="text-sm text-accent mb-3">{component.subtitle}</p>
+                    <p className="text-muted text-sm mb-4">{component.description}</p>
+                    
+                    {/* Features */}
+                    <ul className="space-y-2">
+                      {component.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm text-muted">
+                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* How they connect */}
+          <div className="bg-surface-elevated/50 border border-border rounded-2xl p-8 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Layers className="w-6 h-6 text-accent" />
+              <h3 className="text-lg font-semibold text-foreground">How They Work Together</h3>
+            </div>
+            <p className="text-muted max-w-3xl mx-auto">
+              <strong className="text-foreground">Sensors</strong> capture data automatically and send it to the cloud. 
+              <strong className="text-foreground"> Mobile apps</strong> alert staff to issues and guide them through tasks. 
+              The <strong className="text-foreground">platform</strong> aggregates everything into dashboards, reports, and audit-ready documentation.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Outcomes Section */}
+      <section className="py-16 lg:py-24 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-success/10 text-success rounded-full mb-4">
+              The Results
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Safety. Compliance. Visibility.
@@ -403,70 +471,61 @@ export default function IndustriesPage() {
         </div>
       </section>
 
-      {/* Product Components - How It Works */}
-      <section className="py-16 lg:py-24">
+      {/* Industries Grid */}
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block px-4 py-1 text-sm font-medium bg-surface-elevated text-muted rounded-full mb-4">
-              The Complete Solution
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Sensors + Apps + Platform
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Markets We Serve
             </h2>
-            <p className="text-lg text-muted max-w-2xl mx-auto">
-              Three integrated components that work together to deliver automated monitoring, 
-              streamlined operations, and complete visibility.
+            <p className="text-muted max-w-2xl mx-auto">
+              Each industry has unique challenges. Our solutions are tailored to meet 
+              the specific compliance, safety, and operational needs of your sector.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 mb-12">
-            {productComponents.map((component, index) => {
-              const Icon = component.icon;
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {industries.map((industry) => {
+              const Icon = industry.icon;
               return (
-                <div key={component.title} className="relative">
-                  {/* Connection line */}
-                  {index < 2 && (
-                    <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border z-0">
-                      <ArrowRight className="absolute -right-2 -top-2 w-4 h-4 text-muted" />
-                    </div>
-                  )}
-                  
-                  <div className="bg-surface border border-border rounded-2xl p-6 h-full relative z-10">
-                    {/* Header */}
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${component.color} flex items-center justify-center mb-4`}>
-                      <Icon className="w-7 h-7 text-white" />
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-foreground mb-1">{component.title}</h3>
-                    <p className="text-sm text-accent mb-3">{component.subtitle}</p>
-                    <p className="text-muted text-sm mb-4">{component.description}</p>
-                    
-                    {/* Features */}
-                    <ul className="space-y-2">
-                      {component.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2 text-sm text-muted">
-                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
+                <Link
+                  key={industry.href}
+                  href={industry.href}
+                  className="group bg-surface border border-border rounded-xl p-6 hover:border-accent/50 transition-all card-glow"
+                >
+                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${industry.color} flex items-center justify-center mb-4`}>
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                </div>
+                  
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-xl font-semibold text-foreground group-hover:text-accent transition-colors">
+                      {industry.name}
+                    </h3>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-surface-elevated text-muted rounded">
+                      {industry.product}
+                    </span>
+                  </div>
+                  
+                  <p className="text-muted text-sm mb-4">
+                    {industry.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {industry.customers.slice(0, 2).map((customer) => (
+                        <span key={customer} className="text-xs text-muted/70">
+                          {customer}{industry.customers.indexOf(customer) < Math.min(industry.customers.length - 1, 1) ? ',' : ''}
+                        </span>
+                      ))}
+                      {industry.customers.length > 2 && (
+                        <span className="text-xs text-muted/70">+{industry.customers.length - 2} more</span>
+                      )}
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
               );
             })}
-          </div>
-
-          {/* How they connect */}
-          <div className="bg-surface-elevated/50 border border-border rounded-2xl p-8 text-center">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <Layers className="w-6 h-6 text-accent" />
-              <h3 className="text-lg font-semibold text-foreground">How They Work Together</h3>
-            </div>
-            <p className="text-muted max-w-3xl mx-auto">
-              <strong className="text-foreground">Sensors</strong> capture data automatically and send it to the cloud. 
-              <strong className="text-foreground"> Mobile apps</strong> alert staff to issues and guide them through tasks. 
-              The <strong className="text-foreground">platform</strong> aggregates everything into dashboards, reports, and audit-ready documentation.
-            </p>
           </div>
         </div>
       </section>
@@ -527,65 +586,6 @@ export default function IndustriesPage() {
               <h4 className="font-semibold text-foreground mb-1">Always Supported</h4>
               <p className="text-sm text-muted">24/7/365 monitoring and rapid response</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Industries Grid */}
-      <section className="py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
-              Markets We Serve
-            </h2>
-            <p className="text-muted max-w-2xl mx-auto">
-              Each industry has unique challenges. Our solutions are tailored to meet 
-              the specific compliance, safety, and operational needs of your sector.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {industries.map((industry) => {
-              const Icon = industry.icon;
-              return (
-                <Link
-                  key={industry.href}
-                  href={industry.href}
-                  className="group bg-surface border border-border rounded-xl p-6 hover:border-accent/50 transition-all card-glow"
-                >
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${industry.color} flex items-center justify-center mb-4`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-semibold text-foreground group-hover:text-accent transition-colors">
-                      {industry.name}
-                    </h3>
-                    <span className="px-2 py-0.5 text-xs font-medium bg-surface-elevated text-muted rounded">
-                      {industry.product}
-                    </span>
-                  </div>
-                  
-                  <p className="text-muted text-sm mb-4">
-                    {industry.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1">
-                      {industry.customers.slice(0, 2).map((customer) => (
-                        <span key={customer} className="text-xs text-muted/70">
-                          {customer}{industry.customers.indexOf(customer) < Math.min(industry.customers.length - 1, 1) ? ',' : ''}
-                        </span>
-                      ))}
-                      {industry.customers.length > 2 && (
-                        <span className="text-xs text-muted/70">+{industry.customers.length - 2} more</span>
-                      )}
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted group-hover:text-accent group-hover:translate-x-1 transition-all" />
-                  </div>
-                </Link>
-              );
-            })}
           </div>
         </div>
       </section>

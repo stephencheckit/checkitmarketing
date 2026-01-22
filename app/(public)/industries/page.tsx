@@ -243,14 +243,49 @@ export default function IndustriesPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8">
+      <footer className="border-t border-border py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <img 
-              src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-              alt="Checkit" 
-              className="h-5 opacity-60"
-            />
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <img 
+                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+                alt="Checkit" 
+                className="h-5 mb-4"
+              />
+              <p className="text-sm text-muted">
+                Purpose-built compliance and monitoring solutions for operational excellence.
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Industries</h4>
+              <ul className="space-y-2">
+                <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
+                <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
+                <li><Link href="/industries/nhs-pharmacies" className="text-sm text-muted hover:text-foreground transition-colors">NHS Pharmacies</Link></li>
+                <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">&nbsp;</h4>
+              <ul className="space-y-2">
+                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
+                <li><Link href="/industries/medical" className="text-sm text-muted hover:text-foreground transition-colors">Medical</Link></li>
+                <li><Link href="/industries/operations" className="text-sm text-muted hover:text-foreground transition-colors">Operations</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Contact</h4>
+              <ul className="space-y-2">
+                <li><a href="mailto:sales@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">Request Demo</a></li>
+                <li><a href="mailto:info@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">General Inquiries</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted">
               &copy; {new Date().getFullYear()} Checkit. All rights reserved.
             </p>

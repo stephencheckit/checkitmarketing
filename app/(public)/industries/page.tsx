@@ -20,9 +20,40 @@ import {
   Smartphone,
   Wifi,
   ArrowDown,
-  Layers
+  Layers,
+  HeartHandshake,
+  Wrench,
+  Gauge,
+  Headphones,
+  Cloud,
+  CalendarCheck,
+  BadgeCheck
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Peace of Mind subscription benefits
+const subscriptionBenefits = [
+  {
+    icon: Wrench,
+    title: 'Hardware Included',
+    description: 'All sensors and equipment supplied. Replacements included throughout contract—no unexpected costs.',
+  },
+  {
+    icon: Gauge,
+    title: 'Calibration & Maintenance',
+    description: 'ISO17025-aligned calibration included. Annual health checks keep your system running perfectly.',
+  },
+  {
+    icon: Headphones,
+    title: '24/7/365 Support',
+    description: 'Round-the-clock monitoring alerts and helpdesk support. Optional alarm calling service.',
+  },
+  {
+    icon: Cloud,
+    title: 'Cloud Platform',
+    description: 'High-availability platform with secure data retention. Automatic software updates included.',
+  },
+];
 
 // Product components
 const productComponents = [

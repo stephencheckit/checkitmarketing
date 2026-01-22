@@ -202,6 +202,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 22, 2026 | **Persistent Competitor RSS with Filtering** - Added database persistence for competitor news feeds. New tables: `competitor_feeds`, `competitor_feed_items` (with topics/industries arrays), `user_feed_preferences`. Auto-tagging via keyword matching on save (topics: product-update, case-study, compliance, etc.; industries: healthcare, food-safety, senior-living, etc.). New AI tagging endpoint for unmatched articles. Added "News" tab to Competitors page with multi-select filtering by competitor, topic, industry, and date range. Filters display as colored badges. Refresh button fetches fresh content from sources. | AI |
 | Jan 22, 2026 | **Product Components** - Added "Sensors + Apps + Platform" complete solution sections to all industry pages. Main page has full feature breakdown with visual flow. Each vertical has industry-specific descriptions (e.g., CAM+ sensors for pharma, event workflows for venues). Shows how 3 components work together. | AI |
 | Jan 22, 2026 | **Outcomes Messaging** - Added "Safety. Compliance. Visibility." outcomes sections to main industries page and all 6 vertical pages. Each includes industry-specific stats (99.9% temp compliance, 100% audit trails, real-time multi-site visibility). Main page has proof points (500+ locations, 1M+ daily checks). | AI |
 | Jan 22, 2026 | **Expanded Competitor Database** - Added 7 new competitors: Sonicu (healthcare), Monnit (IoT sensors), OpSense (grocery), Sensire (EU hospitality), Operandio (franchises), Dickson Data, PharmaWatch (VFC). Now monitoring 17 competitors with 10 active feeds and 99 articles. Added blog scraping fallback for sites without RSS. | AI |
@@ -269,6 +270,15 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ### Positioning Versions
 - id, document_id, version_number, data (JSONB), change_notes, created_at
+
+### Competitor Feeds
+- id, competitor_id, competitor_name, competitor_website, feed_url, discovery_method, last_fetched_at, fetch_error, created_at, updated_at
+
+### Competitor Feed Items
+- id, competitor_id, title, link, pub_date, content_snippet, author, topics (TEXT[]), industries (TEXT[]), ai_tagged, created_at
+
+### User Feed Preferences
+- id, user_id, filters (JSONB), updated_at
 
 ---
 

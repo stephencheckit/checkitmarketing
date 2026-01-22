@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Calculator, ArrowLeft, Download, Building2, Users, Clock, DollarSign, TrendingUp, Shield, CheckCircle2, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Calculator, ArrowLeft, Download, Users, Clock, DollarSign, Shield, AlertTriangle, ChevronDown, Zap, Thermometer } from 'lucide-react';
 import Link from 'next/link';
 
 // Vertical presets with industry-specific defaults
@@ -18,6 +18,7 @@ const verticalPresets = [
       auditFrequency: 4,
       auditPrepHours: 24,
       complianceRiskCost: 75000,
+      refrigerationUnits: 8, // per location avg
     },
     description: 'CQC inspections, resident safety checks, medication logging',
   },
@@ -33,6 +34,7 @@ const verticalPresets = [
       auditFrequency: 6,
       auditPrepHours: 16,
       complianceRiskCost: 50000,
+      refrigerationUnits: 15,
     },
     description: 'Stadiums, venues, event-day operations',
   },
@@ -48,6 +50,7 @@ const verticalPresets = [
       auditFrequency: 2,
       auditPrepHours: 40,
       complianceRiskCost: 100000,
+      refrigerationUnits: 3,
     },
     description: 'Controlled drugs, fridge temps, GPhC compliance',
   },
@@ -63,6 +66,7 @@ const verticalPresets = [
       auditFrequency: 4,
       auditPrepHours: 20,
       complianceRiskCost: 40000,
+      refrigerationUnits: 12,
     },
     description: 'BP, Greggs, John Lewis food service',
   },
@@ -78,6 +82,7 @@ const verticalPresets = [
       auditFrequency: 4,
       auditPrepHours: 20,
       complianceRiskCost: 50000,
+      refrigerationUnits: 6,
     },
     description: 'Enter your own values',
   },
@@ -102,41 +107,54 @@ export default function PaperToDigitalCalculator() {
   };
 
   const calculations = useMemo(() => {
-    const { locations, tasksPerDay, avgHourlyWage, minutesPerTask, auditFrequency, auditPrepHours, complianceRiskCost } = inputs;
+    const { locations, tasksPerDay, avgHourlyWage, minutesPerTask, auditFrequency, auditPrepHours, complianceRiskCost, refrigerationUnits } = inputs;
     
-    const timeSavedPerTaskMinutes = minutesPerTask * 0.6;
-    const dailyTimeSavedPerLocation = (tasksPerDay * timeSavedPerTaskMinutes) / 60;
-    const annualTimeSavedHours = dailyTimeSavedPerLocation * locations * 365;
-    const annualLaborSavings = annualTimeSavedHours * avgHourlyWage;
+    // Time repurposed from digitization (60% reduction in wasted time per task)
+    const wastedTimePreventedPerTaskMinutes = minutesPerTask * 0.6;
+    const dailyTimeRepurposedPerLocation = (tasksPerDay * wastedTimePreventedPerTaskMinutes) / 60;
+    const annualTimeRepurposedHours = dailyTimeRepurposedPerLocation * locations * 365;
+    const laborValueRepurposed = annualTimeRepurposedHours * avgHourlyWage;
 
-    const auditPrepSavingsHours = auditPrepHours * 0.75 * auditFrequency * locations;
-    const auditPrepSavingsCost = auditPrepSavingsHours * (avgHourlyWage * 1.5);
+    // Audit prep - wasted time prevented
+    const auditWastedTimePrevented = auditPrepHours * 0.75 * auditFrequency * locations;
+    const auditPrepValue = auditWastedTimePrevented * (avgHourlyWage * 1.5);
 
-    const managerTimeSavedWeekly = locations * 0.5;
-    const managerAnnualSavingsHours = managerTimeSavedWeekly * 52;
-    const managerAnnualSavingsCost = managerAnnualSavingsHours * (avgHourlyWage * 2);
+    // Manager time - repurposed from chasing paper to strategic work
+    const managerTimeRepurposedWeekly = locations * 0.5;
+    const managerAnnualTimeRepurposed = managerTimeRepurposedWeekly * 52;
+    const managerTimeValue = managerAnnualTimeRepurposed * (avgHourlyWage * 2);
 
+    // Compliance risk reduction
     const complianceRiskReduction = complianceRiskCost * 0.15 * 0.7;
 
-    const totalAnnualSavings = annualLaborSavings + auditPrepSavingsCost + managerAnnualSavingsCost + complianceRiskReduction;
+    // Energy savings from smart refrigeration monitoring
+    // Average fridge/freezer costs ~$400/year to run, smart monitoring reduces by 15%
+    const totalRefrigerationUnits = refrigerationUnits * locations;
+    const avgAnnualEnergyCostPerUnit = currency === 'USD' ? 400 : 320; // USD vs GBP
+    const energySavingsPercent = 0.15;
+    const annualEnergySavings = totalRefrigerationUnits * avgAnnualEnergyCostPerUnit * energySavingsPercent;
+
+    const totalAnnualBenefit = laborValueRepurposed + auditPrepValue + managerTimeValue + complianceRiskReduction + annualEnergySavings;
     const estimatedAnnualCost = locations * 1200;
-    const roi = ((totalAnnualSavings - estimatedAnnualCost) / estimatedAnnualCost) * 100;
-    const paybackMonths = (estimatedAnnualCost / totalAnnualSavings) * 12;
+    const roi = ((totalAnnualBenefit - estimatedAnnualCost) / estimatedAnnualCost) * 100;
+    const paybackMonths = (estimatedAnnualCost / totalAnnualBenefit) * 12;
 
     return {
-      annualTimeSavedHours: Math.round(annualTimeSavedHours),
-      annualLaborSavings: Math.round(annualLaborSavings),
-      auditPrepSavingsHours: Math.round(auditPrepSavingsHours),
-      auditPrepSavingsCost: Math.round(auditPrepSavingsCost),
-      managerAnnualSavingsHours: Math.round(managerAnnualSavingsHours),
-      managerAnnualSavingsCost: Math.round(managerAnnualSavingsCost),
+      annualTimeRepurposedHours: Math.round(annualTimeRepurposedHours),
+      laborValueRepurposed: Math.round(laborValueRepurposed),
+      auditWastedTimePrevented: Math.round(auditWastedTimePrevented),
+      auditPrepValue: Math.round(auditPrepValue),
+      managerAnnualTimeRepurposed: Math.round(managerAnnualTimeRepurposed),
+      managerTimeValue: Math.round(managerTimeValue),
       complianceRiskReduction: Math.round(complianceRiskReduction),
-      totalAnnualSavings: Math.round(totalAnnualSavings),
+      totalRefrigerationUnits,
+      annualEnergySavings: Math.round(annualEnergySavings),
+      totalAnnualBenefit: Math.round(totalAnnualBenefit),
       estimatedAnnualCost: Math.round(estimatedAnnualCost),
       roi: Math.round(roi),
       paybackMonths: Math.round(paybackMonths * 10) / 10,
     };
-  }, [inputs]);
+  }, [inputs, currency]);
 
   const currencySymbol = currency === 'USD' ? '$' : '£';
 
@@ -160,7 +178,7 @@ export default function PaperToDigitalCalculator() {
             <h1 className="text-3xl font-bold text-white">Paper to Digital ROI Calculator</h1>
           </div>
           <p className="text-slate-400">
-            Calculate the financial impact of replacing paper checklists and manual logging with Checkit.
+            Calculate the value of eliminating paper-based processes and manual logging with Checkit.
           </p>
         </div>
 
@@ -283,14 +301,29 @@ export default function PaperToDigitalCalculator() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Avg Compliance Violation Cost ({currencySymbol})</label>
-                <input
-                  type="number"
-                  value={inputs.complianceRiskCost}
-                  onChange={(e) => setInputs({ ...inputs, complianceRiskCost: parseInt(e.target.value) || 0 })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
-                />
+              {/* Refrigeration + Compliance */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1 flex items-center gap-1">
+                    <Thermometer className="w-3 h-3" />
+                    Fridges/Freezers per Location
+                  </label>
+                  <input
+                    type="number"
+                    value={inputs.refrigerationUnits}
+                    onChange={(e) => setInputs({ ...inputs, refrigerationUnits: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Violation Cost ({currencySymbol})</label>
+                  <input
+                    type="number"
+                    value={inputs.complianceRiskCost}
+                    onChange={(e) => setInputs({ ...inputs, complianceRiskCost: parseInt(e.target.value) || 0 })}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -303,8 +336,8 @@ export default function PaperToDigitalCalculator() {
           {/* Hero Stats */}
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
             <div className="bg-gradient-to-br from-emerald-900/40 to-slate-800 border border-emerald-500/30 rounded-xl p-4 text-center">
-              <div className="text-sm text-emerald-400 mb-1">Total Annual Savings</div>
-              <div className="text-3xl font-bold text-white">{formatCurrency(calculations.totalAnnualSavings)}</div>
+              <div className="text-sm text-emerald-400 mb-1">Total Annual Benefit</div>
+              <div className="text-3xl font-bold text-white">{formatCurrency(calculations.totalAnnualBenefit)}</div>
             </div>
             <div className="bg-gradient-to-br from-blue-900/40 to-slate-800 border border-blue-500/30 rounded-xl p-4 text-center">
               <div className="text-sm text-blue-400 mb-1">ROI</div>
@@ -318,54 +351,54 @@ export default function PaperToDigitalCalculator() {
 
           {/* Breakdown */}
           <div className="space-y-4 mb-6">
-            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Savings Breakdown</h3>
+            <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wider">Value Breakdown</h3>
             
             <div className="grid sm:grid-cols-2 gap-4">
-              {/* Labor Savings */}
+              {/* Labor - Time Repurposed */}
               <div className="bg-slate-800/50 rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-emerald-500/10 rounded-lg">
                     <Clock className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-400">Frontline Labor</div>
-                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.annualLaborSavings)}/yr</div>
+                    <div className="text-sm text-slate-400">Frontline Time Repurposed</div>
+                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.laborValueRepurposed)}/yr</div>
                   </div>
                 </div>
                 <p className="text-xs text-slate-500">
-                  {calculations.annualTimeSavedHours.toLocaleString()} hours saved (60% faster per task)
+                  {calculations.annualTimeRepurposedHours.toLocaleString()} hours redirected to higher-value work
                 </p>
               </div>
 
-              {/* Audit Prep */}
+              {/* Audit Prep - Wasted Time Prevented */}
               <div className="bg-slate-800/50 rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-blue-500/10 rounded-lg">
                     <Shield className="w-4 h-4 text-blue-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-400">Audit Preparation</div>
-                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.auditPrepSavingsCost)}/yr</div>
+                    <div className="text-sm text-slate-400">Audit Prep Waste Eliminated</div>
+                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.auditPrepValue)}/yr</div>
                   </div>
                 </div>
                 <p className="text-xs text-slate-500">
-                  {calculations.auditPrepSavingsHours.toLocaleString()} manager hours saved (75% reduction)
+                  {calculations.auditWastedTimePrevented.toLocaleString()} hours of scrambling prevented
                 </p>
               </div>
 
-              {/* Manager Time */}
+              {/* Manager Time - Repurposed */}
               <div className="bg-slate-800/50 rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-purple-500/10 rounded-lg">
                     <Users className="w-4 h-4 text-purple-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-400">Manager Visibility</div>
-                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.managerAnnualSavingsCost)}/yr</div>
+                    <div className="text-sm text-slate-400">Manager Time Repurposed</div>
+                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.managerTimeValue)}/yr</div>
                   </div>
                 </div>
                 <p className="text-xs text-slate-500">
-                  {calculations.managerAnnualSavingsHours.toLocaleString()} hours saved vs chasing paper
+                  {calculations.managerAnnualTimeRepurposed.toLocaleString()} hours shifted from chasing paper to leading teams
                 </p>
               </div>
 
@@ -376,12 +409,28 @@ export default function PaperToDigitalCalculator() {
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-400">Compliance Risk</div>
+                    <div className="text-sm text-slate-400">Compliance Risk Reduced</div>
                     <div className="text-lg font-semibold text-white">{formatCurrency(calculations.complianceRiskReduction)}/yr</div>
                   </div>
                 </div>
                 <p className="text-xs text-slate-500">
                   70% reduction in violation probability
+                </p>
+              </div>
+
+              {/* Energy Savings */}
+              <div className="bg-slate-800/50 rounded-lg p-4 sm:col-span-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-cyan-500/10 rounded-lg">
+                    <Zap className="w-4 h-4 text-cyan-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm text-slate-400">Energy Reduction</div>
+                    <div className="text-lg font-semibold text-white">{formatCurrency(calculations.annualEnergySavings)}/yr</div>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">
+                  15% efficiency gain across {calculations.totalRefrigerationUnits} refrigeration units via smart monitoring
                 </p>
               </div>
             </div>
@@ -396,12 +445,12 @@ export default function PaperToDigitalCalculator() {
                 <div className="text-xs text-slate-600">~{formatCurrency(100)}/location/mo</div>
               </div>
               <div>
-                <div className="text-xs text-slate-500 mb-1">Total Savings</div>
-                <div className="text-lg font-semibold text-emerald-400">{formatCurrency(calculations.totalAnnualSavings)}</div>
+                <div className="text-xs text-slate-500 mb-1">Total Value</div>
+                <div className="text-lg font-semibold text-emerald-400">{formatCurrency(calculations.totalAnnualBenefit)}</div>
               </div>
               <div>
                 <div className="text-xs text-slate-500 mb-1">Net Annual Benefit</div>
-                <div className="text-lg font-semibold text-white">{formatCurrency(calculations.totalAnnualSavings - calculations.estimatedAnnualCost)}</div>
+                <div className="text-lg font-semibold text-white">{formatCurrency(calculations.totalAnnualBenefit - calculations.estimatedAnnualCost)}</div>
               </div>
             </div>
           </div>
@@ -416,11 +465,12 @@ export default function PaperToDigitalCalculator() {
                 Calculation Assumptions
               </summary>
               <ul className="mt-3 text-xs text-slate-500 space-y-1 pl-6">
-                <li>• 60% time reduction per task (paper → digital)</li>
-                <li>• 75% reduction in audit prep with instant reporting</li>
+                <li>• 60% reduction in wasted time per task (paper → digital)</li>
+                <li>• 75% reduction in audit prep scrambling with instant reporting</li>
                 <li>• Manager time valued at 2x hourly wage</li>
-                <li>• 15% baseline annual violation probability</li>
-                <li>• 70% risk reduction with digital compliance</li>
+                <li>• 15% baseline annual violation probability, 70% risk reduction</li>
+                <li>• Avg refrigeration unit: {formatCurrency(currency === 'USD' ? 400 : 320)}/yr energy cost</li>
+                <li>• 15% energy reduction via smart temperature monitoring</li>
                 <li>• 365 operating days per year</li>
               </ul>
             </details>

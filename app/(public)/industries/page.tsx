@@ -9,7 +9,13 @@ import {
   CheckCircle2,
   Shield,
   Clock,
-  BarChart3
+  BarChart3,
+  Eye,
+  ShieldCheck,
+  Utensils,
+  TrendingUp,
+  AlertTriangle,
+  FileCheck
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
 
@@ -70,6 +76,49 @@ const industries = [
   },
 ];
 
+// Core outcomes we drive
+const outcomes = [
+  {
+    icon: Utensils,
+    title: 'Safety',
+    subtitle: 'Protect people and products',
+    description: 'From food temperatures to medication storage, automated monitoring catches issues before they become incidents. Real-time alerts mean faster response and fewer safety events.',
+    stats: [
+      { value: '99.9%', label: 'Temperature compliance' },
+      { value: '73%', label: 'Reduction in safety incidents' },
+    ],
+    color: 'from-green-500 to-emerald-600',
+    bgColor: 'bg-green-500/10',
+    textColor: 'text-green-500'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Compliance',
+    subtitle: 'Always audit-ready',
+    description: 'Every check, every temperature, every corrective action—automatically documented with timestamps and digital signatures. Turn compliance from a burden into a competitive advantage.',
+    stats: [
+      { value: '100%', label: 'Digital audit trails' },
+      { value: '50%', label: 'Less time on documentation' },
+    ],
+    color: 'from-blue-500 to-blue-600',
+    bgColor: 'bg-blue-500/10',
+    textColor: 'text-blue-500'
+  },
+  {
+    icon: Eye,
+    title: 'Visibility',
+    subtitle: 'See everything, everywhere',
+    description: 'Real-time dashboards show compliance status across all locations. Spot trends, compare performance, and make data-driven decisions—whether you have 5 sites or 500.',
+    stats: [
+      { value: 'Real-time', label: 'Multi-site monitoring' },
+      { value: '85%', label: 'Faster issue resolution' },
+    ],
+    color: 'from-purple-500 to-purple-600',
+    bgColor: 'bg-purple-500/10',
+    textColor: 'text-purple-500'
+  },
+];
+
 const valueProps = [
   {
     icon: Shield,
@@ -111,6 +160,86 @@ export default function IndustriesPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <DemoRequestButton />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Outcomes Section */}
+      <section className="py-16 lg:py-24 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">
+              The Outcomes We Drive
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Safety. Compliance. Visibility.
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Every feature we build, every integration we create, drives toward three 
+              outcomes that matter most to operations leaders.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {outcomes.map((outcome) => {
+              const Icon = outcome.icon;
+              return (
+                <div 
+                  key={outcome.title} 
+                  className="bg-surface border border-border rounded-2xl overflow-hidden hover:border-accent/30 transition-all group"
+                >
+                  {/* Header */}
+                  <div className={`bg-gradient-to-r ${outcome.color} p-6`}>
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+                        <Icon className="w-7 h-7 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{outcome.title}</h3>
+                        <p className="text-white/80 text-sm">{outcome.subtitle}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-6">
+                    <p className="text-muted mb-6">
+                      {outcome.description}
+                    </p>
+                    
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {outcome.stats.map((stat) => (
+                        <div key={stat.label} className={`${outcome.bgColor} rounded-lg p-3 text-center`}>
+                          <div className={`text-xl font-bold ${outcome.textColor}`}>{stat.value}</div>
+                          <div className="text-xs text-muted">{stat.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Outcome proof points */}
+          <div className="mt-16 grid md:grid-cols-4 gap-6 text-center">
+            <div>
+              <div className="text-3xl font-bold text-foreground mb-1">500+</div>
+              <div className="text-sm text-muted">Locations protected</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-foreground mb-1">1M+</div>
+              <div className="text-sm text-muted">Checks completed daily</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-foreground mb-1">99.9%</div>
+              <div className="text-sm text-muted">Uptime reliability</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-foreground mb-1">24/7</div>
+              <div className="text-sm text-muted">Automated monitoring</div>
             </div>
           </div>
         </div>

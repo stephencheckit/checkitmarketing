@@ -10,9 +10,43 @@ import {
   FileCheck,
   Store,
   BarChart3,
-  MapPin
+  MapPin,
+  Eye,
+  ShieldCheck,
+  Utensils
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Core outcomes for food retail
+const outcomes = [
+  {
+    icon: Utensils,
+    title: 'Food Safety',
+    description: 'Protect customers with continuous temperature monitoring across fridges, hot holding, and display cases.',
+    stat: '99.9%',
+    statLabel: 'Temperature compliance',
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Compliance',
+    description: 'Pass every EHO inspection with confidence. Complete digital records, always ready for review.',
+    stat: '5-star',
+    statLabel: 'Food hygiene ratings',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10'
+  },
+  {
+    icon: Eye,
+    title: 'Visibility',
+    description: 'See compliance status across your entire estate in real-time. One dashboard for hundreds of sites.',
+    stat: 'Real-time',
+    statLabel: 'Multi-site visibility',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500/10'
+  },
+];
 
 const problems = [
   {
@@ -133,6 +167,43 @@ export default function FoodRetailPage() {
                 Leading UK retailers trust CheckIt for food-to-go compliance
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Outcomes Section */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-orange-500/10 text-orange-400 rounded-full mb-4">
+              Outcomes That Matter
+            </span>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Safety. Compliance. Visibility.
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              Every feature drives toward protecting your customers, ensuring compliance, 
+              and giving you complete visibility across your entire retail estate.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {outcomes.map((outcome) => {
+              const Icon = outcome.icon;
+              return (
+                <div key={outcome.title} className="bg-surface border border-border rounded-xl p-6 text-center">
+                  <div className={`w-14 h-14 mx-auto rounded-xl ${outcome.bgColor} flex items-center justify-center mb-4`}>
+                    <Icon className={`w-7 h-7 ${outcome.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{outcome.title}</h3>
+                  <p className="text-muted text-sm mb-4">{outcome.description}</p>
+                  <div className={`inline-block ${outcome.bgColor} rounded-lg px-4 py-2`}>
+                    <span className={`text-xl font-bold ${outcome.color}`}>{outcome.stat}</span>
+                    <span className="text-xs text-muted block">{outcome.statLabel}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

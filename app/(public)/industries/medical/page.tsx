@@ -11,9 +11,42 @@ import {
   BarChart3,
   Bell,
   FlaskConical,
-  GraduationCap
+  GraduationCap,
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Core outcomes for medical/life sciences
+const outcomes = [
+  {
+    icon: Thermometer,
+    title: 'Product Safety',
+    description: 'Protect biologics, plasma, samples, and reagents with 24/7 environmental monitoring. Never lose irreplaceable materials.',
+    stat: '24/7',
+    statLabel: 'Continuous protection',
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10'
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Compliance',
+    description: 'Meet FDA, AABB, GxP, and institutional requirements with automated documentation and complete audit trails.',
+    stat: '21 CFR 11',
+    statLabel: 'Compliant records',
+    color: 'text-red-500',
+    bgColor: 'bg-red-500/10'
+  },
+  {
+    icon: Eye,
+    title: 'Visibility',
+    description: 'Monitor every freezer, incubator, and clean room from anywhere. Real-time alerts enable rapid response.',
+    stat: 'Real-time',
+    statLabel: 'Multi-site visibility',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500/10'
+  },
+];
 
 const problems = [
   {
@@ -202,8 +235,45 @@ export default function MedicalPage() {
         </div>
       </section>
 
-      {/* Problems Section */}
+      {/* Outcomes Section */}
       <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-red-500/10 text-red-400 rounded-full mb-4">
+              Outcomes That Matter
+            </span>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Safety. Compliance. Visibility.
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              CAM+ protects critical materials, ensures regulatory compliance, 
+              and provides the visibility life sciences operations demand.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {outcomes.map((outcome) => {
+              const Icon = outcome.icon;
+              return (
+                <div key={outcome.title} className="bg-surface border border-border rounded-xl p-6 text-center">
+                  <div className={`w-14 h-14 mx-auto rounded-xl ${outcome.bgColor} flex items-center justify-center mb-4`}>
+                    <Icon className={`w-7 h-7 ${outcome.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">{outcome.title}</h3>
+                  <p className="text-muted text-sm mb-4">{outcome.description}</p>
+                  <div className={`inline-block ${outcome.bgColor} rounded-lg px-4 py-2`}>
+                    <span className={`text-xl font-bold ${outcome.color}`}>{outcome.stat}</span>
+                    <span className="text-xs text-muted block">{outcome.statLabel}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Problems Section */}
+      <section className="py-16 lg:py-20 bg-surface-elevated/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">

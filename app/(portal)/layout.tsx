@@ -14,7 +14,7 @@ export default async function PortalLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen w-full bg-background">
       <MainNav userName={session.name || 'User'} userRole={session.role} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}

@@ -57,22 +57,20 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-6">
-            <div className="h-12 px-4 py-2 bg-accent rounded-xl flex items-center justify-center">
-              <img 
-                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-                alt="Checkit" 
-                className="h-6"
-              />
-            </div>
+            <img 
+              src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+              alt="Checkit" 
+              className="h-8"
+            />
           </div>
           <h1 className="text-2xl font-bold mb-2">Checkit Marketing Hub</h1>
           <p className="text-muted">Register to access marketing tools and enablement</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-2xl p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-surface border border-border rounded-2xl p-6 space-y-5 card-glow">
           {error && (
-            <div className="bg-error/10 border border-error/20 text-error rounded-lg px-4 py-3 text-sm">
+            <div className="rounded-lg px-4 py-3 text-sm text-error" style={{ background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(244, 63, 94, 0.05))', border: '1px solid rgba(244, 63, 94, 0.2)' }}>
               {error}
             </div>
           )}
@@ -87,7 +85,7 @@ export default function RegisterPage() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all"
               placeholder="Sarah Chen"
             />
           </div>
@@ -102,7 +100,7 @@ export default function RegisterPage() {
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all"
               placeholder="sarah@checkit.com"
             />
           </div>
@@ -116,7 +114,7 @@ export default function RegisterPage() {
               required
               value={formData.department}
               onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:border-accent transition-colors appearance-none cursor-pointer"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:border-border-accent transition-all appearance-none cursor-pointer"
             >
               <option value="" disabled>Select your department</option>
               {DEPARTMENTS.map((dept) => (
@@ -135,7 +133,7 @@ export default function RegisterPage() {
               required
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all"
               placeholder="••••••••"
             />
           </div>
@@ -150,7 +148,7 @@ export default function RegisterPage() {
               required
               value={formData.accessCode}
               onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-accent transition-colors uppercase"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all uppercase"
               placeholder="Enter access code"
             />
             <p className="text-xs text-muted mt-1.5">Contact your manager for the access code</p>
@@ -159,7 +157,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-3 transition-colors"
+            className="w-full btn-gradient disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-3"
           >
             {loading ? 'Creating account...' : 'Get Started →'}
           </button>
@@ -168,7 +166,7 @@ export default function RegisterPage() {
         {/* Footer */}
         <p className="text-center text-muted text-sm mt-6">
           Already registered?{' '}
-          <Link href="/login" className="text-accent hover:text-accent-hover transition-colors">
+          <Link href="/login" className="text-gradient font-medium hover:opacity-80 transition-opacity">
             Sign in
           </Link>
         </p>

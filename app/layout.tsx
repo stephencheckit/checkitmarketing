@@ -21,18 +21,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${leagueSpartan.variable} font-sans antialiased`}
+        className={`${leagueSpartan.variable} font-sans antialiased min-h-screen w-full`}
       >
         {/* SVG Gradient Definitions for icons */}
         <svg className="absolute w-0 h-0 overflow-hidden" aria-hidden="true">
           <defs>
             <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#a855f7" />
+              <stop offset="0%" stopColor="#2563eb" />
+              <stop offset="100%" stopColor="#3b82f6" />
             </linearGradient>
             <linearGradient id="icon-gradient-hover" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#818cf8" />
-              <stop offset="100%" stopColor="#c084fc" />
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#60a5fa" />
             </linearGradient>
           </defs>
         </svg>

@@ -44,21 +44,21 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div className="bg-surface border border-border rounded-xl p-6 card-glow transition-all">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted text-sm">Progress</span>
-            <span className="text-2xl font-bold">{progressPercent}%</span>
+            <span className="text-2xl font-bold text-gradient">{progressPercent}%</span>
           </div>
           <div className="h-2 bg-background rounded-full overflow-hidden">
             <div 
-              className="h-full bg-accent transition-all duration-500"
+              className="h-full progress-gradient transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
           <p className="text-xs text-muted mt-2">{completedModules} of {MODULES.length} modules</p>
         </div>
 
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div className="bg-surface border border-border rounded-xl p-6 card-glow transition-all">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted text-sm">Quiz Status</span>
             {certified ? (
@@ -84,13 +84,13 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <div className="bg-surface border border-border rounded-xl p-6">
+        <div className="bg-surface border border-border rounded-xl p-6 card-glow transition-all">
           <div className="flex items-center justify-between mb-2">
             <span className="text-muted text-sm">Certification</span>
           </div>
           {certified ? (
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center glow-success" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1))' }}>
                 <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-muted/20 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-surface-elevated rounded-full flex items-center justify-center">
                 <svg className="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -117,9 +117,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Critical Notice */}
-      <div className="bg-warning/10 border border-warning/30 rounded-xl p-5">
+      <div className="rounded-xl p-5 glow-warning" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-warning/20 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1))' }}>
             <AlertTriangle className="w-5 h-5 text-warning" />
           </div>
           <div>
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
               <Link
                 key={module.slug}
                 href={`/learn/${module.slug}`}
-                className="bg-surface border border-border rounded-xl p-4 hover:border-accent/50 transition-colors flex items-center justify-between group"
+                className="bg-surface border border-border rounded-xl p-4 card-glow hover:border-border-accent transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
@@ -189,12 +189,12 @@ export default async function DashboardPage() {
 
       {/* CTA */}
       {!certified && completedModules === MODULES.length && (
-        <div className="bg-accent/10 border border-accent/30 rounded-xl p-6 text-center">
+        <div className="rounded-xl p-6 text-center glow-accent" style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.05))', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
           <h3 className="font-semibold text-lg mb-2">Ready to get certified?</h3>
           <p className="text-muted text-sm mb-4">You&apos;ve completed all modules. Take the quiz to earn your V6 Ready badge!</p>
           <Link
             href="/quiz"
-            className="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white font-medium px-6 py-3 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 btn-gradient text-white font-medium px-6 py-3 rounded-lg"
           >
             Take the Quiz
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

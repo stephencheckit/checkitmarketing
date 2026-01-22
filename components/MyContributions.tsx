@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Clock, 
   CheckCircle, 
@@ -72,8 +73,6 @@ export default function MyContributions({ isOpen, onClose }: MyContributionsProp
     }
   };
 
-  if (!isOpen) return null;
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -82,9 +81,11 @@ export default function MyContributions({ isOpen, onClose }: MyContributionsProp
     });
   };
 
-  return (
+  if (!isOpen) return null;
+
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-[100] overflow-y-auto"
+      className="fixed inset-0 z-[9999] overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop */}
@@ -219,4 +220,11 @@ export default function MyContributions({ isOpen, onClose }: MyContributionsProp
       </div>
     </div>
   );
+
+  // Use portal to render outside of any stacking context
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  
+  return modalContent;
 }

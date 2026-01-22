@@ -203,7 +203,7 @@ export default function QuizPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <ClipboardCheck className="w-7 h-7 text-accent" />
+          <ClipboardCheck className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           V6 Certification Quiz
         </h1>
         <p className="text-sm text-muted mt-1">Answer all questions. You need 80% to pass.</p>

@@ -493,7 +493,7 @@ export default function CompetitorHub() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-              <Building2 className="w-7 h-7 text-accent" />
+              <Building2 className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
               Competitor Battlecards
             </h1>
             <p className="text-sm text-muted mt-1">

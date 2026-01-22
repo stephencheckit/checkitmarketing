@@ -8,7 +8,7 @@ export default function ReferencePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <BookMarked className="w-7 h-7 text-accent" />
+          <BookMarked className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           Quick Reference
         </h1>
         <p className="text-sm text-muted mt-1">Essential talking points and naming conventions at a glance.</p>
@@ -63,7 +63,7 @@ export default function ReferencePage() {
       {/* Copyable phrases */}
       <div>
         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Copy className="w-5 h-5 text-accent" />
+          <Copy className="w-5 h-5" style={{ stroke: 'url(#icon-gradient)' }} />
           Ready-to-Use Phrases
         </h2>
         <div className="space-y-3">

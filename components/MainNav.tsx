@@ -20,7 +20,8 @@ import {
   Search,
   Presentation,
   Handshake,
-  Calculator
+  Calculator,
+  LayoutDashboard
 } from 'lucide-react';
 import MyContributions from '@/components/MyContributions';
 
@@ -44,6 +45,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   };
 
   const mainNavItems = [
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/competitors', label: 'Competitors', icon: Building2 },
     { href: '/content', label: 'Content', icon: FileText },
@@ -67,8 +69,8 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/positioning" className="flex items-center">
-            <div className="h-10 px-3 py-2 bg-accent rounded-lg flex items-center justify-center">
+          <Link href="/dashboard" className="flex items-center">
+            <div className="h-10 px-3 py-2 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #6366f1 100%)' }}>
               <img 
                 src="/checkit-logo-horizontal-standard-rgb-white.svg" 
                 alt="Checkit" 
@@ -85,9 +87,9 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive(item.href)
-                      ? 'bg-accent text-white'
+                      ? 'btn-gradient text-white'
                       : 'text-muted hover:text-foreground hover:bg-surface-elevated'
                   }`}
                 >
@@ -104,9 +106,9 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               onMouseLeave={() => setEnablementOpen(false)}
             >
               <button
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isEnablementActive
-                    ? 'bg-accent text-white'
+                    ? 'btn-gradient text-white'
                     : 'text-muted hover:text-foreground hover:bg-surface-elevated'
                 }`}
               >

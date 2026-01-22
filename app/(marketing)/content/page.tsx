@@ -260,7 +260,7 @@ export default function ContentPage() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-              <FileText className="w-7 h-7 text-accent" />
+              <FileText className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
               Content Ideation
             </h1>
             <p className="text-sm text-muted mt-1">

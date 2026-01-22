@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Lightbulb, AlertCircle, HelpCircle, PenLine, Eye, EyeOff, Mic, Square, Loader2 } from 'lucide-react';
 
 type TargetType = 'positioning' | 'competitors' | 'content';
@@ -272,17 +273,17 @@ export default function ContributionModal({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   const targetLabels: Record<TargetType, string> = {
     positioning: 'Positioning',
     competitors: 'Competitors',
     content: 'Content'
   };
 
-  return (
+  if (!isOpen) return null;
+
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-[100] overflow-y-auto"
+      className="fixed inset-0 z-[9999] overflow-y-auto"
       onClick={handleClose}
     >
       {/* Backdrop */}
@@ -509,4 +510,11 @@ export default function ContributionModal({
       </div>
     </div>
   );
+
+  // Use portal to render outside of any stacking context
+  if (typeof document !== 'undefined') {
+    return createPortal(modalContent, document.body);
+  }
+  
+  return modalContent;
 }

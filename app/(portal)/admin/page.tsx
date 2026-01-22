@@ -31,7 +31,7 @@ export default async function AdminPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <ShieldCheck className="w-7 h-7 text-accent" />
+          <ShieldCheck className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           Admin Dashboard
         </h1>
         <p className="text-sm text-muted mt-1">Track team progress and certification status.</p>

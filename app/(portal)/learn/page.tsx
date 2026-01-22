@@ -27,7 +27,7 @@ export default async function LearnPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <GraduationCap className="w-7 h-7 text-accent" />
+          <GraduationCap className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           Learning Modules
         </h1>
         <p className="text-sm text-muted mt-1">

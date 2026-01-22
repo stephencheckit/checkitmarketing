@@ -45,7 +45,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-6">
-            <div className="h-12 px-4 py-2 bg-accent rounded-xl flex items-center justify-center">
+            <div className="h-12 px-4 py-2 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #6366f1 100%)' }}>
               <img 
                 src="/checkit-logo-horizontal-standard-rgb-white.svg" 
                 alt="Checkit" 

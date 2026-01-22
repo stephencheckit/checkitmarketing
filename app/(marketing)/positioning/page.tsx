@@ -296,7 +296,7 @@ export default function PositioningPage() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-              <Target className="w-7 h-7 text-accent" />
+              <Target className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
               Corporate Positioning
             </h1>
             <p className="text-sm text-muted mt-1">
@@ -379,7 +379,7 @@ export default function PositioningPage() {
                 className="w-full flex items-center justify-between px-6 py-4 hover:bg-surface-elevated transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-accent" />
+                  <FileText className="w-5 h-5" style={{ stroke: 'url(#icon-gradient)' }} />
                   <h2 className="text-lg font-semibold text-foreground">{section.name}</h2>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-surface-elevated text-muted">
                     {section.fields.filter(f => f.value?.trim()).length}/{section.fields.length}

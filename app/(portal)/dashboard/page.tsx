@@ -3,7 +3,7 @@ import { getUserById, getUserProgress, hasUserPassed, getUserQuizAttempts } from
 import { MODULES } from '@/lib/modules';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Award, AlertTriangle, ChevronRight, Clock, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, BookOpen, AlertTriangle, ChevronRight, Clock, CheckCircle } from 'lucide-react';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <LayoutDashboard className="w-7 h-7 text-accent" />
+          <LayoutDashboard className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           Dashboard
         </h1>
         <p className="text-sm text-muted mt-1">
@@ -135,7 +135,7 @@ export default async function DashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-accent" />
+            <BookOpen className="w-5 h-5" style={{ stroke: 'url(#icon-gradient)' }} />
             Learning Modules
           </h2>
           <Link 

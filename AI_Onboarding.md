@@ -81,12 +81,12 @@ checkitmarketing/
 ## Current Features
 
 ### Unified Navigation
-All pages now share a consistent navigation bar with:
-- **Positioning** - Corporate strategy document
-- **Competitors** - Battlecard matrix
-- **Content** - AI-powered ideation
-- **Enablement** dropdown - Dashboard, Learn, Quiz, Reference
-- User name and sign out
+All pages share a consistent navigation bar with role-based dropdowns:
+- **Dashboard** - Main landing page with stats and quick links
+- **Marketing** dropdown - Positioning, Competitors, Content
+- **Sales** dropdown - Discovery, Solutioning, Closing, Tools
+- **Training** dropdown - Learn, Quiz, Reference
+- Profile menu with contributions and sign out
 
 ### Corporate Positioning (`/positioning`) - NEW
 Strategic messaging framework document with 8 sections:
@@ -152,6 +152,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 22, 2026 | **Navigation Restructure** - Reorganized nav from flat items + Enablement dropdown into 3 logical groups: Marketing (Positioning, Competitors, Content), Sales (Discovery, Solutioning, Closing, Tools), Training (Learn, Quiz, Reference). Dashboard standalone. Removed duplicate dashboard from (marketing) route group. Consistent hover interactions and cursor-pointer across all nav elements. | AI |
 | Jan 22, 2026 | **Main Dashboard + Voice Recording** - New comprehensive Dashboard as main landing after login with welcome greeting, quick stats (contributions, progress, certification), quick links to all tools, enablement section with progress bar. Added voice recording to ContributionModal with OpenAI Whisper transcription. Fixed modal z-index issues with React Portal. Updated gradients to be more blue per user preference. Dashboard now first nav item. | AI |
 | Jan 22, 2026 | **UI Consistency + Color Update** - Changed accent color from purple (#6366f1) to darker blue (#2563eb). Consistent icons across nav and page headers (Target/Building2/FileText). Removed redundant Dashboard from Enablement nav. Auto-expanding textareas on Positioning page. Verified mobile responsiveness across all pages. | AI |
 | Jan 22, 2026 | **ROI Tools & Calculators** - New `/tools` section with Paper to Digital ROI Calculator. Vertical-specific presets for Senior Living (US), Facilities Food Ops, NHS Pharmacies (UK), Multi-site Food Retail. Auto currency switching (USD/GBP). Real-time calculations for labor savings, audit prep, manager visibility, compliance risk. Investment summary with ROI and payback period. | AI |

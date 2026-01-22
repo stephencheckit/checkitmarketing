@@ -410,67 +410,8 @@ export default function IndustriesPage() {
             })}
           </div>
 
-          {/* Subscription tiers comparison */}
-          <div className="bg-surface border border-border rounded-2xl overflow-hidden">
-            <div className="grid md:grid-cols-3">
-              {/* Features column */}
-              <div className="p-6 bg-surface-elevated/50 border-b md:border-b-0 md:border-r border-border">
-                <h3 className="text-lg font-semibold text-foreground mb-6">What&apos;s Included</h3>
-                <ul className="space-y-4 text-sm">
-                  <li className="text-muted">Hardware supply & replacements</li>
-                  <li className="text-muted">Calibration (initial & ongoing)</li>
-                  <li className="text-muted">24/7/365 automated alerts</li>
-                  <li className="text-muted">Helpdesk & support portal</li>
-                  <li className="text-muted">Cloud platform & storage</li>
-                  <li className="text-muted">Software maintenance</li>
-                  <li className="text-muted">Preventative health checks</li>
-                  <li className="text-muted">Engineer site visits</li>
-                </ul>
-              </div>
-              
-              {/* Automated Monitoring tier */}
-              <div className="p-6 border-b md:border-b-0 md:border-r border-border">
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-foreground">Automated Monitoring</h3>
-                  <p className="text-sm text-muted">Essential monitoring solution</p>
-                </div>
-                <ul className="space-y-4 text-sm">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Single point</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><span className="text-muted">—</span> Per visit</li>
-                  <li className="flex items-center gap-2"><span className="text-muted">—</span> Additional</li>
-                </ul>
-              </div>
-              
-              {/* Automated Monitoring+ tier */}
-              <div className="p-6 bg-accent/5 relative">
-                <div className="absolute top-0 right-0 bg-accent text-white text-xs px-3 py-1 rounded-bl-lg font-medium">
-                  Most Popular
-                </div>
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-accent">Automated Monitoring+</h3>
-                  <p className="text-sm text-muted">Premium support package</p>
-                </div>
-                <ul className="space-y-4 text-sm">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Multi-point options</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" /> Included</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           {/* Value props */}
-          <div className="mt-12 grid md:grid-cols-3 gap-6 text-center">
+          <div className="grid md:grid-cols-3 gap-6 text-center">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
                 <BadgeCheck className="w-6 h-6 text-success" />

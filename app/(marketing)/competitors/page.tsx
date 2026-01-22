@@ -24,7 +24,12 @@ import {
   MicOff,
   Lightbulb,
   Square,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Newspaper,
+  Filter,
+  Calendar,
+  Tag,
+  Briefcase
 } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
 import { BattlecardData, Competitor, BattlecardCategory, BattlecardVersion, CompanyData } from '@/lib/types';
@@ -72,7 +77,25 @@ declare global {
   }
 }
 
-type ViewMode = 'table' | 'edit';
+type ViewMode = 'table' | 'edit' | 'news';
+
+interface FeedItem {
+  id: number;
+  competitor_id: string;
+  competitor_name: string;
+  title: string;
+  link: string;
+  pub_date: string | null;
+  content_snippet: string | null;
+  topics: string[];
+  industries: string[];
+}
+
+interface FilterOptions {
+  competitors: { id: string; name: string }[];
+  topics: string[];
+  industries: string[];
+}
 
 interface ComparisonView {
   competitor: Competitor;
@@ -117,6 +140,16 @@ export default function CompetitorHub() {
   
   // Contribution modal (for team contributions that go through review)
   const [showContribution, setShowContribution] = useState(false);
+  
+  // News/Feeds state
+  const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [feedsLoading, setFeedsLoading] = useState(false);
+  const [feedsRefreshing, setFeedsRefreshing] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({ competitors: [], topics: [], industries: [] });
+  const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [daysFilter, setDaysFilter] = useState<number | undefined>(undefined);
 
   const fetchBattlecard = useCallback(async () => {
     try {
@@ -149,9 +182,50 @@ export default function CompetitorHub() {
     }
   };
 
+  const fetchFeedItems = useCallback(async () => {
+    try {
+      setFeedsLoading(true);
+      const params = new URLSearchParams();
+      if (selectedCompetitors.length > 0) params.set('competitors', selectedCompetitors.join(','));
+      if (selectedTopics.length > 0) params.set('topics', selectedTopics.join(','));
+      if (selectedIndustries.length > 0) params.set('industries', selectedIndustries.join(','));
+      if (daysFilter) params.set('days', daysFilter.toString());
+      
+      const res = await fetch(`/api/competitor-rss?${params.toString()}`);
+      if (!res.ok) throw new Error('Failed to fetch feeds');
+      const result = await res.json();
+      setFeedItems(result.items || []);
+      setFilterOptions(result.filterOptions || { competitors: [], topics: [], industries: [] });
+    } catch (err) {
+      console.error('Error fetching feeds:', err);
+    } finally {
+      setFeedsLoading(false);
+    }
+  }, [selectedCompetitors, selectedTopics, selectedIndustries, daysFilter]);
+
+  const refreshFeeds = async () => {
+    try {
+      setFeedsRefreshing(true);
+      const res = await fetch('/api/competitor-rss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+      if (!res.ok) throw new Error('Failed to refresh feeds');
+      await fetchFeedItems();
+    } catch (err) {
+      console.error('Error refreshing feeds:', err);
+    } finally {
+      setFeedsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     fetchBattlecard();
   }, [fetchBattlecard]);
+
+  // Fetch feeds when switching to news view or filters change
+  useEffect(() => {
+    if (viewMode === 'news') {
+      fetchFeedItems();
+    }
+  }, [viewMode, fetchFeedItems]);
 
   // Check for speech recognition support
   useEffect(() => {
@@ -525,6 +599,17 @@ export default function CompetitorHub() {
               >
                 <Edit3 className="w-4 h-4" />
                 Edit
+              </button>
+              <button
+                onClick={() => setViewMode('news')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  viewMode === 'news' 
+                    ? 'bg-accent text-white' 
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                <Newspaper className="w-4 h-4" />
+                News
               </button>
             </div>
 

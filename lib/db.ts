@@ -1067,6 +1067,388 @@ export async function getContributionsByUser(userId: number) {
   `;
 }
 
+// ============================================
+// COMPETITOR FEEDS (RSS/SCRAPING) OPERATIONS
+// ============================================
+
+export async function initializeCompetitorFeedsTables() {
+  // Cache of competitor feed metadata
+  await sql`
+    CREATE TABLE IF NOT EXISTS competitor_feeds (
+      id SERIAL PRIMARY KEY,
+      competitor_id VARCHAR(100) NOT NULL UNIQUE,
+      competitor_name VARCHAR(255) NOT NULL,
+      competitor_website VARCHAR(500),
+      feed_url VARCHAR(500),
+      discovery_method VARCHAR(100),
+      last_fetched_at TIMESTAMP,
+      fetch_error TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // Individual feed items with tagging
+  await sql`
+    CREATE TABLE IF NOT EXISTS competitor_feed_items (
+      id SERIAL PRIMARY KEY,
+      competitor_id VARCHAR(100) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      link VARCHAR(1000) NOT NULL UNIQUE,
+      pub_date TIMESTAMP,
+      content_snippet TEXT,
+      author VARCHAR(255),
+      topics TEXT[] DEFAULT '{}',
+      industries TEXT[] DEFAULT '{}',
+      ai_tagged BOOLEAN DEFAULT false,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // User feed preferences
+  await sql`
+    CREATE TABLE IF NOT EXISTS user_feed_preferences (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+      filters JSONB DEFAULT '{}',
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_feed_items_competitor ON competitor_feed_items(competitor_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_feed_items_pub_date ON competitor_feed_items(pub_date DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_feed_items_topics ON competitor_feed_items USING GIN(topics)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_feed_items_industries ON competitor_feed_items USING GIN(industries)`;
+}
+
+// Keyword patterns for auto-tagging
+const TOPIC_KEYWORDS: Record<string, string[]> = {
+  'product-update': ['product', 'release', 'feature', 'update', 'launch', 'new version', 'announcement'],
+  'case-study': ['case study', 'customer story', 'success story', 'testimonial', 'results'],
+  'thought-leadership': ['insight', 'trends', 'future of', 'opinion', 'perspective', 'analysis'],
+  'webinar': ['webinar', 'workshop', 'live event', 'register', 'join us'],
+  'compliance': ['compliance', 'regulation', 'audit', 'inspection', 'FDA', 'HACCP', 'CQC', 'standard'],
+  'company-news': ['partnership', 'acquisition', 'funding', 'award', 'recognition', 'hired', 'joins'],
+  'how-to': ['how to', 'guide', 'tutorial', 'best practices', 'tips', 'steps'],
+  'industry-news': ['industry', 'market', 'report', 'survey', 'research', 'study finds'],
+};
+
+const INDUSTRY_KEYWORDS: Record<string, string[]> = {
+  'healthcare': ['healthcare', 'hospital', 'NHS', 'clinical', 'patient', 'medical', 'health system', 'CQC'],
+  'food-safety': ['food safety', 'HACCP', 'food service', 'restaurant', 'kitchen', 'catering', 'FDA food'],
+  'senior-living': ['senior living', 'care home', 'elderly', 'assisted living', 'nursing home', 'aged care'],
+  'pharmacy': ['pharmacy', 'pharmacist', 'dispensing', 'medication', 'prescription'],
+  'hospitality': ['hotel', 'hospitality', 'resort', 'guest', 'accommodation'],
+  'retail': ['retail', 'store', 'supermarket', 'grocery', 'shop'],
+  'facilities': ['facilities', 'building', 'maintenance', 'HVAC', 'energy', 'property'],
+};
+
+// Auto-tag an article using keyword matching
+export function autoTagArticle(title: string, content: string): { topics: string[]; industries: string[] } {
+  const text = `${title} ${content}`.toLowerCase();
+  const topics: string[] = [];
+  const industries: string[] = [];
+
+  for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+    if (keywords.some(kw => text.includes(kw.toLowerCase()))) {
+      topics.push(topic);
+    }
+  }
+
+  for (const [industry, keywords] of Object.entries(INDUSTRY_KEYWORDS)) {
+    if (keywords.some(kw => text.includes(kw.toLowerCase()))) {
+      industries.push(industry);
+    }
+  }
+
+  return { topics, industries };
+}
+
+// Save or update a competitor feed
+export async function upsertCompetitorFeed(data: {
+  competitorId: string;
+  competitorName: string;
+  competitorWebsite?: string;
+  feedUrl?: string;
+  discoveryMethod?: string;
+  fetchError?: string;
+}) {
+  const result = await sql`
+    INSERT INTO competitor_feeds (
+      competitor_id, competitor_name, competitor_website, 
+      feed_url, discovery_method, fetch_error, last_fetched_at
+    )
+    VALUES (
+      ${data.competitorId}, ${data.competitorName}, ${data.competitorWebsite || null},
+      ${data.feedUrl || null}, ${data.discoveryMethod || null}, ${data.fetchError || null},
+      CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (competitor_id) DO UPDATE SET
+      competitor_name = ${data.competitorName},
+      competitor_website = COALESCE(${data.competitorWebsite || null}, competitor_feeds.competitor_website),
+      feed_url = COALESCE(${data.feedUrl || null}, competitor_feeds.feed_url),
+      discovery_method = COALESCE(${data.discoveryMethod || null}, competitor_feeds.discovery_method),
+      fetch_error = ${data.fetchError || null},
+      last_fetched_at = CURRENT_TIMESTAMP,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+  return result[0];
+}
+
+// Save feed items (with auto-tagging)
+export async function saveFeedItems(competitorId: string, items: Array<{
+  title: string;
+  link: string;
+  pubDate?: string;
+  contentSnippet?: string;
+  author?: string;
+}>) {
+  const saved = [];
+  for (const item of items) {
+    // Auto-tag using keywords
+    const { topics, industries } = autoTagArticle(item.title, item.contentSnippet || '');
+    
+    try {
+      const result = await sql`
+        INSERT INTO competitor_feed_items (
+          competitor_id, title, link, pub_date, content_snippet, author, topics, industries
+        )
+        VALUES (
+          ${competitorId}, ${item.title}, ${item.link}, 
+          ${item.pubDate ? new Date(item.pubDate) : null},
+          ${item.contentSnippet || null}, ${item.author || null},
+          ${topics}, ${industries}
+        )
+        ON CONFLICT (link) DO UPDATE SET
+          title = ${item.title},
+          content_snippet = COALESCE(${item.contentSnippet || null}, competitor_feed_items.content_snippet),
+          topics = CASE 
+            WHEN competitor_feed_items.ai_tagged THEN competitor_feed_items.topics 
+            ELSE ${topics}
+          END,
+          industries = CASE 
+            WHEN competitor_feed_items.ai_tagged THEN competitor_feed_items.industries 
+            ELSE ${industries}
+          END
+        RETURNING *
+      `;
+      saved.push(result[0]);
+    } catch {
+      // Skip duplicates or errors
+    }
+  }
+  return saved;
+}
+
+// Get feed items with filtering
+export async function getFeedItems(filters?: {
+  competitorIds?: string[];
+  topics?: string[];
+  industries?: string[];
+  daysBack?: number;
+  sortBy?: 'date' | 'competitor';
+  sortOrder?: 'asc' | 'desc';
+  limit?: number;
+  offset?: number;
+}) {
+  const limit = filters?.limit || 50;
+  const offset = filters?.offset || 0;
+  const sortOrder = filters?.sortOrder === 'asc' ? sql`ASC` : sql`DESC`;
+  
+  // Build dynamic query based on filters
+  let query;
+  
+  if (filters?.competitorIds?.length && filters?.topics?.length && filters?.industries?.length && filters?.daysBack) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.competitor_id = ANY(${filters.competitorIds})
+        AND fi.topics && ${filters.topics}
+        AND fi.industries && ${filters.industries}
+        AND fi.pub_date >= NOW() - INTERVAL '1 day' * ${filters.daysBack}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.competitorIds?.length && filters?.topics?.length && filters?.industries?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.competitor_id = ANY(${filters.competitorIds})
+        AND fi.topics && ${filters.topics}
+        AND fi.industries && ${filters.industries}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.competitorIds?.length && filters?.topics?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.competitor_id = ANY(${filters.competitorIds})
+        AND fi.topics && ${filters.topics}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.competitorIds?.length && filters?.industries?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.competitor_id = ANY(${filters.competitorIds})
+        AND fi.industries && ${filters.industries}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.topics?.length && filters?.industries?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.topics && ${filters.topics}
+        AND fi.industries && ${filters.industries}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.competitorIds?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.competitor_id = ANY(${filters.competitorIds})
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.topics?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.topics && ${filters.topics}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.industries?.length) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.industries && ${filters.industries}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else if (filters?.daysBack) {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      WHERE fi.pub_date >= NOW() - INTERVAL '1 day' * ${filters.daysBack}
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  } else {
+    query = sql`
+      SELECT fi.*, cf.competitor_name, cf.feed_url
+      FROM competitor_feed_items fi
+      LEFT JOIN competitor_feeds cf ON fi.competitor_id = cf.competitor_id
+      ORDER BY fi.pub_date DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+  }
+  
+  return await query;
+}
+
+// Get all cached competitor feeds
+export async function getCompetitorFeeds() {
+  return await sql`
+    SELECT cf.*, 
+      (SELECT COUNT(*) FROM competitor_feed_items WHERE competitor_id = cf.competitor_id) as item_count
+    FROM competitor_feeds cf
+    ORDER BY cf.competitor_name
+  `;
+}
+
+// Check if feeds need refresh (older than X hours)
+export async function getFeedsNeedingRefresh(hoursOld: number = 12) {
+  return await sql`
+    SELECT * FROM competitor_feeds
+    WHERE last_fetched_at IS NULL 
+      OR last_fetched_at < NOW() - INTERVAL '1 hour' * ${hoursOld}
+  `;
+}
+
+// Get available filter options (for UI dropdowns)
+export async function getFeedFilterOptions() {
+  const competitors = await sql`
+    SELECT DISTINCT competitor_id, competitor_name 
+    FROM competitor_feeds 
+    ORDER BY competitor_name
+  `;
+  
+  const topics = await sql`
+    SELECT DISTINCT unnest(topics) as topic 
+    FROM competitor_feed_items 
+    WHERE array_length(topics, 1) > 0
+    ORDER BY topic
+  `;
+  
+  const industries = await sql`
+    SELECT DISTINCT unnest(industries) as industry 
+    FROM competitor_feed_items 
+    WHERE array_length(industries, 1) > 0
+    ORDER BY industry
+  `;
+  
+  return {
+    competitors: competitors.map(c => ({ id: c.competitor_id, name: c.competitor_name })),
+    topics: topics.map(t => t.topic),
+    industries: industries.map(i => i.industry),
+  };
+}
+
+// User preferences
+export async function getUserFeedPreferences(userId: number) {
+  const result = await sql`
+    SELECT * FROM user_feed_preferences WHERE user_id = ${userId}
+  `;
+  return result[0]?.filters || {};
+}
+
+export async function saveUserFeedPreferences(userId: number, filters: object) {
+  await sql`
+    INSERT INTO user_feed_preferences (user_id, filters, updated_at)
+    VALUES (${userId}, ${JSON.stringify(filters)}, CURRENT_TIMESTAMP)
+    ON CONFLICT (user_id) DO UPDATE SET
+      filters = ${JSON.stringify(filters)},
+      updated_at = CURRENT_TIMESTAMP
+  `;
+}
+
+// Update tags via AI (mark as AI-tagged)
+export async function updateItemTags(itemId: number, topics: string[], industries: string[]) {
+  await sql`
+    UPDATE competitor_feed_items
+    SET topics = ${topics}, industries = ${industries}, ai_tagged = true
+    WHERE id = ${itemId}
+  `;
+}
+
+// Get items needing AI tagging (no keyword matches)
+export async function getItemsNeedingAITagging(limit: number = 20) {
+  return await sql`
+    SELECT * FROM competitor_feed_items
+    WHERE ai_tagged = false 
+      AND array_length(topics, 1) IS NULL 
+      AND array_length(industries, 1) IS NULL
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  `;
+}
+
 // Get contribution stats (for admin dashboard)
 export async function getContributionStats() {
   const byStatus = await sql`

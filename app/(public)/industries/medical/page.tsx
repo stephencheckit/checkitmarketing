@@ -13,9 +13,31 @@ import {
   FlaskConical,
   GraduationCap,
   Eye,
-  ShieldCheck
+  ShieldCheck,
+  Wifi,
+  Smartphone,
+  Monitor
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Product components for medical/life sciences
+const productComponents = [
+  {
+    icon: Wifi,
+    title: 'Sensors',
+    description: 'CAM+ sensors monitor freezers, incubators, and clean rooms with 21 CFR Part 11 compliant logging.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Apps',
+    description: 'Instant alerts to on-call staff when excursions occur. Log responses from anywhere.',
+  },
+  {
+    icon: Monitor,
+    title: 'Platform',
+    description: 'Validated platform with complete audit trails for FDA, AABB, and institutional requirements.',
+  },
+];
 
 // Core outcomes for medical/life sciences
 const outcomes = [
@@ -352,8 +374,38 @@ export default function MedicalPage() {
         </div>
       </section>
 
-      {/* Why Different Section */}
+      {/* Product Components */}
       <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              The Complete Solution
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              CAM+ sensors, mobile alerts, and validated platform designed for 
+              the stringent requirements of life sciences and healthcare.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {productComponents.map((component) => {
+              const Icon = component.icon;
+              return (
+                <div key={component.title} className="bg-surface border border-border rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 mx-auto rounded-lg bg-red-500/10 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-red-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{component.title}</h3>
+                  <p className="text-sm text-muted">{component.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Different Section */}
+      <section className="py-16 lg:py-20 bg-surface-elevated/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">

@@ -1,5 +1,16 @@
-import { NextResponse } from 'next/server';
-import { getCurrentBattlecardData } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { 
+  getCurrentBattlecardData, 
+  upsertCompetitorFeed, 
+  saveFeedItems,
+  getFeedItems,
+  getCompetitorFeeds,
+  getFeedFilterOptions,
+  getUserFeedPreferences,
+  saveUserFeedPreferences,
+  initializeCompetitorFeedsTables
+} from '@/lib/db';
+import { getSession } from '@/lib/session';
 import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 
@@ -10,6 +21,12 @@ const parser = new Parser({
   },
 });
 
+interface Competitor {
+  id: string;
+  name: string;
+  website: string;
+}
+
 interface RSSFeedItem {
   title: string;
   link: string;
@@ -17,22 +34,6 @@ interface RSSFeedItem {
   contentSnippet?: string;
   content?: string;
   creator?: string;
-}
-
-interface CompetitorFeed {
-  competitorId: string;
-  competitorName: string;
-  competitorWebsite: string;
-  feedUrl: string | null;
-  feedDiscoveryMethod: string | null;
-  items: RSSFeedItem[];
-  error: string | null;
-}
-
-interface Competitor {
-  id: string;
-  name: string;
-  website: string;
 }
 
 // Common RSS feed paths to try
@@ -118,7 +119,7 @@ async function tryCommonPaths(baseUrl: string): Promise<{ url: string; method: s
       const feedUrl = `${base}${path}`;
       const feed = await parser.parseURL(feedUrl);
       if (feed && feed.items && feed.items.length > 0) {
-        return { url: feedUrl, method: `common path: ${path}` };
+        return { url: feedUrl, method: `RSS: common path: ${path}` };
       }
     } catch {
       // Continue to next path
@@ -152,7 +153,6 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
       const items: RSSFeedItem[] = [];
       
       // Strategy 1: Look for article/post cards with common patterns
-      // Try various common selectors for blog listings
       const selectors = [
         'article',
         '.post',
@@ -173,15 +173,12 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
       for (const selector of selectors) {
         const elements = $(selector);
         if (elements.length >= 3) {
-          // Found likely blog listing
           elements.each((_, el) => {
             const $el = $(el);
             
-            // Try to find title - look for headings or links
             let title = '';
             let link = '';
             
-            // Title from h2, h3, h4 or prominent link
             const titleEl = $el.find('h1, h2, h3, h4').first();
             if (titleEl.length) {
               title = titleEl.text().trim();
@@ -189,19 +186,16 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
               if (titleLink) link = titleLink;
             }
             
-            // If no title from heading, try first prominent link
             if (!title) {
               const linkEl = $el.find('a').first();
               title = linkEl.text().trim();
               link = linkEl.attr('href') || '';
             }
             
-            // Get link if not found yet
             if (!link) {
               link = $el.find('a').attr('href') || $el.attr('href') || '';
             }
             
-            // Make link absolute
             if (link && !link.startsWith('http')) {
               if (link.startsWith('/')) {
                 link = `${base}${link}`;
@@ -210,23 +204,19 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
               }
             }
             
-            // Try to find date
             let pubDate = '';
             const dateEl = $el.find('time, [class*="date"], [class*="Date"], .meta, .published').first();
             if (dateEl.length) {
               pubDate = dateEl.attr('datetime') || dateEl.text().trim();
             }
             
-            // Try to find snippet/description
             let snippet = '';
             const descEl = $el.find('p, .excerpt, .description, .summary, [class*="excerpt"], [class*="desc"]').first();
             if (descEl.length) {
               snippet = descEl.text().trim().slice(0, 300);
             }
             
-            // Only add if we have title and link
             if (title && link && title.length > 10 && title.length < 200) {
-              // Avoid duplicates and navigation items
               const isDuplicate = items.some(i => i.title === title || i.link === link);
               const isNav = title.toLowerCase().includes('menu') || 
                            title.toLowerCase().includes('navigation') ||
@@ -245,7 +235,6 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
           });
           
           if (items.length >= 3) {
-            // Found enough articles, return
             return { 
               url: blogUrl, 
               items: items.slice(0, 10), 
@@ -262,13 +251,12 @@ async function scrapeBlogPage(baseUrl: string): Promise<{ url: string; items: RS
           const href = $a.attr('href') || '';
           const text = $a.text().trim();
           
-          // Check if link looks like a blog post URL
           const isBlogPost = href.includes('/blog/') || 
                             href.includes('/post/') || 
                             href.includes('/article/') ||
                             href.includes('/news/') ||
                             href.includes('/insights/') ||
-                            href.match(/\/\d{4}\/\d{2}\//); // Date pattern in URL
+                            href.match(/\/\d{4}\/\d{2}\//);
           
           if (isBlogPost && text.length > 15 && text.length < 150) {
             let fullLink = href;
@@ -310,15 +298,12 @@ async function fetchCompetitorFeed(
   competitorId: string,
   competitorName: string,
   website: string
-): Promise<CompetitorFeed> {
-  const result: CompetitorFeed = {
-    competitorId,
-    competitorName,
-    competitorWebsite: website,
-    feedUrl: null,
-    feedDiscoveryMethod: null,
-    items: [],
-    error: null,
+): Promise<{ feedUrl: string | null; method: string | null; items: RSSFeedItem[]; error: string | null }> {
+  const result = {
+    feedUrl: null as string | null,
+    method: null as string | null,
+    items: [] as RSSFeedItem[],
+    error: null as string | null,
   };
   
   if (!website) {
@@ -326,7 +311,6 @@ async function fetchCompetitorFeed(
     return result;
   }
   
-  // Normalize website URL
   let baseUrl = website;
   if (!baseUrl.startsWith('http')) {
     baseUrl = `https://${baseUrl}`;
@@ -340,7 +324,7 @@ async function fetchCompetitorFeed(
         const feed = await parser.parseURL(discoveredFeed);
         if (feed && feed.items && feed.items.length > 0) {
           result.feedUrl = discoveredFeed;
-          result.feedDiscoveryMethod = 'RSS: HTML meta tag';
+          result.method = 'RSS: HTML meta tag';
           result.items = feed.items.slice(0, 10).map(item => ({
             title: item.title || 'Untitled',
             link: item.link || '',
@@ -361,7 +345,7 @@ async function fetchCompetitorFeed(
     if (commonPath) {
       const feed = await parser.parseURL(commonPath.url);
       result.feedUrl = commonPath.url;
-      result.feedDiscoveryMethod = `RSS: ${commonPath.method}`;
+      result.method = commonPath.method;
       result.items = feed.items.slice(0, 10).map(item => ({
         title: item.title || 'Untitled',
         link: item.link || '',
@@ -377,7 +361,7 @@ async function fetchCompetitorFeed(
     const scrapedContent = await scrapeBlogPage(baseUrl);
     if (scrapedContent && scrapedContent.items.length > 0) {
       result.feedUrl = scrapedContent.url;
-      result.feedDiscoveryMethod = scrapedContent.method;
+      result.method = scrapedContent.method;
       result.items = scrapedContent.items;
       return result;
     }
@@ -390,44 +374,180 @@ async function fetchCompetitorFeed(
   return result;
 }
 
-// GET - Fetch RSS feeds for all competitors
-export async function GET() {
+// GET - Return cached feed items with filtering
+export async function GET(request: NextRequest) {
   try {
+    // Initialize tables if needed
+    await initializeCompetitorFeedsTables();
+    
+    const { searchParams } = new URL(request.url);
+    
+    // Check if requesting filter options
+    if (searchParams.get('options') === 'true') {
+      const options = await getFeedFilterOptions();
+      return NextResponse.json(options);
+    }
+    
+    // Check if requesting competitor feed metadata
+    if (searchParams.get('feeds') === 'true') {
+      const feeds = await getCompetitorFeeds();
+      return NextResponse.json({ feeds });
+    }
+    
+    // Parse filter parameters
+    const competitorIds = searchParams.get('competitors')?.split(',').filter(Boolean);
+    const topics = searchParams.get('topics')?.split(',').filter(Boolean);
+    const industries = searchParams.get('industries')?.split(',').filter(Boolean);
+    const daysBack = searchParams.get('days') ? parseInt(searchParams.get('days')!) : undefined;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50;
+    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0;
+    
+    // Get filtered items
+    const items = await getFeedItems({
+      competitorIds,
+      topics,
+      industries,
+      daysBack,
+      limit,
+      offset,
+    });
+    
+    // Get filter options for UI
+    const filterOptions = await getFeedFilterOptions();
+    
+    return NextResponse.json({
+      items,
+      count: items.length,
+      filters: {
+        competitors: competitorIds || [],
+        topics: topics || [],
+        industries: industries || [],
+        daysBack,
+      },
+      filterOptions,
+    });
+  } catch (error) {
+    console.error('Error fetching competitor feeds:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch competitor feeds' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Refresh feeds from sources (fetch + save to DB)
+export async function POST(request: NextRequest) {
+  try {
+    // Initialize tables if needed
+    await initializeCompetitorFeedsTables();
+    
+    const body = await request.json().catch(() => ({}));
+    const competitorId = body.competitorId; // Optional: refresh single competitor
+    
     const battlecard = await getCurrentBattlecardData();
     
     if (!battlecard || !battlecard.data || !battlecard.data.competitors) {
       return NextResponse.json({ 
         error: 'No competitors found in battlecard',
-        feeds: [] 
+        refreshed: 0 
       });
     }
     
-    const competitors = battlecard.data.competitors as Competitor[];
+    let competitors = battlecard.data.competitors as Competitor[];
     
-    // Fetch feeds in parallel (with some concurrency limit)
-    const feedPromises = competitors.map(comp => 
-      fetchCompetitorFeed(comp.id, comp.name, comp.website)
-    );
+    // If specific competitor requested, filter to just that one
+    if (competitorId) {
+      competitors = competitors.filter(c => c.id === competitorId);
+    }
     
-    const feeds = await Promise.all(feedPromises);
+    const results = {
+      refreshed: 0,
+      failed: 0,
+      totalItems: 0,
+      details: [] as Array<{ competitor: string; status: string; itemCount: number }>,
+    };
     
-    // Summary stats
-    const feedsFound = feeds.filter(f => f.feedUrl !== null).length;
-    const totalItems = feeds.reduce((sum, f) => sum + f.items.length, 0);
+    // Fetch feeds in parallel
+    const feedPromises = competitors.map(async (comp) => {
+      const feedResult = await fetchCompetitorFeed(comp.id, comp.name, comp.website);
+      
+      // Save feed metadata
+      await upsertCompetitorFeed({
+        competitorId: comp.id,
+        competitorName: comp.name,
+        competitorWebsite: comp.website,
+        feedUrl: feedResult.feedUrl || undefined,
+        discoveryMethod: feedResult.method || undefined,
+        fetchError: feedResult.error || undefined,
+      });
+      
+      // Save feed items
+      if (feedResult.items.length > 0) {
+        await saveFeedItems(comp.id, feedResult.items.map(item => ({
+          title: item.title,
+          link: item.link,
+          pubDate: item.pubDate,
+          contentSnippet: item.contentSnippet,
+          author: item.creator,
+        })));
+      }
+      
+      return {
+        competitor: comp.name,
+        status: feedResult.error ? `error: ${feedResult.error}` : `success: ${feedResult.method}`,
+        itemCount: feedResult.items.length,
+        hasError: !!feedResult.error,
+      };
+    });
+    
+    const feedResults = await Promise.all(feedPromises);
+    
+    for (const result of feedResults) {
+      if (result.hasError) {
+        results.failed++;
+      } else {
+        results.refreshed++;
+      }
+      results.totalItems += result.itemCount;
+      results.details.push({
+        competitor: result.competitor,
+        status: result.status,
+        itemCount: result.itemCount,
+      });
+    }
     
     return NextResponse.json({
-      summary: {
-        competitorsChecked: competitors.length,
-        feedsFound,
-        totalItems,
-        checkedAt: new Date().toISOString(),
-      },
-      feeds,
+      success: true,
+      refreshedAt: new Date().toISOString(),
+      ...results,
     });
   } catch (error) {
-    console.error('Error fetching competitor RSS:', error);
+    console.error('Error refreshing competitor feeds:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch competitor feeds' },
+      { error: 'Failed to refresh competitor feeds' },
+      { status: 500 }
+    );
+  }
+}
+
+// PUT - Save user filter preferences
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const body = await request.json();
+    const { filters } = body;
+    
+    await saveUserFeedPreferences(session.userId, filters);
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error saving feed preferences:', error);
+    return NextResponse.json(
+      { error: 'Failed to save preferences' },
       { status: 500 }
     );
   }

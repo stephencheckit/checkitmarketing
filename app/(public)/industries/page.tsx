@@ -15,9 +15,42 @@ import {
   Utensils,
   TrendingUp,
   AlertTriangle,
-  FileCheck
+  FileCheck,
+  Monitor,
+  Smartphone,
+  Wifi,
+  ArrowDown,
+  Layers
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Product components
+const productComponents = [
+  {
+    icon: Wifi,
+    title: 'Sensors',
+    subtitle: 'Always-on monitoring',
+    description: 'Wireless IoT sensors continuously monitor temperatures, humidity, and equipment status. No manual checks required.',
+    features: ['Temperature sensors', 'Door/open sensors', 'Humidity monitoring', 'Equipment alerts'],
+    color: 'from-green-500 to-emerald-600',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Apps',
+    subtitle: 'Operations in your pocket',
+    description: 'iOS and Android apps for task completion, alerts, and on-the-go visibility. Staff complete workflows from any device.',
+    features: ['Digital checklists', 'Real-time alerts', 'Photo capture', 'Offline capable'],
+    color: 'from-blue-500 to-blue-600',
+  },
+  {
+    icon: Monitor,
+    title: 'Platform',
+    subtitle: 'Command center',
+    description: 'Cloud dashboard for complete visibility across all locations. Reports, analytics, and compliance documentation.',
+    features: ['Multi-site dashboards', 'Compliance reports', 'Trend analytics', 'Audit trails'],
+    color: 'from-purple-500 to-purple-600',
+  },
+];
 
 const industries = [
   {
@@ -245,8 +278,76 @@ export default function IndustriesPage() {
         </div>
       </section>
 
+      {/* Product Components - How It Works */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-surface-elevated text-muted rounded-full mb-4">
+              The Complete Solution
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Sensors + Apps + Platform
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Three integrated components that work together to deliver automated monitoring, 
+              streamlined operations, and complete visibility.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            {productComponents.map((component, index) => {
+              const Icon = component.icon;
+              return (
+                <div key={component.title} className="relative">
+                  {/* Connection line */}
+                  {index < 2 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border z-0">
+                      <ArrowRight className="absolute -right-2 -top-2 w-4 h-4 text-muted" />
+                    </div>
+                  )}
+                  
+                  <div className="bg-surface border border-border rounded-2xl p-6 h-full relative z-10">
+                    {/* Header */}
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${component.color} flex items-center justify-center mb-4`}>
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-foreground mb-1">{component.title}</h3>
+                    <p className="text-sm text-accent mb-3">{component.subtitle}</p>
+                    <p className="text-muted text-sm mb-4">{component.description}</p>
+                    
+                    {/* Features */}
+                    <ul className="space-y-2">
+                      {component.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2 text-sm text-muted">
+                          <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* How they connect */}
+          <div className="bg-surface-elevated/50 border border-border rounded-2xl p-8 text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <Layers className="w-6 h-6 text-accent" />
+              <h3 className="text-lg font-semibold text-foreground">How They Work Together</h3>
+            </div>
+            <p className="text-muted max-w-3xl mx-auto">
+              <strong className="text-foreground">Sensors</strong> capture data automatically and send it to the cloud. 
+              <strong className="text-foreground"> Mobile apps</strong> alert staff to issues and guide them through tasks. 
+              The <strong className="text-foreground">platform</strong> aggregates everything into dashboards, reports, and audit-ready documentation.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Industries Grid */}
-      <section className="py-16 lg:py-20">
+      <section className="py-16 lg:py-20 bg-surface-elevated/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">

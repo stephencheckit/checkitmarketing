@@ -13,9 +13,31 @@ import {
   MapPin,
   Eye,
   ShieldCheck,
-  Utensils
+  Utensils,
+  Wifi,
+  Smartphone,
+  Monitor
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
+
+// Product components for food retail
+const productComponents = [
+  {
+    icon: Wifi,
+    title: 'Sensors',
+    description: 'Wireless monitoring of fridges, hot holding units, and display cases across every location.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Apps',
+    description: 'Staff complete food safety checks, receive temperature alerts, and log corrective actions.',
+  },
+  {
+    icon: Monitor,
+    title: 'Platform',
+    description: 'Estate-wide dashboards showing compliance status across hundreds of sites in real-time.',
+  },
+];
 
 // Core outcomes for food retail
 const outcomes = [
@@ -288,8 +310,38 @@ export default function FoodRetailPage() {
         </div>
       </section>
 
-      {/* Why Different Section */}
+      {/* Product Components */}
       <section className="py-16 lg:py-20 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              The Complete Solution
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              Sensors, mobile apps, and cloud platform working together to ensure 
+              food safety across your entire retail estate.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {productComponents.map((component) => {
+              const Icon = component.icon;
+              return (
+                <div key={component.title} className="bg-surface border border-border rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 mx-auto rounded-lg bg-accent/10 flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6 text-accent" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{component.title}</h3>
+                  <p className="text-sm text-muted">{component.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Different Section */}
+      <section className="py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">

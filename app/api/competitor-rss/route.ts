@@ -382,6 +382,72 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     
+    // Legacy format for content page's Competitor Watch feature
+    // Returns fresh fetch with summary + feeds grouped by competitor
+    if (searchParams.get('legacy') === 'true') {
+      const battlecard = await getCurrentBattlecardData();
+      
+      if (!battlecard || !battlecard.data || !battlecard.data.competitors) {
+        return NextResponse.json({ 
+          error: 'No competitors found in battlecard',
+          summary: { competitorsChecked: 0, feedsFound: 0, totalItems: 0, checkedAt: new Date().toISOString() },
+          feeds: [] 
+        });
+      }
+      
+      const competitors = battlecard.data.competitors as Competitor[];
+      
+      // Fetch feeds in parallel
+      const feedPromises = competitors.map(async (comp) => {
+        const feedResult = await fetchCompetitorFeed(comp.id, comp.name, comp.website);
+        
+        // Also save to DB for caching
+        await upsertCompetitorFeed({
+          competitorId: comp.id,
+          competitorName: comp.name,
+          competitorWebsite: comp.website,
+          feedUrl: feedResult.feedUrl || undefined,
+          discoveryMethod: feedResult.method || undefined,
+          fetchError: feedResult.error || undefined,
+        });
+        
+        if (feedResult.items.length > 0) {
+          await saveFeedItems(comp.id, feedResult.items.map(item => ({
+            title: item.title,
+            link: item.link,
+            pubDate: item.pubDate,
+            contentSnippet: item.contentSnippet,
+            author: item.creator,
+          })));
+        }
+        
+        return {
+          competitorId: comp.id,
+          competitorName: comp.name,
+          competitorWebsite: comp.website,
+          feedUrl: feedResult.feedUrl,
+          feedDiscoveryMethod: feedResult.method,
+          items: feedResult.items,
+          error: feedResult.error,
+        };
+      });
+      
+      const feeds = await Promise.all(feedPromises);
+      
+      const feedsFound = feeds.filter(f => f.feedUrl !== null).length;
+      const totalItems = feeds.reduce((sum, f) => sum + f.items.length, 0);
+      
+      return NextResponse.json({
+        summary: {
+          competitorsChecked: competitors.length,
+          feedsFound,
+          totalItems,
+          checkedAt: new Date().toISOString(),
+        },
+        feeds,
+      });
+    }
+    
     // Check if requesting filter options
     if (searchParams.get('options') === 'true') {
       const options = await getFeedFilterOptions();

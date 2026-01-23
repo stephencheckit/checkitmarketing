@@ -276,7 +276,7 @@ export default function ContentPage() {
     setLoadingFeeds(true);
     setFeedsError(null);
     try {
-      const res = await fetch('/api/competitor-rss');
+      const res = await fetch('/api/competitor-rss?legacy=true');
       if (!res.ok) throw new Error('Failed to fetch competitor feeds');
       const data: CompetitorRSSResponse = await res.json();
       setCompetitorFeeds(data);

@@ -266,19 +266,56 @@ export default function IndustriesPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-transparent" />
+      <section className="relative py-20 lg:py-32 overflow-hidden">
+        {/* Network grid background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300A3E0' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3Cpath d='M30 0v60M0 30h60' stroke='%2300A3E0' stroke-width='0.5' stroke-opacity='0.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+        
+        {/* Animated gradient orbs */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        {/* Globe/network visualization */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/2 h-full opacity-10 pointer-events-none hidden lg:block">
+          <svg viewBox="0 0 400 400" className="w-full h-full">
+            {/* Globe circles */}
+            <circle cx="200" cy="200" r="150" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-accent" />
+            <circle cx="200" cy="200" r="120" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-accent" />
+            <circle cx="200" cy="200" r="90" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-accent" />
+            <ellipse cx="200" cy="200" rx="150" ry="60" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-accent" />
+            <ellipse cx="200" cy="200" rx="60" ry="150" stroke="currentColor" strokeWidth="0.5" fill="none" className="text-accent" />
+            {/* Connection nodes */}
+            <circle cx="200" cy="50" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="320" cy="140" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="340" cy="220" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="280" cy="320" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="120" cy="300" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="80" cy="180" r="4" fill="currentColor" className="text-accent" />
+            <circle cx="140" cy="100" r="4" fill="currentColor" className="text-accent" />
+            {/* Connection lines */}
+            <line x1="200" y1="50" x2="320" y2="140" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="320" y1="140" x2="340" y2="220" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="340" y1="220" x2="280" y2="320" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="280" y1="320" x2="120" y2="300" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="120" y1="300" x2="80" y2="180" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="80" y1="180" x2="140" y2="100" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+            <line x1="140" y1="100" x2="200" y2="50" stroke="currentColor" strokeWidth="0.5" className="text-accent" />
+          </svg>
+        </div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center max-w-3xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto lg:text-left lg:max-w-2xl lg:mx-0">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Industry-Specific Solutions for{' '}
               <span className="text-gradient">Operational Excellence</span>
             </h1>
             <p className="text-lg text-muted mb-8">
-              From senior living to plasma centers, CheckIt delivers purpose-built compliance 
-              and monitoring solutions that transform how organizations operate.
+              From senior living to plasma centers, Checkit delivers purpose-built compliance 
+              and monitoring solutions that transform how multi-site organizations operate.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-4">
               <DemoRequestButton />
             </div>
           </div>

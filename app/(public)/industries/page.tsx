@@ -33,7 +33,11 @@ import {
   FileWarning,
   Ban,
   CircleDollarSign,
-  Timer
+  Timer,
+  Building,
+  Globe2,
+  Award,
+  MapPin
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
 
@@ -237,6 +241,11 @@ const outcomes = [
 
 const valueProps = [
   {
+    icon: Globe2,
+    title: 'Multi-Site Control',
+    description: 'One platform for all your locations. Standardize operations, compare performance, and manage compliance centrally.'
+  },
+  {
     icon: Shield,
     title: 'Regulatory Compliance',
     description: 'Meet and exceed industry-specific regulatory requirements with automated monitoring and documentation.'
@@ -245,11 +254,6 @@ const valueProps = [
     icon: Clock,
     title: 'Operational Efficiency',
     description: 'Eliminate paper-based processes and manual data entry. Free your teams to focus on what matters.'
-  },
-  {
-    icon: BarChart3,
-    title: 'Real-Time Visibility',
-    description: 'Instant insights across all locations. Identify issues before they become problems.'
   },
   {
     icon: CheckCircle2,
@@ -276,6 +280,30 @@ export default function IndustriesPage() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <DemoRequestButton />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Bar */}
+      <section className="py-8 border-y border-border bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12 text-sm">
+            <div className="flex items-center gap-2 text-muted">
+              <Building className="w-4 h-4 text-accent" />
+              <span><strong className="text-foreground">LSE: CHK</strong> — Publicly Traded</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted">
+              <MapPin className="w-4 h-4 text-accent" />
+              <span>London Headquarters</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted">
+              <Globe2 className="w-4 h-4 text-accent" />
+              <span><strong className="text-foreground">Multi-Site</strong> Operations Platform</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted">
+              <Award className="w-4 h-4 text-accent" />
+              <span>ISO 17025 &amp; UKAS Accredited</span>
             </div>
           </div>
         </div>

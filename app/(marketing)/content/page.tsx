@@ -1,10 +1,20 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Copy, Check, Sparkles, Linkedin, Facebook, Twitter, ChevronDown, ChevronUp, Target, ListChecks, FileText, X, Loader2, Trash2, Archive, RefreshCw, Lightbulb, Rss, ExternalLink, Building2, AlertCircle, Wand2 } from 'lucide-react';
+import { Copy, Check, Sparkles, Linkedin, Facebook, Twitter, ChevronDown, ChevronUp, Target, ListChecks, FileText, X, Loader2, Trash2, Archive, RefreshCw, Lightbulb, Rss, ExternalLink, Building2, AlertCircle, Wand2, Zap, TrendingUp, Users, MessageSquare } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
 
-type TabType = 'ideas' | 'competitor-watch';
+type TabType = 'ideas' | 'competitor-watch' | 'innovation';
+
+interface InnovationIdea {
+  title: string;
+  angle: string;
+  competitorInsight: string;
+  checkitOpportunity: string;
+  targetAudience: string;
+  contentTypes: string[];
+  keyMessages: string[];
+}
 
 interface ContentIdea {
   id?: number;
@@ -100,6 +110,12 @@ export default function ContentPage() {
   const [generatingResponse, setGeneratingResponse] = useState<string | null>(null); // itemId being generated
   const [generatedResponses, setGeneratedResponses] = useState<Map<string, GeneratedResponse>>(new Map());
   const [responseModal, setResponseModal] = useState<{ itemId: string; response: GeneratedResponse } | null>(null);
+  
+  // Innovation state
+  const [innovationIdeas, setInnovationIdeas] = useState<InnovationIdea[]>([]);
+  const [loadingInnovation, setLoadingInnovation] = useState(false);
+  const [innovationError, setInnovationError] = useState<string | null>(null);
+  const [expandedInnovation, setExpandedInnovation] = useState<Set<number>>(new Set([0]));
 
   // Load saved ideas on mount
   const loadSavedIdeas = useCallback(async () => {
@@ -294,6 +310,57 @@ export default function ContentPage() {
     }
   }, [activeTab, competitorFeeds, loadingFeeds, fetchCompetitorFeeds]);
 
+  // Generate innovation ideas based on competitor content
+  const generateInnovationIdeas = useCallback(async () => {
+    // First ensure we have competitor feeds
+    if (!competitorFeeds || competitorFeeds.feeds.length === 0) {
+      setInnovationError('Please scan competitor feeds first to generate innovation ideas');
+      return;
+    }
+    
+    setLoadingInnovation(true);
+    setInnovationError(null);
+    
+    try {
+      // Collect all competitor articles
+      const competitorContent = competitorFeeds.feeds
+        .filter(f => f.items.length > 0)
+        .map(f => ({
+          competitor: f.competitorName,
+          articles: f.items.slice(0, 5).map(item => ({
+            title: item.title,
+            snippet: item.contentSnippet || ''
+          }))
+        }));
+      
+      const res = await fetch('/api/innovate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ competitorContent })
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to generate innovation ideas');
+      }
+      
+      const data = await res.json();
+      setInnovationIdeas(data.ideas);
+      setExpandedInnovation(new Set([0]));
+    } catch (err) {
+      setInnovationError(err instanceof Error ? err.message : 'Failed to generate innovation ideas');
+    } finally {
+      setLoadingInnovation(false);
+    }
+  }, [competitorFeeds]);
+
+  // Auto-generate innovation when switching to that tab (if we have feeds but no ideas)
+  useEffect(() => {
+    if (activeTab === 'innovation' && competitorFeeds && innovationIdeas.length === 0 && !loadingInnovation) {
+      generateInnovationIdeas();
+    }
+  }, [activeTab, competitorFeeds, innovationIdeas.length, loadingInnovation, generateInnovationIdeas]);
+
   // Generate Checkit response to competitor content
   const generateResponse = async (competitorName: string, item: RSSFeedItem) => {
     const itemId = `${competitorName}-${item.title}`;
@@ -369,13 +436,15 @@ export default function ContentPage() {
             <p className="text-sm text-muted mt-1">
               {activeTab === 'ideas' 
                 ? `AI-powered content ideas • ${activeIdeas.length} ideas ${archivedCount > 0 ? `• ${archivedCount} archived` : ''}`
-                : `Monitor competitor content & generate Checkit responses`
+                : activeTab === 'competitor-watch'
+                ? `Monitor competitor content & generate Checkit responses`
+                : `Generate unique ideas from competitor intelligence • ${innovationIdeas.length} opportunities`
               }
             </p>
           </div>
           
           <div className="flex items-center gap-2">
-            {activeTab === 'ideas' ? (
+            {activeTab === 'ideas' && (
               <>
                 <button
                   onClick={() => setShowContribution(true)}
@@ -394,7 +463,8 @@ export default function ContentPage() {
                   {loading ? 'Generating...' : 'Generate Ideas'}
                 </button>
               </>
-            ) : (
+            )}
+            {activeTab === 'competitor-watch' && (
               <button
                 onClick={fetchCompetitorFeeds}
                 disabled={loadingFeeds}
@@ -402,6 +472,16 @@ export default function ContentPage() {
               >
                 <Rss className={`w-4 h-4 ${loadingFeeds ? 'animate-pulse' : ''}`} />
                 {loadingFeeds ? 'Scanning...' : 'Scan Competitor Feeds'}
+              </button>
+            )}
+            {activeTab === 'innovation' && (
+              <button
+                onClick={generateInnovationIdeas}
+                disabled={loadingInnovation || !competitorFeeds}
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+              >
+                <Zap className={`w-4 h-4 ${loadingInnovation ? 'animate-pulse' : ''}`} />
+                {loadingInnovation ? 'Generating...' : 'Generate Innovation Ideas'}
               </button>
             )}
           </div>
@@ -430,6 +510,17 @@ export default function ContentPage() {
           >
             <Rss className="w-4 h-4" />
             Competitor Watch
+          </button>
+          <button
+            onClick={() => setActiveTab('innovation')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors ${
+              activeTab === 'innovation'
+                ? 'bg-accent text-white'
+                : 'text-muted hover:text-foreground'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+            Innovation
           </button>
         </div>
 
@@ -926,6 +1017,230 @@ export default function ContentPage() {
                 >
                   <Rss className="w-4 h-4" />
                   Scan Competitor Feeds
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* INNOVATION TAB */}
+        {activeTab === 'innovation' && (
+          <>
+            {/* Loading State */}
+            {loadingInnovation && (
+              <div className="text-center py-12">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-surface border border-border rounded-lg shadow">
+                  <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                  <span className="text-muted">
+                    Analyzing competitor content and generating innovation ideas...
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Error State */}
+            {innovationError && (
+              <div className="text-center py-8">
+                <div className="inline-block px-6 py-4 bg-error/10 border border-error/30 rounded-lg">
+                  <AlertCircle className="w-6 h-6 text-error mx-auto mb-2" />
+                  <p className="text-error">{innovationError}</p>
+                  {!competitorFeeds && (
+                    <button
+                      onClick={() => setActiveTab('competitor-watch')}
+                      className="mt-3 text-sm text-accent hover:underline"
+                    >
+                      Go to Competitor Watch to scan feeds first →
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Innovation Ideas */}
+            {!loadingInnovation && innovationIdeas.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm text-muted">
+                    {innovationIdeas.length} innovation opportunities based on competitor activity
+                  </p>
+                  <button
+                    onClick={generateInnovationIdeas}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground transition-colors"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerate
+                  </button>
+                </div>
+
+                {innovationIdeas.map((idea, index) => (
+                  <div
+                    key={index}
+                    className="bg-surface border border-border rounded-xl overflow-hidden"
+                  >
+                    {/* Header */}
+                    <button
+                      onClick={() => {
+                        const newExpanded = new Set(expandedInnovation);
+                        if (newExpanded.has(index)) {
+                          newExpanded.delete(index);
+                        } else {
+                          newExpanded.add(index);
+                        }
+                        setExpandedInnovation(newExpanded);
+                      }}
+                      className="w-full px-5 py-4 flex items-center justify-between hover:bg-surface-elevated/50 transition-colors text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-success flex items-center justify-center">
+                          <Zap className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{idea.title}</h3>
+                          <p className="text-sm text-muted">{idea.angle}</p>
+                        </div>
+                      </div>
+                      {expandedInnovation.has(index) ? (
+                        <ChevronUp className="w-5 h-5 text-muted" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5 text-muted" />
+                      )}
+                    </button>
+
+                    {/* Expanded Content */}
+                    {expandedInnovation.has(index) && (
+                      <div className="px-5 pb-5 border-t border-border">
+                        {/* Competitor Insight */}
+                        <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                          <div className="flex items-center gap-2 text-sm font-medium text-warning mb-2">
+                            <TrendingUp className="w-4 h-4" />
+                            Competitor Insight
+                          </div>
+                          <p className="text-sm text-foreground/80">{idea.competitorInsight}</p>
+                        </div>
+
+                        {/* Checkit Opportunity */}
+                        <div className="mt-4 p-4 bg-success/10 border border-success/20 rounded-lg">
+                          <div className="flex items-center gap-2 text-sm font-medium text-success mb-2">
+                            <Lightbulb className="w-4 h-4" />
+                            Checkit&apos;s Opportunity
+                          </div>
+                          <p className="text-sm text-foreground/80">{idea.checkitOpportunity}</p>
+                        </div>
+
+                        {/* Target Audience & Content Types */}
+                        <div className="mt-4 grid md:grid-cols-2 gap-4">
+                          <div className="p-4 bg-surface-elevated rounded-lg">
+                            <div className="flex items-center gap-2 text-sm font-medium text-muted mb-2">
+                              <Users className="w-4 h-4" />
+                              Target Audience
+                            </div>
+                            <p className="text-sm text-foreground">{idea.targetAudience}</p>
+                          </div>
+                          <div className="p-4 bg-surface-elevated rounded-lg">
+                            <div className="flex items-center gap-2 text-sm font-medium text-muted mb-2">
+                              <MessageSquare className="w-4 h-4" />
+                              Suggested Content Types
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {idea.contentTypes.map((type, i) => (
+                                <span key={i} className="px-2 py-0.5 text-xs bg-accent/20 text-accent rounded">
+                                  {type}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Key Messages */}
+                        <div className="mt-4">
+                          <div className="flex items-center gap-2 text-sm font-medium text-muted mb-3">
+                            <ListChecks className="w-4 h-4" />
+                            Key Messages
+                          </div>
+                          <ul className="space-y-2">
+                            {idea.keyMessages.map((msg, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                                <span className="w-5 h-5 rounded-full bg-accent/20 text-accent flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                                  {i + 1}
+                                </span>
+                                {msg}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="mt-4 pt-4 border-t border-border flex justify-end">
+                          <button
+                            onClick={() => {
+                              // Convert to content idea and switch to ideas tab
+                              const newIdea: ContentIdea = {
+                                title: idea.title,
+                                description: idea.checkitOpportunity,
+                                targetAudience: idea.targetAudience,
+                                keyPoints: idea.keyMessages,
+                                linkedinPost: '',
+                                facebookPost: '',
+                                twitterPost: '',
+                                status: 'draft'
+                              };
+                              setIdeas(prev => [newIdea, ...prev]);
+                              setActiveTab('ideas');
+                              setExpandedIdeas(new Set([0]));
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors text-sm"
+                          >
+                            <Sparkles className="w-4 h-4" />
+                            Add to Content Ideas
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty State - No competitor data */}
+            {!loadingInnovation && !innovationError && innovationIdeas.length === 0 && !competitorFeeds && (
+              <div className="text-center py-16">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
+                  <Zap className="w-8 h-8 text-accent" />
+                </div>
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  Innovation Lab
+                </h2>
+                <p className="text-muted max-w-md mx-auto mb-4">
+                  Generate unique content ideas by analyzing what competitors are publishing and finding gaps Checkit can fill.
+                </p>
+                <button
+                  onClick={() => setActiveTab('competitor-watch')}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                >
+                  <Rss className="w-4 h-4" />
+                  Scan Competitor Feeds First
+                </button>
+              </div>
+            )}
+
+            {/* Empty State - Has competitor data but no ideas yet */}
+            {!loadingInnovation && !innovationError && innovationIdeas.length === 0 && competitorFeeds && (
+              <div className="text-center py-16">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
+                  <Zap className="w-8 h-8 text-accent" />
+                </div>
+                <h2 className="text-xl font-semibold text-foreground mb-2">
+                  Ready to Innovate
+                </h2>
+                <p className="text-muted max-w-md mx-auto mb-4">
+                  We have competitor content loaded. Generate innovation ideas that position Checkit uniquely in the market.
+                </p>
+                <button
+                  onClick={generateInnovationIdeas}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+                >
+                  <Zap className="w-4 h-4" />
+                  Generate Innovation Ideas
                 </button>
               </div>
             )}

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import MainNav from '@/components/MainNav';
+import QuickCaptureFAB from '@/components/QuickCaptureFAB';
 
 export default async function MarketingLayout({
   children,
@@ -19,6 +20,7 @@ export default async function MarketingLayout({
       <main>
         {children}
       </main>
+      <QuickCaptureFAB />
     </div>
   );
 }

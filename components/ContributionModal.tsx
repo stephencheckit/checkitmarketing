@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Lightbulb, AlertCircle, HelpCircle, PenLine, Eye, EyeOff, Mic, Square, Loader2 } from 'lucide-react';
+import { useVoiceRecording, formatRecordingTime } from '@/lib/useVoiceRecording';
+import { useToast } from './ToastProvider';
 
 type TargetType = 'positioning' | 'competitors' | 'content';
 type ContributionType = 'intel' | 'suggestion' | 'question' | 'correction';
@@ -61,158 +63,55 @@ export default function ContributionModal({
   sectionLabel,
   onSuccess
 }: ContributionModalProps) {
+  const { toast } = useToast();
+  
   const [contributionType, setContributionType] = useState<ContributionType | null>(null);
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  // Voice recording state
-  const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [micPermission, setMicPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
-  
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const availableTypes = contributionTypes.filter(t => t.availableFor.includes(targetType));
 
-  // Check microphone permission on mount
-  useEffect(() => {
-    if (isOpen && navigator.permissions) {
-      navigator.permissions.query({ name: 'microphone' as PermissionName }).then((result) => {
-        setMicPermission(result.state as 'granted' | 'denied' | 'prompt');
-        result.onchange = () => {
-          setMicPermission(result.state as 'granted' | 'denied' | 'prompt');
-        };
-      }).catch(() => {
-        // Permissions API not supported, will check on first recording attempt
-      });
-    }
-  }, [isOpen]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-    };
-  }, []);
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setMicPermission('granted');
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4'
-      });
-      
-      audioChunksRef.current = [];
-      
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-      
-      mediaRecorder.onstop = async () => {
-        // Stop all tracks
-        stream.getTracks().forEach(track => track.stop());
-        
-        // Clear timer
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        
-        // Create audio blob and transcribe
-        const audioBlob = new Blob(audioChunksRef.current, { 
-          type: mediaRecorder.mimeType 
-        });
-        
-        if (audioBlob.size > 0) {
-          await transcribeAudio(audioBlob);
-        }
-        
-        setRecordingTime(0);
-      };
-      
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(1000); // Collect data every second
-      setIsRecording(true);
-      
-      // Start timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-      
-    } catch (err) {
-      console.error('Error accessing microphone:', err);
-      if (err instanceof Error && err.name === 'NotAllowedError') {
-        setMicPermission('denied');
-        setError('Microphone access denied. Please enable it in your browser settings.');
-      } else {
-        setError('Could not access microphone. Please check your device.');
-      }
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const transcribeAudio = async (audioBlob: Blob) => {
-    setIsTranscribing(true);
-    setError(null);
-    
-    try {
-      const formData = new FormData();
-      // Convert to a proper file with extension
-      const extension = audioBlob.type.includes('webm') ? 'webm' : 'm4a';
-      const audioFile = new File([audioBlob], `recording.${extension}`, { type: audioBlob.type });
-      formData.append('audio', audioFile);
-      
-      const response = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Transcription failed');
-      }
-      
+  // Use the shared voice recording hook
+  const {
+    isRecording,
+    isTranscribing,
+    recordingTime,
+    micPermission,
+    error: voiceError,
+    startRecording,
+    stopRecording,
+    clearError: clearVoiceError
+  } = useVoiceRecording({
+    onTranscriptionComplete: (text) => {
       // Append transcribed text to content
       setContent(prev => {
         if (prev.trim()) {
-          return prev + '\n\n' + data.text;
+          return prev + '\n\n' + text;
         }
-        return data.text;
+        return text;
       });
-      
-    } catch (err) {
-      console.error('Transcription error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to transcribe audio');
-    } finally {
-      setIsTranscribing(false);
+    },
+    onError: (err) => {
+      setError(err);
     }
-  };
+  });
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // Clear errors after 3 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (voiceError) {
+      const timer = setTimeout(clearVoiceError, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [voiceError, clearVoiceError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,14 +139,22 @@ export default function ContributionModal({
         throw new Error(data.error || 'Failed to submit contribution');
       }
 
-      setSuccess(data.message);
-      setTimeout(() => {
-        resetForm();
-        onClose();
-        onSuccess?.();
-      }, 1500);
+      // Show success toast
+      toast({
+        type: 'success',
+        message: data.message || 'Your insight has been submitted!'
+      });
+
+      // Notify other components that a contribution was added
+      window.dispatchEvent(new CustomEvent('contribution-updated'));
+
+      // Reset and close
+      resetForm();
+      onClose();
+      onSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
+      toast({ type: 'error', message: err instanceof Error ? err.message : 'Failed to submit' });
     } finally {
       setIsSubmitting(false);
     }
@@ -258,17 +165,13 @@ export default function ContributionModal({
     setContent('');
     setIsAnonymous(false);
     setError(null);
-    setSuccess(null);
-    setIsRecording(false);
-    setIsTranscribing(false);
-    setRecordingTime(0);
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop();
-    }
   };
 
   const handleClose = () => {
+    // Stop recording if active
+    if (isRecording) {
+      stopRecording();
+    }
     resetForm();
     onClose();
   };
@@ -357,7 +260,7 @@ export default function ContributionModal({
                 <span className="text-sm font-medium text-foreground">Voice Recording</span>
               </div>
               {isRecording && (
-                <span className="text-sm text-red-500 font-mono">{formatTime(recordingTime)}</span>
+                <span className="text-sm text-red-500 font-mono">{formatRecordingTime(recordingTime)}</span>
               )}
               {isTranscribing && (
                 <span className="text-sm text-accent flex items-center gap-1">
@@ -372,7 +275,7 @@ export default function ContributionModal({
                 <button
                   type="button"
                   onClick={startRecording}
-                  disabled={!contributionType || isTranscribing}
+                  disabled={!contributionType || isTranscribing || micPermission === 'denied'}
                   className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Mic className="w-4 h-4" />
@@ -475,16 +378,9 @@ export default function ContributionModal({
           )}
 
           {/* Error Message */}
-          {error && (
+          {(error || voiceError) && (
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 text-sm">
-              {success}
+              {error || voiceError}
             </div>
           )}
 
@@ -499,7 +395,7 @@ export default function ContributionModal({
             </button>
             <button
               type="submit"
-              disabled={!contributionType || !content.trim() || isSubmitting || isRecording || isTranscribing || !!success}
+              disabled={!contributionType || !content.trim() || isSubmitting || isRecording || isTranscribing}
               className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Insight'}

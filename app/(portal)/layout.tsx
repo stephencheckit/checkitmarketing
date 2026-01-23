@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import MainNav from '@/components/MainNav';
+import QuickCaptureFAB from '@/components/QuickCaptureFAB';
 
 export default async function PortalLayout({
   children,
@@ -19,6 +20,7 @@ export default async function PortalLayout({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {children}
       </main>
+      <QuickCaptureFAB />
     </div>
   );
 }

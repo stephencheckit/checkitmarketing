@@ -272,7 +272,7 @@ export default function ContentPage() {
   };
 
   // Fetch competitor RSS feeds
-  const fetchCompetitorFeeds = async () => {
+  const fetchCompetitorFeeds = useCallback(async () => {
     setLoadingFeeds(true);
     setFeedsError(null);
     try {
@@ -285,7 +285,14 @@ export default function ContentPage() {
     } finally {
       setLoadingFeeds(false);
     }
-  };
+  }, []);
+
+  // Auto-fetch competitor feeds when switching to that tab (if not already loaded)
+  useEffect(() => {
+    if (activeTab === 'competitor-watch' && !competitorFeeds && !loadingFeeds) {
+      fetchCompetitorFeeds();
+    }
+  }, [activeTab, competitorFeeds, loadingFeeds, fetchCompetitorFeeds]);
 
   // Generate Checkit response to competitor content
   const generateResponse = async (competitorName: string, item: RSSFeedItem) => {

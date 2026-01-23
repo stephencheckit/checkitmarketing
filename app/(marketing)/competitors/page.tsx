@@ -32,6 +32,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
+import ApprovedContributionsPanel from '@/components/ApprovedContributionsPanel';
 import { BattlecardData, Competitor, BattlecardCategory, BattlecardVersion, CompanyData } from '@/lib/types';
 
 // Declare SpeechRecognition types for TypeScript
@@ -675,6 +676,9 @@ export default function CompetitorHub() {
             />
           </div>
         )}
+
+        {/* Approved Contributions Panel */}
+        <ApprovedContributionsPanel targetType="competitors" className="mb-4" />
 
         {/* Table View */}
         {viewMode === 'table' && (

@@ -112,7 +112,8 @@ body {
 }
 
 /* Ensure all root containers have the background */
-body > div,
+/* Main app container - exclude fixed positioned portals */
+body > div:not(.fixed),
 #__next {
   background-color: var(--background);
   min-height: 100vh;
@@ -162,4 +163,20 @@ body::before {
 ::selection {
   background: var(--accent);
   color: white;
+}
+
+/* Toast slide-in animation */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
 }

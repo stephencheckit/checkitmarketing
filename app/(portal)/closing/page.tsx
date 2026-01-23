@@ -22,6 +22,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
+import InlineAddButton from '@/components/InlineAddButton';
 
 interface ClosingItem {
   id: string;
@@ -645,6 +646,16 @@ export default function ClosingPage() {
                                 </ul>
                               </div>
                             )}
+
+                            {/* Inline Add Insight Button */}
+                            <div className="pt-2 border-t border-border/50">
+                              <InlineAddButton
+                                targetType="positioning"
+                                targetSection={`Closing > ${section.name} > ${item.title}`}
+                                sectionLabel={item.title}
+                                variant="pill"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>

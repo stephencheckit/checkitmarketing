@@ -22,7 +22,7 @@ async function ensureTables() {
 }
 
 // GET /api/contributions - List contributions
-// Query params: view=my|pending|all, targetType, status
+// Query params: view=my|pending|all|approved-for-target, targetType, status
 export async function GET(request: NextRequest) {
   try {
     await ensureTables();
@@ -48,6 +48,22 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
       contributions = await getPendingContributions();
+    } else if (view === 'approved-for-target') {
+      // Get approved/auto-published contributions for a specific target type
+      // This helps show what intel has been contributed for positioning/competitors/content
+      if (!targetType) {
+        return NextResponse.json({ error: 'targetType required for approved-for-target view' }, { status: 400 });
+      }
+      contributions = await getAllContributions({
+        targetType,
+        status: 'approved'
+      });
+      // Also get auto-published ones
+      const autoPublished = await getAllContributions({
+        targetType,
+        status: 'auto_published'
+      });
+      contributions = [...contributions, ...autoPublished];
     } else if (view === 'all') {
       // Admin: all contributions with optional filters
       if (session.role !== 'admin') {

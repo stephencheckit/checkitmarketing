@@ -16,6 +16,9 @@ import {
   Lightbulb
 } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
+import InlineAddButton from '@/components/InlineAddButton';
+import CitationBadge from '@/components/CitationBadge';
+import ApprovedContributionsPanel from '@/components/ApprovedContributionsPanel';
 
 interface PositioningField {
   id: string;
@@ -366,6 +369,9 @@ export default function PositioningPage() {
           </div>
         )}
 
+        {/* Approved Contributions Panel */}
+        <ApprovedContributionsPanel targetType="positioning" className="mb-6" />
+
         {/* Sections */}
         <div className="space-y-4">
           {data.sections.map((section) => (
@@ -374,27 +380,47 @@ export default function PositioningPage() {
               className="bg-surface border border-border rounded-xl overflow-hidden"
             >
               {/* Section Header */}
-              <button
-                onClick={() => toggleSection(section.id)}
-                className="w-full flex items-center justify-between px-6 py-4 hover:bg-surface-elevated transition-colors"
-              >
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between px-6 py-4 hover:bg-surface-elevated transition-colors">
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="flex items-center gap-3 flex-1"
+                >
                   <FileText className="w-5 h-5" style={{ stroke: 'url(#icon-gradient)' }} />
                   <h2 className="text-lg font-semibold text-foreground">{section.name}</h2>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-surface-elevated text-muted">
                     {section.fields.filter(f => f.value?.trim()).length}/{section.fields.length}
                   </span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <InlineAddButton
+                    targetType="positioning"
+                    targetSection={`Positioning > ${section.name}`}
+                    sectionLabel={section.name}
+                    size="sm"
+                  />
+                  <button onClick={() => toggleSection(section.id)}>
+                    {expandedSections.has(section.id) ? (
+                      <ChevronUp className="w-5 h-5 text-muted" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-muted" />
+                    )}
+                  </button>
                 </div>
-                {expandedSections.has(section.id) ? (
-                  <ChevronUp className="w-5 h-5 text-muted" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-muted" />
-                )}
-              </button>
+              </div>
               
               {/* Section Content */}
               {expandedSections.has(section.id) && (
                 <div className="px-6 pb-6 space-y-5">
+                  {/* Show citations for this section */}
+                  {currentVersion > 0 && (
+                    <CitationBadge
+                      versionType="positioning"
+                      versionId={currentVersion}
+                      sectionId={section.id}
+                      className="mb-2"
+                    />
+                  )}
+                  
                   {section.fields.map((field) => (
                     <div key={field.id}>
                       <label className="block text-sm font-medium text-muted mb-2">

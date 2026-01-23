@@ -20,6 +20,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
+import InlineAddButton from '@/components/InlineAddButton';
 
 interface DiscoveryQuestion {
   id: string;
@@ -510,6 +511,16 @@ export default function DiscoveryPage() {
                               </div>
                             </div>
                           )}
+
+                          {/* Inline Add Insight Button */}
+                          <div className="pt-2 border-t border-border/50">
+                            <InlineAddButton
+                              targetType="positioning"
+                              targetSection={`Discovery > ${stageInfo[q.stage].label} > Q${globalIndex}`}
+                              sectionLabel={`Q${globalIndex}: ${q.question.substring(0, 50)}...`}
+                              variant="pill"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

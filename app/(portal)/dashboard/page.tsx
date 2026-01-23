@@ -4,6 +4,7 @@ import { MODULES } from '@/lib/modules';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { LayoutDashboard, BookOpen, AlertTriangle, ChevronRight, Clock, CheckCircle } from 'lucide-react';
+import LeaderboardWidget from '@/components/LeaderboardWidget';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -116,17 +117,23 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Critical Notice */}
-      <div className="rounded-xl p-5 glow-warning" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1))' }}>
-            <AlertTriangle className="w-5 h-5 text-warning" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-warning mb-1">Critical: &quot;Nova UI&quot; is internal only</h3>
-            <p className="text-sm text-foreground/80">
-              Customers should only hear <strong>&quot;Checkit Platform&quot;</strong>. Never use Nova, Control Center, or CAM/CWM externally.
-            </p>
+      {/* Leaderboard + Critical Notice Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Leaderboard Widget */}
+        <LeaderboardWidget currentUserId={session.userId} />
+
+        {/* Critical Notice */}
+        <div className="rounded-xl p-5 glow-warning h-fit" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.03))', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1))' }}>
+              <AlertTriangle className="w-5 h-5 text-warning" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-warning mb-1">Critical: &quot;Nova UI&quot; is internal only</h3>
+              <p className="text-sm text-foreground/80">
+                Customers should only hear <strong>&quot;Checkit Platform&quot;</strong>. Never use Nova, Control Center, or CAM/CWM externally.
+              </p>
+            </div>
           </div>
         </div>
       </div>

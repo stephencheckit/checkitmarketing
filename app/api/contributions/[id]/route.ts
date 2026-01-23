@@ -4,7 +4,11 @@ import {
   getContribution, 
   reviewContribution, 
   deleteContribution,
-  initializeContributionsTables
+  initializeContributionsTables,
+  createCitation,
+  getCurrentPositioningData,
+  getCurrentBattlecardData,
+  type TargetType
 } from '@/lib/db';
 
 // Initialize tables on first request
@@ -99,9 +103,41 @@ export async function PATCH(
       return NextResponse.json({ error: 'Contribution not found' }, { status: 404 });
     }
 
+    // If approved, auto-create a citation linking to current version
+    let citation = null;
+    if (status === 'approved') {
+      try {
+        // Get current version ID based on target type
+        let versionId: number | null = null;
+        const targetType = contribution.target_type as TargetType;
+        
+        if (targetType === 'positioning') {
+          const posData = await getCurrentPositioningData();
+          versionId = posData.current_version;
+        } else if (targetType === 'competitors') {
+          const battlecard = await getCurrentBattlecardData();
+          versionId = battlecard.current_version;
+        }
+        // Note: 'content' type doesn't have versioning yet
+        
+        if (versionId) {
+          citation = await createCitation({
+            contributionId: contribution.id,
+            versionType: targetType,
+            versionId,
+            sectionId: contribution.target_section || undefined
+          });
+        }
+      } catch (citationError) {
+        console.error('Failed to create citation:', citationError);
+        // Don't fail the approval if citation creation fails
+      }
+    }
+
     return NextResponse.json({ 
       contribution,
-      message: `Contribution ${status}`
+      citation,
+      message: `Contribution ${status}${citation ? ' and cited' : ''}`
     });
   } catch (error) {
     console.error('Error reviewing contribution:', error);

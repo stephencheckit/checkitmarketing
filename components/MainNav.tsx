@@ -22,7 +22,12 @@ import {
   Handshake,
   Calculator,
   LayoutDashboard,
-  User
+  User,
+  Megaphone,
+  Crown,
+  Globe,
+  ExternalLink,
+  Send
 } from 'lucide-react';
 import MyContributions from '@/components/MyContributions';
 
@@ -45,19 +50,30 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const isAdmin = userRole === 'admin';
 
   // Fetch contribution count
-  useEffect(() => {
-    const fetchContributionCount = async () => {
-      try {
-        const response = await fetch('/api/contributions?view=my');
-        const data = await response.json();
-        if (response.ok && data.contributions) {
-          setContributionCount(data.contributions.length);
-        }
-      } catch (error) {
-        console.error('Failed to fetch contribution count:', error);
+  const fetchContributionCount = async () => {
+    try {
+      const response = await fetch('/api/contributions?view=my');
+      const data = await response.json();
+      if (response.ok && data.contributions) {
+        setContributionCount(data.contributions.length);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch contribution count:', error);
+    }
+  };
+
+  useEffect(() => {
     fetchContributionCount();
+    
+    // Listen for contribution updates
+    const handleContributionUpdate = () => {
+      fetchContributionCount();
+    };
+    
+    window.addEventListener('contribution-updated', handleContributionUpdate);
+    return () => {
+      window.removeEventListener('contribution-updated', handleContributionUpdate);
+    };
   }, []);
 
 
@@ -70,6 +86,9 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/competitors', label: 'Competitors', icon: Building2 },
     { href: '/content', label: 'Content', icon: FileText },
+    { href: '/channels', label: 'Channels', icon: Megaphone },
+    { href: '/outbound', label: 'Outbound', icon: Send },
+    { href: '/kits-toolkit', label: "Kit's Toolkit", icon: Crown },
   ];
 
   const salesItems = [
@@ -246,6 +265,19 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 </div>
               )}
             </div>
+
+            {/* Public Microsite Link */}
+            <a
+              href="/industries"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface-elevated transition-all cursor-pointer"
+              title="View public microsite (opens in new tab)"
+            >
+              <Globe className="w-4 h-4" />
+              <span className="hidden lg:inline">Microsite</span>
+              <ExternalLink className="w-3 h-3 opacity-50" />
+            </a>
           </nav>
 
           {/* User Menu */}
@@ -424,6 +456,20 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
+              </div>
+
+              {/* Public Microsite */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <a
+                  href="/industries"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                  Public Microsite
+                  <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
+                </a>
               </div>
 
               {/* Account Section */}

@@ -84,7 +84,17 @@ export default function QuizPage() {
   // Result screen
   if (result) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <ClipboardCheck className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
+            V6 Certification Quiz
+          </h1>
+          <p className="text-sm text-muted mt-1">Answer all questions. You need 80% to pass.</p>
+        </div>
+
+        <div className="max-w-2xl mx-auto">
         <div className={`text-center p-6 rounded-xl border ${
           result.passed 
             ? 'bg-success/10 border-success/30' 
@@ -189,6 +199,7 @@ export default function QuizPage() {
             })}
           </div>
         )}
+        </div>
       </div>
     );
   }
@@ -199,9 +210,9 @@ export default function QuizPage() {
   const canSubmit = answeredCount === questions.length;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
+      <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
           <ClipboardCheck className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           V6 Certification Quiz
@@ -209,6 +220,7 @@ export default function QuizPage() {
         <p className="text-sm text-muted mt-1">Answer all questions. You need 80% to pass.</p>
       </div>
 
+      <div className="max-w-2xl mx-auto">
       {/* Progress */}
       <div className="mb-8">
         <div className="flex items-center justify-between text-sm mb-2">
@@ -303,6 +315,7 @@ export default function QuizPage() {
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
+      </div>
       </div>
     </div>
   );

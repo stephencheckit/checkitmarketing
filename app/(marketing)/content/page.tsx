@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Copy, Check, Sparkles, Linkedin, Facebook, Twitter, ChevronDown, ChevronUp, Target, ListChecks, FileText, X, Loader2, Trash2, Archive, RefreshCw, Lightbulb, Rss, ExternalLink, Building2, AlertCircle, Wand2, Zap, TrendingUp, Users, MessageSquare } from 'lucide-react';
+import { Copy, Check, Sparkles, Linkedin, Facebook, Twitter, ChevronDown, ChevronUp, Target, ListChecks, FileText, X, Loader2, Trash2, Archive, RefreshCw, Lightbulb, Rss, ExternalLink, Building2, AlertCircle, Wand2, Zap, TrendingUp, Users, MessageSquare, Newspaper } from 'lucide-react';
 import ContributionModal from '@/components/ContributionModal';
 
 type TabType = 'ideas' | 'competitor-watch' | 'innovation';
@@ -49,6 +49,7 @@ interface CompetitorFeed {
   feedDiscoveryMethod: string | null;
   items: RSSFeedItem[];
   error: string | null;
+  isIndustryNews?: boolean;
 }
 
 interface CompetitorRSSResponse {
@@ -57,6 +58,7 @@ interface CompetitorRSSResponse {
     feedsFound: number;
     totalItems: number;
     checkedAt: string;
+    cached?: boolean;
   };
   feeds: CompetitorFeed[];
 }
@@ -287,12 +289,15 @@ export default function ContentPage() {
     }
   };
 
-  // Fetch competitor RSS feeds
-  const fetchCompetitorFeeds = useCallback(async () => {
+  // Fetch competitor RSS feeds (cached by default)
+  const fetchCompetitorFeeds = useCallback(async (forceRefresh = false) => {
     setLoadingFeeds(true);
     setFeedsError(null);
     try {
-      const res = await fetch('/api/competitor-rss?legacy=true');
+      const url = forceRefresh 
+        ? '/api/competitor-rss?legacy=true&refresh=true'
+        : '/api/competitor-rss?legacy=true&cached=true';
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch competitor feeds');
       const data: CompetitorRSSResponse = await res.json();
       setCompetitorFeeds(data);
@@ -466,12 +471,12 @@ export default function ContentPage() {
             )}
             {activeTab === 'competitor-watch' && (
               <button
-                onClick={fetchCompetitorFeeds}
+                onClick={() => fetchCompetitorFeeds(true)}
                 disabled={loadingFeeds}
                 className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
               >
-                <Rss className={`w-4 h-4 ${loadingFeeds ? 'animate-pulse' : ''}`} />
-                {loadingFeeds ? 'Scanning...' : 'Scan Competitor Feeds'}
+                <RefreshCw className={`w-4 h-4 ${loadingFeeds ? 'animate-spin' : ''}`} />
+                {loadingFeeds ? 'Refreshing...' : 'Refresh Feeds'}
               </button>
             )}
             {activeTab === 'innovation' && (
@@ -860,31 +865,50 @@ export default function ContentPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6 text-sm">
                       <span className="text-muted">
-                        <span className="font-semibold text-foreground">{competitorFeeds.summary.competitorsChecked}</span> competitors checked
+                        <span className="font-semibold text-foreground">{competitorFeeds.feeds.filter(f => !f.isIndustryNews).length}</span> competitors
                       </span>
                       <span className="text-muted">
-                        <span className="font-semibold text-success">{competitorFeeds.summary.feedsFound}</span> RSS feeds found
+                        <span className="font-semibold text-warning">{competitorFeeds.feeds.filter(f => f.isIndustryNews).length}</span> industry sources
                       </span>
                       <span className="text-muted">
-                        <span className="font-semibold text-accent">{competitorFeeds.summary.totalItems}</span> recent articles
+                        <span className="font-semibold text-accent">{competitorFeeds.summary.totalItems}</span> articles
                       </span>
                     </div>
-                    <span className="text-xs text-muted">
-                      Scanned {new Date(competitorFeeds.summary.checkedAt).toLocaleString()}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      {competitorFeeds.summary.cached && (
+                        <span className="text-xs text-muted bg-surface-elevated px-2 py-1 rounded">
+                          Cached
+                        </span>
+                      )}
+                      <span className="text-xs text-muted">
+                        {new Date(competitorFeeds.summary.checkedAt).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Competitor Feeds */}
                 <div className="space-y-6">
-                  {competitorFeeds.feeds.map(feed => (
-                    <div key={feed.competitorId} className="bg-surface border border-border rounded-xl overflow-hidden">
+                  {/* Competitors first, then industry news */}
+                  {[...competitorFeeds.feeds.filter(f => !f.isIndustryNews), ...competitorFeeds.feeds.filter(f => f.isIndustryNews)].map(feed => (
+                    <div key={feed.competitorId} className={`bg-surface border rounded-xl overflow-hidden ${feed.isIndustryNews ? 'border-warning/30' : 'border-border'}`}>
                       {/* Competitor Header */}
-                      <div className="px-4 py-3 bg-surface-elevated border-b border-border flex items-center justify-between">
+                      <div className={`px-4 py-3 border-b border-border flex items-center justify-between ${feed.isIndustryNews ? 'bg-warning/5' : 'bg-surface-elevated'}`}>
                         <div className="flex items-center gap-3">
-                          <Building2 className="w-5 h-5 text-muted" />
+                          {feed.isIndustryNews ? (
+                            <Newspaper className="w-5 h-5 text-warning" />
+                          ) : (
+                            <Building2 className="w-5 h-5 text-muted" />
+                          )}
                           <div>
-                            <h3 className="font-semibold text-foreground">{feed.competitorName}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-foreground">{feed.competitorName}</h3>
+                              {feed.isIndustryNews && (
+                                <span className="text-[10px] uppercase tracking-wider text-warning bg-warning/10 px-1.5 py-0.5 rounded font-medium">
+                                  Industry
+                                </span>
+                              )}
+                            </div>
                             {feed.competitorWebsite && (
                               <a 
                                 href={feed.competitorWebsite.startsWith('http') ? feed.competitorWebsite : `https://${feed.competitorWebsite}`}
@@ -899,17 +923,10 @@ export default function ContentPage() {
                           </div>
                         </div>
                         
-                        {feed.feedUrl ? (
-                          <span className="flex items-center gap-1.5 text-xs text-success bg-success/10 px-2 py-1 rounded">
-                            <Rss className="w-3 h-3" />
-                            {feed.items.length} articles
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 text-xs text-warning bg-warning/10 px-2 py-1 rounded">
-                            <AlertCircle className="w-3 h-3" />
-                            {feed.error || 'No RSS feed'}
-                          </span>
-                        )}
+                        <span className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded ${feed.isIndustryNews ? 'text-warning bg-warning/10' : 'text-success bg-success/10'}`}>
+                          <Rss className="w-3 h-3" />
+                          {feed.items.length} articles
+                        </span>
                       </div>
                       
                       {/* Feed Items */}
@@ -984,15 +1001,7 @@ export default function ContentPage() {
                             );
                           })}
                         </div>
-                      ) : feed.feedUrl ? (
-                        <div className="p-4 text-center text-sm text-muted">
-                          No recent articles found in feed
-                        </div>
-                      ) : (
-                        <div className="p-4 text-center text-sm text-muted">
-                          Add a website URL in the Competitors page to scan for RSS
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -1006,17 +1015,17 @@ export default function ContentPage() {
                   <Rss className="w-8 h-8 text-accent" />
                 </div>
                 <h2 className="text-xl font-semibold text-foreground mb-2">
-                  Monitor Competitor Content
+                  Competitor & Industry Watch
                 </h2>
                 <p className="text-muted max-w-md mx-auto mb-4">
-                  Scan your competitors&apos; websites for RSS feeds and generate Checkit&apos;s unique perspective on their topics.
+                  Monitor competitor content and industry news from IoT, food safety, and compliance sources.
                 </p>
                 <button
-                  onClick={fetchCompetitorFeeds}
+                  onClick={() => fetchCompetitorFeeds(false)}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
                 >
                   <Rss className="w-4 h-4" />
-                  Scan Competitor Feeds
+                  Load Feeds
                 </button>
               </div>
             )}

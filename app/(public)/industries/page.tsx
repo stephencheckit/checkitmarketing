@@ -34,10 +34,8 @@ import {
   Ban,
   CircleDollarSign,
   Timer,
-  Building,
   Globe2,
-  Award,
-  MapPin
+  Award
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
 
@@ -309,7 +307,7 @@ export default function IndustriesPage() {
           <div className="text-center max-w-3xl mx-auto lg:text-left lg:max-w-2xl lg:mx-0">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
               Industry-Specific Solutions for{' '}
-              <span className="text-gradient">Operational Excellence</span>
+              <span className="text-gradient">Forward Thinking Operations</span>
             </h1>
             <p className="text-lg text-muted mb-8">
               From senior living to plasma centers, Checkit delivers purpose-built compliance 
@@ -327,12 +325,8 @@ export default function IndustriesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12 text-sm">
             <div className="flex items-center gap-2 text-muted">
-              <Building className="w-4 h-4 text-accent" />
-              <span><strong className="text-foreground">LSE: CHK</strong> — Publicly Traded</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted">
-              <MapPin className="w-4 h-4 text-accent" />
-              <span>London Headquarters</span>
+              <Layers className="w-4 h-4 text-accent" />
+              <span><strong className="text-foreground">Fully Connected</strong> Operational Ecosystem</span>
             </div>
             <div className="flex items-center gap-2 text-muted">
               <Globe2 className="w-4 h-4 text-accent" />
@@ -461,10 +455,10 @@ export default function IndustriesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-block px-4 py-1 text-sm font-medium bg-success/10 text-success rounded-full mb-4">
-              The Results
+              The Outcomes
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Safety. Compliance. Visibility.
+              Driving Better Behavioral Change at Scale
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Every feature we build, every integration we create, drives toward three 

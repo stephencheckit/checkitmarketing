@@ -382,37 +382,144 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url);
     
+    // Industry news RSS feeds to monitor alongside competitors
+    const INDUSTRY_FEEDS = [
+      { id: 'food-safety-news', name: 'Food Safety News', website: 'https://www.foodsafetynews.com', feedUrl: 'https://www.foodsafetynews.com/feed/' },
+      { id: 'food-safety-mag', name: 'Food Safety Magazine', website: 'https://www.food-safety.com', feedUrl: 'https://www.food-safety.com/rss/topic/272-food-safety' },
+      { id: 'haccp-intl', name: 'HACCP International', website: 'https://www.haccp-international.com', feedUrl: 'https://www.haccp-international.com/feed/' },
+      { id: 'iot-world-today', name: 'IoT World Today', website: 'https://www.iotworldtoday.com', feedUrl: 'https://www.iotworldtoday.com/rss.xml' },
+      { id: 'fda-recalls', name: 'FDA Recalls', website: 'https://www.fda.gov', feedUrl: 'https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/recalls/rss.xml' },
+    ];
+
     // Legacy format for content page's Competitor Watch feature
-    // Returns fresh fetch with summary + feeds grouped by competitor
+    // cached=true returns DB data without fresh fetching
+    // refresh=true forces fresh fetch even with cached data
     if (searchParams.get('legacy') === 'true') {
-      const battlecard = await getCurrentBattlecardData();
+      const useCached = searchParams.get('cached') === 'true';
+      const forceRefresh = searchParams.get('refresh') === 'true';
       
-      if (!battlecard || !battlecard.data || !battlecard.data.competitors) {
-        return NextResponse.json({ 
-          error: 'No competitors found in battlecard',
-          summary: { competitorsChecked: 0, feedsFound: 0, totalItems: 0, checkedAt: new Date().toISOString() },
-          feeds: [] 
-        });
+      const battlecard = await getCurrentBattlecardData();
+      const competitors = (battlecard?.data?.competitors || []) as Competitor[];
+      
+      // Combine competitors with industry feeds
+      const allSources = [
+        ...competitors.map(c => ({ ...c, isIndustryNews: false })),
+        ...INDUSTRY_FEEDS.map(f => ({ 
+          id: f.id, 
+          name: f.name, 
+          website: f.website, 
+          knownFeedUrl: f.feedUrl,
+          isIndustryNews: true 
+        })),
+      ];
+      
+      let feeds: Array<{
+        competitorId: string;
+        competitorName: string;
+        competitorWebsite: string;
+        feedUrl: string | null;
+        feedDiscoveryMethod: string | null;
+        items: RSSFeedItem[];
+        error: string | null;
+        isIndustryNews: boolean;
+      }> = [];
+      
+      // Try to use cached data first
+      if (useCached && !forceRefresh) {
+        const cachedFeeds = await getCompetitorFeeds();
+        const cachedItems = await getFeedItems({ limit: 500 });
+        
+        if (cachedFeeds.length > 0) {
+          // Group items by competitor
+          const itemsByCompetitor = new Map<string, RSSFeedItem[]>();
+          for (const item of cachedItems) {
+            const existing = itemsByCompetitor.get(item.competitor_id) || [];
+            existing.push({
+              title: item.title,
+              link: item.link,
+              pubDate: item.pub_date || '',
+              contentSnippet: item.content_snippet || undefined,
+            });
+            itemsByCompetitor.set(item.competitor_id, existing);
+          }
+          
+          feeds = cachedFeeds.map(cf => ({
+            competitorId: cf.competitor_id as string,
+            competitorName: cf.competitor_name as string,
+            competitorWebsite: cf.competitor_website as string || '',
+            feedUrl: cf.feed_url as string | null,
+            feedDiscoveryMethod: cf.discovery_method as string | null,
+            items: itemsByCompetitor.get(cf.competitor_id as string) || [],
+            error: cf.fetch_error as string | null,
+            isIndustryNews: (cf.competitor_id as string).startsWith('food-') || 
+                           (cf.competitor_id as string).startsWith('iot-') || 
+                           (cf.competitor_id as string).startsWith('fda-') ||
+                           (cf.competitor_id as string).startsWith('haccp-'),
+          }));
+          
+          // Filter out feeds with no items (no RSS found)
+          feeds = feeds.filter(f => f.items.length > 0);
+          
+          if (feeds.length > 0) {
+            const feedsFound = feeds.length;
+            const totalItems = feeds.reduce((sum, f) => sum + f.items.length, 0);
+            const lastFetched = cachedFeeds[0]?.last_fetched_at;
+            
+            return NextResponse.json({
+              summary: {
+                competitorsChecked: allSources.length,
+                feedsFound,
+                totalItems,
+                checkedAt: lastFetched || new Date().toISOString(),
+                cached: true,
+              },
+              feeds,
+            });
+          }
+        }
       }
       
-      const competitors = battlecard.data.competitors as Competitor[];
-      
-      // Fetch feeds in parallel
-      const feedPromises = competitors.map(async (comp) => {
-        const feedResult = await fetchCompetitorFeed(comp.id, comp.name, comp.website);
+      // Fresh fetch
+      const feedPromises = allSources.map(async (source) => {
+        const knownFeedUrl = 'knownFeedUrl' in source ? (source.knownFeedUrl as string) : null;
+        const isIndustry = !!knownFeedUrl;
+        let feedResult;
         
-        // Also save to DB for caching
+        if (isIndustry && knownFeedUrl) {
+          // For industry feeds, try the known URL directly
+          try {
+            const feed = await parser.parseURL(knownFeedUrl);
+            feedResult = {
+              feedUrl: knownFeedUrl,
+              method: 'known RSS feed',
+              items: feed.items.slice(0, 10).map(item => ({
+                title: item.title || 'Untitled',
+                link: item.link || '',
+                pubDate: item.pubDate || item.isoDate || '',
+                contentSnippet: item.contentSnippet?.slice(0, 300),
+                creator: item.creator || item.author,
+              })),
+              error: null,
+            };
+          } catch {
+            feedResult = { feedUrl: null, method: null, items: [], error: 'Failed to fetch feed' };
+          }
+        } else {
+          feedResult = await fetchCompetitorFeed(source.id, source.name, source.website);
+        }
+        
+        // Save to DB for caching
         await upsertCompetitorFeed({
-          competitorId: comp.id,
-          competitorName: comp.name,
-          competitorWebsite: comp.website,
+          competitorId: source.id,
+          competitorName: source.name,
+          competitorWebsite: source.website,
           feedUrl: feedResult.feedUrl || undefined,
           discoveryMethod: feedResult.method || undefined,
           fetchError: feedResult.error || undefined,
         });
         
         if (feedResult.items.length > 0) {
-          await saveFeedItems(comp.id, feedResult.items.map(item => ({
+          await saveFeedItems(source.id, feedResult.items.map(item => ({
             title: item.title,
             link: item.link,
             pubDate: item.pubDate,
@@ -422,27 +529,32 @@ export async function GET(request: NextRequest) {
         }
         
         return {
-          competitorId: comp.id,
-          competitorName: comp.name,
-          competitorWebsite: comp.website,
+          competitorId: source.id,
+          competitorName: source.name,
+          competitorWebsite: source.website,
           feedUrl: feedResult.feedUrl,
           feedDiscoveryMethod: feedResult.method,
           items: feedResult.items,
           error: feedResult.error,
+          isIndustryNews: isIndustry,
         };
       });
       
-      const feeds = await Promise.all(feedPromises);
+      const allFeeds = await Promise.all(feedPromises);
       
-      const feedsFound = feeds.filter(f => f.feedUrl !== null).length;
+      // Filter out feeds with no items (hide "no RSS found" competitors)
+      feeds = allFeeds.filter(f => f.items.length > 0);
+      
+      const feedsFound = feeds.length;
       const totalItems = feeds.reduce((sum, f) => sum + f.items.length, 0);
       
       return NextResponse.json({
         summary: {
-          competitorsChecked: competitors.length,
+          competitorsChecked: allSources.length,
           feedsFound,
           totalItems,
           checkedAt: new Date().toISOString(),
+          cached: false,
         },
         feeds,
       });

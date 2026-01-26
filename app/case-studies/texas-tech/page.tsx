@@ -233,8 +233,8 @@ export default function TexasTechCaseStudy() {
                 <ChefHat className="w-7 h-7 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-lg font-bold text-white">OVG Hospitality Leadership</div>
-                <div className="text-white/70">Texas Tech Football Operations</div>
+                <div className="text-lg font-bold text-white">Megan Sunderman</div>
+                <div className="text-white/70">General Manager, OVG Hospitality</div>
               </div>
             </footer>
           </blockquote>
@@ -421,8 +421,8 @@ export default function TexasTechCaseStudy() {
                 <ChefHat className="w-7 h-7 text-white" />
               </div>
               <div className="text-left">
-                <div className="text-lg font-bold text-white">OVG Hospitality Leadership</div>
-                <div className="text-white/50">Texas Tech Football Operations</div>
+                <div className="text-lg font-bold text-white">Megan Sunderman</div>
+                <div className="text-white/50">General Manager, OVG Hospitality</div>
               </div>
             </footer>
           </blockquote>

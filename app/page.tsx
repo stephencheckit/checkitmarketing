@@ -33,7 +33,14 @@ import {
   Zap,
   LogIn,
   ExternalLink,
-  Apple
+  Apple,
+  ClipboardList,
+  Droplet,
+  Wind,
+  TrendingUp,
+  Activity,
+  Radio,
+  Sparkles
 } from 'lucide-react';
 
 // Hero stats
@@ -87,6 +94,58 @@ const problems = [
     description: 'Hours spent on temperature logs and compliance paperwork that could be automated.',
     stat: '8+ hrs',
     statLabel: 'per week on manual tasks',
+  },
+];
+
+// Use cases / capabilities
+const useCases = [
+  {
+    icon: ClipboardList,
+    title: 'Digitize Tasks & Workflows',
+    description: 'Move off paper-based or manual tracking to a fully digital and mobile-ready solution.',
+    color: 'bg-blue-500',
+  },
+  {
+    icon: Thermometer,
+    title: 'Automate Temperature Monitoring',
+    description: 'Capture temperature data in real-time, ensuring freezers, cold rooms, and labs stay within safe parameters.',
+    color: 'bg-red-500',
+  },
+  {
+    icon: Droplet,
+    title: 'Track Humidity',
+    description: 'Protect assets, ensure product quality, and prevent mold, mildew, and equipment malfunction.',
+    color: 'bg-cyan-500',
+  },
+  {
+    icon: Wind,
+    title: 'Measure O2 and CO2 Levels',
+    description: 'Ensure safe oxygen levels in hospitals, laboratories, and industrial settings.',
+    color: 'bg-emerald-500',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Predict Equipment Failures',
+    description: 'Understand when freezers and fridges protecting your critical assets are likely to fail.',
+    color: 'bg-purple-500',
+  },
+  {
+    icon: Activity,
+    title: 'See Ambient Levels',
+    description: 'Monitor temperature, humidity, light, and sound levels for comfort and safety.',
+    color: 'bg-orange-500',
+  },
+  {
+    icon: Droplets,
+    title: 'Detect Water Leaks',
+    description: 'Real-time alerts help you respond quickly to water leaks and minimize damage.',
+    color: 'bg-sky-500',
+  },
+  {
+    icon: Radio,
+    title: 'Much, Much More',
+    description: 'Measure motion, levels, proximity, door openings, and so much more.',
+    color: 'bg-pink-500',
   },
 ];
 
@@ -459,6 +518,47 @@ export default function HomePage() {
               <strong className="text-foreground"> Mobile apps</strong> alert staff to issues and guide them through tasks. 
               The <strong className="text-foreground">platform</strong> aggregates everything into dashboards, reports, and audit-ready documentation.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="py-16 lg:py-24 bg-surface-elevated/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">
+              <Sparkles className="w-4 h-4 inline mr-1" />
+              Endless Possibilities
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              What Can You Measure?
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Whether you can see it or not, we can measure it. Reduce waste, stay compliant, 
+              and improve your bottom line with intelligent monitoring.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {useCases.map((useCase) => {
+              const Icon = useCase.icon;
+              return (
+                <div 
+                  key={useCase.title} 
+                  className="bg-surface border border-border rounded-xl p-5 hover:border-accent/30 transition-all group"
+                >
+                  <div className={`w-10 h-10 rounded-lg ${useCase.color} flex items-center justify-center mb-3`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
+                    {useCase.title}
+                  </h3>
+                  <p className="text-sm text-muted leading-relaxed">
+                    {useCase.description}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

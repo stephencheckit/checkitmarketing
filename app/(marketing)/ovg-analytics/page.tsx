@@ -126,16 +126,37 @@ export default function OVGAnalyticsPage() {
     return 'Other';
   };
 
+  const formatPagePath = (path: string) => {
+    const pageNames: Record<string, string> = {
+      '/ovg-map': 'Territory Map',
+      '/ovg': 'Microsite Home',
+      '/case-studies/texas-tech': 'Texas Tech Case Study',
+    };
+    return pageNames[path] || path;
+  };
+
+  const getPageColor = (path: string) => {
+    const colors: Record<string, string> = {
+      '/ovg-map': 'bg-blue-500/20 text-blue-400',
+      '/ovg': 'bg-purple-500/20 text-purple-400',
+      '/case-studies/texas-tech': 'bg-green-500/20 text-green-400',
+    };
+    return colors[path] || 'bg-gray-500/20 text-gray-400';
+  };
+
   const exportCSV = () => {
     if (!analytics?.recentVisitors) return;
     
-    const headers = ['Date', 'City', 'Region', 'Country', 'Browser'];
+    const headers = ['First Visit', 'Last Visit', 'City', 'Region', 'Country', 'Browser', 'Pages Viewed', 'Pages'];
     const rows = analytics.recentVisitors.map(v => [
-      new Date(v.viewed_at).toISOString(),
+      new Date(v.first_visit).toISOString(),
+      new Date(v.last_visit).toISOString(),
       v.visitor_city || 'Unknown',
       v.visitor_region || 'Unknown',
       v.visitor_country || 'Unknown',
       formatUserAgent(v.user_agent),
+      v.page_count || 1,
+      (v.pages_visited || []).map(p => formatPagePath(p)).join('; '),
     ]);
     
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -165,8 +186,8 @@ export default function OVGAnalyticsPage() {
               <BarChart3 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">OVG Map Analytics</h1>
-              <p className="text-gray-400">Visitor tracking for the OVG territory map</p>
+              <h1 className="text-2xl font-bold text-white">OVG Analytics</h1>
+              <p className="text-gray-400">Visitor tracking across all OVG pages</p>
             </div>
           </div>
           
@@ -301,6 +322,75 @@ export default function OVGAnalyticsPage() {
           </div>
         </div>
 
+        {/* Views by Page */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-400" />
+                Views by Page
+              </h2>
+            </div>
+            <div className="p-4">
+              {analytics?.byPage && analytics.byPage.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.byPage.map((page, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getPageColor(page.page_path)}`}>
+                        {formatPagePath(page.page_path)}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 rounded-full h-2"
+                            style={{ width: `${Math.min(100, (Number(page.views) / Math.max(...analytics.byPage.map(p => Number(p.views)))) * 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="font-bold text-white w-8 text-right">{page.views}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No page data yet</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-purple-400" />
+                Session Depth
+              </h2>
+            </div>
+            <div className="p-4">
+              {analytics?.sessionsByPageCount && analytics.sessionsByPageCount.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.sessionsByPageCount.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <span className="text-gray-300 text-sm">
+                        {Number(item.page_count) === 1 ? '1 page' : `${item.page_count} pages`}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-24 bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-purple-500 rounded-full h-2"
+                            style={{ width: `${Math.min(100, (Number(item.session_count) / Math.max(...analytics.sessionsByPageCount.map(s => Number(s.session_count)))) * 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="font-bold text-white w-8 text-right">{item.session_count} <span className="text-gray-500 font-normal text-xs">visitors</span></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No session data yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Visitor Location Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-gray-800/50 rounded-xl border border-gray-700">
@@ -347,7 +437,7 @@ export default function OVGAnalyticsPage() {
                         <div className="w-32 bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-blue-500 rounded-full h-2"
-                            style={{ width: `${Math.min(100, (day.views / Math.max(...analytics.byDay.map(d => d.views))) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (Number(day.views) / Math.max(...analytics.byDay.map(d => Number(d.views)))) * 100)}%` }}
                           ></div>
                         </div>
                         <span className="font-bold text-white w-8 text-right">{day.views}</span>
@@ -375,16 +465,17 @@ export default function OVGAnalyticsPage() {
               <table className="w-full">
                 <thead className="bg-gray-900/50">
                   <tr>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Time</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Last Visit</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Location</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Browser</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden md:table-cell">Browser</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Pages Viewed</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700/50">
-                  {analytics.recentVisitors.map((visitor) => (
-                    <tr key={visitor.id} className="hover:bg-gray-700/30">
+                  {analytics.recentVisitors.map((visitor, idx) => (
+                    <tr key={idx} className="hover:bg-gray-700/30">
                       <td className="px-4 py-3 text-gray-300 text-sm">
-                        {formatDate(visitor.viewed_at)}
+                        {formatDate(visitor.last_visit)}
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-white">
@@ -394,8 +485,25 @@ export default function OVGAnalyticsPage() {
                           <span className="text-gray-500 text-sm ml-2">({visitor.visitor_country})</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-sm">
+                      <td className="px-4 py-3 text-gray-400 text-sm hidden md:table-cell">
                         {formatUserAgent(visitor.user_agent)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-1">
+                          {(visitor.pages_visited || []).map((page, pidx) => (
+                            <span 
+                              key={pidx}
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${getPageColor(page)}`}
+                            >
+                              {formatPagePath(page)}
+                            </span>
+                          ))}
+                          {visitor.page_count > 1 && (
+                            <span className="text-gray-500 text-xs ml-1">
+                              ({visitor.page_count} views)
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -403,7 +511,7 @@ export default function OVGAnalyticsPage() {
               </table>
             ) : (
               <div className="p-8 text-center text-gray-500">
-                No visitors yet. Share the map link to start tracking.
+                No visitors yet. Share the OVG pages to start tracking.
               </div>
             )}
           </div>

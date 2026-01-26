@@ -99,7 +99,7 @@ export default function TexasTechCaseStudy() {
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(/ovg-texastech.webp)' }}
+          style={{ backgroundImage: 'url(/Jones.jpg)' }}
         />
         
         {/* Dark Gradient Overlay */}
@@ -182,6 +182,15 @@ export default function TexasTechCaseStudy() {
             </div>
           </div>
 
+          {/* Premium Space Image */}
+          <div className="mt-10 rounded-2xl overflow-hidden">
+            <img 
+              src="/Meeting-rooms-in-lubbock.jpg" 
+              alt="Premium hospitality suite at Texas Tech" 
+              className="w-full h-64 lg:h-80 object-cover"
+            />
+          </div>
+
           {/* Operational Areas */}
           <div className="mt-10 pt-8 border-t border-gray-200">
             <h4 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6">Areas Covered</h4>
@@ -207,6 +216,19 @@ export default function TexasTechCaseStudy() {
                 );
               })}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Venue Image */}
+      <section className="py-12 lg:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden">
+            <img 
+              src="/Texas-Tech-0031.jpg" 
+              alt="Texas Tech game day hospitality" 
+              className="w-full h-64 lg:h-96 object-cover"
+            />
           </div>
         </div>
       </section>
@@ -355,7 +377,20 @@ export default function TexasTechCaseStudy() {
         </div>
       </section>
 
-      {/* The Results */}
+      {/* Platform Screenshot */}
+      <section className="py-12 lg:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-lg">
+            <img 
+              src="/checkitv6.png" 
+              alt="Checkit V6 Platform Dashboard" 
+              className="w-full h-auto"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* The Benefits */}
       <section className="py-16 lg:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-10">
@@ -489,6 +524,19 @@ export default function TexasTechCaseStudy() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Game Day Image */}
+      <section className="py-12 lg:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl overflow-hidden">
+            <img 
+              src="/Cheerleader-2 (1).jpg" 
+              alt="Texas Tech game day atmosphere" 
+              className="w-full h-64 lg:h-96 object-cover"
+            />
           </div>
         </div>
       </section>

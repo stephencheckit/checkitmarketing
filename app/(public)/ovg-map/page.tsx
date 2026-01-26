@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { 
   MapPin, 
   Building2, 
@@ -14,7 +15,10 @@ import {
   ChevronUp,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  FileText,
+  ArrowRight,
+  Home
 } from 'lucide-react';
 
 // Dynamically import map component to avoid SSR issues with Leaflet
@@ -162,6 +166,29 @@ export default function OVGMapPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {/* Navigation Banner */}
+      <div className="bg-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-4">
+              <Link href="/ovg" className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                <Home className="w-4 h-4" />
+                OVG Hub
+              </Link>
+              <span className="text-blue-300">|</span>
+              <Link href="/case-studies/texas-tech" className="flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+                <FileText className="w-4 h-4" />
+                Texas Tech Case Study
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <a href="mailto:sales@checkit.net" className="hidden sm:flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+              Contact Sales
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4">

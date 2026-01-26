@@ -917,43 +917,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-b from-accent/5 to-transparent">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Ready to Transform Your Operations?
-          </h2>
-          <p className="text-muted mb-8 max-w-2xl mx-auto">
-            See how Checkit can help your organization achieve compliance confidence, 
-            operational efficiency, and real-time visibility across all your locations.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="https://www.checkit.net/contact"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-            >
-              Request a Demo
-              <ArrowRight className="w-4 h-4" />
-            </a>
-            <a
-              href="https://www.checkit.net"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-            >
-              Learn More at Checkit.net
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="border-t border-border py-12 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {/* Brand */}
             <div className="lg:col-span-2">
               <img 
@@ -1008,17 +975,6 @@ export default function HomePage() {
                 <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
                 <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
                 <li><Link href="/industries/medical" className="text-sm text-muted hover:text-foreground transition-colors">Medical</Link></li>
-              </ul>
-            </div>
-            
-            {/* Resources */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Case Studies</Link></li>
-                <li><Link href="/case-studies/texas-tech" className="text-sm text-muted hover:text-foreground transition-colors">Texas Tech & OVG</Link></li>
-                <li><a href="https://www.checkit.net" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">Checkit.net</a></li>
-                <li><a href="https://www.checkit.net/about" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">About Us</a></li>
               </ul>
             </div>
             

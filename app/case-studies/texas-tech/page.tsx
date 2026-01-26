@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { 
@@ -109,8 +109,37 @@ export default function TexasTechCaseStudy() {
   const [mapStats, setMapStats] = useState({ contracted: 0, engaged: 0, total: 0 });
   const metricsRef = useRef<HTMLDivElement>(null);
 
-  // Fetch OVG sites for the map
+  // Generate session ID for tracking
+  const getSessionId = useCallback(() => {
+    if (typeof window === 'undefined') return '';
+    let sessionId = sessionStorage.getItem('ovg-session-id');
+    if (!sessionId) {
+      sessionId = `ovg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('ovg-session-id', sessionId);
+    }
+    return sessionId;
+  }, []);
+
+  // Record page view
+  const recordPageView = useCallback(async () => {
+    try {
+      await fetch('/api/ovg/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          pagePath: '/case-studies/texas-tech',
+        }),
+      });
+    } catch (error) {
+      console.log('Analytics recording failed:', error);
+    }
+  }, [getSessionId]);
+
+  // Fetch OVG sites for the map and record page view
   useEffect(() => {
+    recordPageView();
+    
     fetch('/api/ovg/sites')
       .then(res => res.json())
       .then(data => {
@@ -123,7 +152,7 @@ export default function TexasTechCaseStudy() {
         });
       })
       .catch(() => {});
-  }, []);
+  }, [recordPageView]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

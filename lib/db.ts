@@ -1803,13 +1803,49 @@ export async function getOVGAnalyticsSummary(daysBack: number = 30) {
     ORDER BY date DESC
   `;
 
+  // Views by page
+  const byPage = await sql`
+    SELECT page_path, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY page_path
+    ORDER BY views DESC
+  `;
+
+  // Recent visitors with all their page visits
   const recentVisitors = await sql`
-    SELECT DISTINCT ON (visitor_ip) *
+    SELECT 
+      visitor_ip,
+      visitor_city,
+      visitor_region,
+      visitor_country,
+      user_agent,
+      MIN(viewed_at) as first_visit,
+      MAX(viewed_at) as last_visit,
+      COUNT(*) as page_count,
+      ARRAY_AGG(DISTINCT page_path) as pages_visited
     FROM ovg_page_analytics
     WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
       AND visitor_ip IS NOT NULL
-    ORDER BY visitor_ip, viewed_at DESC
+    GROUP BY visitor_ip, visitor_city, visitor_region, visitor_country, user_agent
+    ORDER BY last_visit DESC
     LIMIT 50
+  `;
+
+  // Sessions by pages visited count
+  const sessionsByPageCount = await sql`
+    SELECT 
+      page_count,
+      COUNT(*) as session_count
+    FROM (
+      SELECT visitor_ip, COUNT(DISTINCT page_path) as page_count
+      FROM ovg_page_analytics
+      WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+        AND visitor_ip IS NOT NULL
+      GROUP BY visitor_ip
+    ) as sessions
+    GROUP BY page_count
+    ORDER BY page_count
   `;
 
   return {
@@ -1817,7 +1853,9 @@ export async function getOVGAnalyticsSummary(daysBack: number = 30) {
     uniqueVisitors: uniqueVisitors[0]?.count || 0,
     byLocation,
     byDay,
-    recentVisitors
+    byPage,
+    recentVisitors,
+    sessionsByPageCount
   };
 }
 

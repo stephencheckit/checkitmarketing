@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   MapPin, 
@@ -20,7 +20,37 @@ import {
 export default function OVGMicrositeHome() {
   const [stats, setStats] = useState({ contracted: 0, engaged: 0, total: 0 });
 
+  // Generate session ID for tracking
+  const getSessionId = useCallback(() => {
+    if (typeof window === 'undefined') return '';
+    let sessionId = sessionStorage.getItem('ovg-session-id');
+    if (!sessionId) {
+      sessionId = `ovg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem('ovg-session-id', sessionId);
+    }
+    return sessionId;
+  }, []);
+
+  // Record page view
+  const recordPageView = useCallback(async () => {
+    try {
+      await fetch('/api/ovg/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          pagePath: '/ovg',
+        }),
+      });
+    } catch (error) {
+      console.log('Analytics recording failed:', error);
+    }
+  }, [getSessionId]);
+
   useEffect(() => {
+    // Record page view
+    recordPageView();
+    
     // Fetch live stats from API
     fetch('/api/ovg/sites')
       .then(res => res.json())
@@ -33,7 +63,7 @@ export default function OVGMicrositeHome() {
         });
       })
       .catch(() => {});
-  }, []);
+  }, [recordPageView]);
 
   return (
     <div className="min-h-screen bg-gray-950">

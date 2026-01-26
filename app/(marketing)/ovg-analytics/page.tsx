@@ -11,7 +11,9 @@ import {
   Download,
   Globe,
   Clock,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  Layers
 } from 'lucide-react';
 
 interface AnalyticsSummary {
@@ -27,15 +29,24 @@ interface AnalyticsSummary {
     date: string;
     views: number;
   }>;
+  byPage: Array<{
+    page_path: string;
+    views: number;
+  }>;
   recentVisitors: Array<{
-    id: number;
     visitor_ip: string;
     visitor_city: string;
     visitor_region: string;
     visitor_country: string;
     user_agent: string;
-    password_used: string;
-    viewed_at: string;
+    first_visit: string;
+    last_visit: string;
+    page_count: number;
+    pages_visited: string[];
+  }>;
+  sessionsByPageCount: Array<{
+    page_count: number;
+    session_count: number;
   }>;
 }
 

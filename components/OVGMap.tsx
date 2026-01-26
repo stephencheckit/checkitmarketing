@@ -133,13 +133,6 @@ export default function OVGMap({ sites, onSiteSelect }: OVGMapProps) {
         closeButton: true,
       });
 
-      // Handle click to select site
-      if (onSiteSelect) {
-        marker.on('click', () => {
-          onSiteSelect(site);
-        });
-      }
-
       marker.addTo(markersRef.current!);
     });
 
@@ -155,7 +148,7 @@ export default function OVGMap({ sites, onSiteSelect }: OVGMapProps) {
         10
       );
     }
-  }, [sites, onSiteSelect]);
+  }, [sites]);
 
   return (
     <>

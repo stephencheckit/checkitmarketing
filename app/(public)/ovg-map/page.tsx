@@ -308,7 +308,7 @@ export default function OVGMapPage() {
               Venue List ({filteredSites.length})
             </h2>
           </div>
-          <div className="max-h-[400px] overflow-y-auto">
+          <div>
             {filteredSites.length === 0 ? (
               <div className="p-8 text-center text-gray-400">
                 No venues found.

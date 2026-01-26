@@ -4,78 +4,47 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { 
   Menu,
-  X,
-  ArrowRight
+  X
 } from 'lucide-react';
-import DemoRequestModal from '@/components/DemoRequestModal';
 
 export default function PublicNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showDemoModal, setShowDemoModal] = useState(false);
 
   return (
-    <>
-      <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/industries" className="flex items-center shrink-0">
-              <img 
-                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-                alt="Checkit" 
-                className="h-6"
-              />
-            </Link>
+    <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/industries" className="flex items-center shrink-0">
+            <img 
+              src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+              alt="Checkit" 
+              className="h-6"
+            />
+          </Link>
 
-            {/* Desktop Navigation - intentionally minimal */}
-            <nav className="hidden md:flex items-center gap-1">
-            </nav>
+          {/* Desktop Navigation - intentionally minimal */}
+          <nav className="hidden md:flex items-center gap-1">
+          </nav>
 
-            {/* CTA Button */}
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={() => setShowDemoModal(true)}
-                className="flex items-center gap-2 px-4 py-2 btn-gradient text-white text-sm font-medium rounded-lg transition-all cursor-pointer"
-              >
-                Request Demo
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer"
-            >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          {mobileOpen && (
-            <div className="md:hidden border-t border-border py-4">
-              <nav className="space-y-1">
-                {/* CTA */}
-                <button
-                  onClick={() => {
-                    setMobileOpen(false);
-                    setShowDemoModal(true);
-                  }}
-                  className="flex items-center justify-center gap-2 mx-4 px-4 py-3 btn-gradient text-white text-sm font-medium rounded-lg w-[calc(100%-2rem)]"
-                >
-                  Request Demo
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </nav>
-            </div>
-          )}
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer"
+          >
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
-      </header>
 
-      <DemoRequestModal
-        isOpen={showDemoModal}
-        onClose={() => setShowDemoModal(false)}
-      />
-    </>
+        {/* Mobile Navigation */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-border py-4">
+            <nav className="space-y-1">
+              {/* Navigation items can be added here */}
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }

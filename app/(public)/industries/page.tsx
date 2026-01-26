@@ -37,7 +37,6 @@ import {
   Globe2,
   Award
 } from 'lucide-react';
-import DemoRequestButton from '@/components/DemoRequestButton';
 
 // Problems - Operational non-compliance and waste
 const problems = [
@@ -313,9 +312,6 @@ export default function IndustriesPage() {
               From senior living to plasma centers, Checkit delivers purpose-built compliance 
               and monitoring solutions that transform how multi-site organizations operate.
             </p>
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-              <DemoRequestButton />
-            </div>
           </div>
         </div>
       </section>
@@ -721,12 +717,13 @@ export default function IndustriesPage() {
             operational efficiency, and real-time visibility across all your locations.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <DemoRequestButton label="Schedule a Demo" />
             <a
-              href="mailto:info@checkit.net?subject=General Inquiry"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
+              href="https://www.checkit.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg transition-colors"
             >
-              Contact Us
+              Learn More at Checkit.net
             </a>
           </div>
         </div>
@@ -767,10 +764,10 @@ export default function IndustriesPage() {
             </div>
             
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Contact</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Company</h4>
               <ul className="space-y-2">
-                <li><a href="mailto:sales@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">Request Demo</a></li>
-                <li><a href="mailto:info@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">General Inquiries</a></li>
+                <li><a href="https://www.checkit.net" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">Checkit.net</a></li>
+                <li><a href="https://www.checkit.net/about" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">About Us</a></li>
               </ul>
             </div>
           </div>

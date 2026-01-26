@@ -182,9 +182,6 @@ export default function OVGMapPage() {
                 <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
-            <a href="mailto:sales@checkit.net" className="hidden sm:flex items-center gap-1.5 hover:text-blue-200 transition-colors">
-              Contact Sales
-            </a>
           </div>
         </div>
       </div>

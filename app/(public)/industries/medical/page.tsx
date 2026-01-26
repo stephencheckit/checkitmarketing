@@ -18,7 +18,6 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
-import DemoRequestButton from '@/components/DemoRequestButton';
 
 // Product components for medical/life sciences
 const productComponents = [
@@ -192,9 +191,6 @@ export default function MedicalPage() {
                 documentation that regulated medical environments demand.
               </p>
               
-              <div className="flex flex-wrap gap-4">
-                <DemoRequestButton industry="Medical" />
-              </div>
             </div>
             
             <div className="bg-surface border border-border rounded-xl p-6">
@@ -446,10 +442,9 @@ export default function MedicalPage() {
             and protect irreplaceable materials around the clock.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <DemoRequestButton industry="Medical" label="Schedule a Demo" />
             <Link
               href="/industries"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg transition-colors"
             >
               View All Industries
             </Link>
@@ -492,10 +487,10 @@ export default function MedicalPage() {
             </div>
             
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Contact</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Company</h4>
               <ul className="space-y-2">
-                <li><a href="mailto:sales@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">Request Demo</a></li>
-                <li><a href="mailto:info@checkit.net" className="text-sm text-muted hover:text-foreground transition-colors">General Inquiries</a></li>
+                <li><a href="https://www.checkit.net" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">Checkit.net</a></li>
+                <li><a href="https://www.checkit.net/about" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">About Us</a></li>
               </ul>
             </div>
           </div>

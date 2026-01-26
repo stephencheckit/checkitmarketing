@@ -10,11 +10,11 @@ import {
   Shield,
   ArrowRight,
   Building2,
-  Users,
   TrendingUp,
   Clock,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 
 export default function OVGMicrositeHome() {
@@ -324,13 +324,13 @@ export default function OVGMicrositeHome() {
             Join Texas Tech and other OVG venues in delivering operational excellence with Checkit.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a 
-              href="mailto:sales@checkit.net?subject=OVG%20Venue%20Inquiry"
+            <Link 
+              href="/case-studies/texas-tech"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
             >
-              <Users className="w-5 h-5" />
-              Contact Sales
-            </a>
+              <FileText className="w-5 h-5" />
+              Read Case Study
+            </Link>
             <Link 
               href="/ovg-map"
               className="inline-flex items-center gap-2 px-8 py-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg transition-colors"
@@ -386,16 +386,17 @@ export default function OVGMicrositeHome() {
             </div>
 
             <div>
-              <h4 className="text-white font-semibold mb-4">Contact</h4>
+              <h4 className="text-white font-semibold mb-4">Learn More</h4>
               <ul className="space-y-2">
-                <li>
-                  <a href="mailto:sales@checkit.net" className="text-gray-400 hover:text-white text-sm transition-colors">
-                    sales@checkit.net
-                  </a>
-                </li>
                 <li>
                   <a href="https://www.oakviewgroup.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1">
                     OVG Hospitality
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </li>
+                <li>
+                  <a href="https://www.checkit.net/about" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors inline-flex items-center gap-1">
+                    About Checkit
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </li>

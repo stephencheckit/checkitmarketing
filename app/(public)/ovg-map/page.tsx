@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { 
-  Lock, 
   MapPin, 
   Building2, 
   CheckCircle2, 
@@ -43,22 +42,16 @@ interface OVGSite {
   contact_phone: string | null;
 }
 
-// Password for access - in production this could be in env vars
-const VALID_PASSWORDS = ['CHECKIT-OVG-2026', 'OVG2026'];
-
 export default function OVGMapPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [sites, setSites] = useState<OVGSite[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedSite, setSelectedSite] = useState<OVGSite | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showLegend, setShowLegend] = useState(true);
-  const [pageViewId, setPageViewId] = useState<number | null>(null);
 
   // Generate session ID for tracking
   const getSessionId = useCallback(() => {
+    if (typeof window === 'undefined') return '';
     let sessionId = sessionStorage.getItem('ovg-session-id');
     if (!sessionId) {
       sessionId = `ovg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -67,28 +60,23 @@ export default function OVGMapPage() {
     return sessionId;
   }, []);
 
-  // Record page view when authenticated
-  const recordPageView = useCallback(async (passwordUsed: string) => {
+  // Record page view on load
+  const recordPageView = useCallback(async () => {
     try {
-      const res = await fetch('/api/ovg/analytics', {
+      await fetch('/api/ovg/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          passwordUsed,
           sessionId: getSessionId(),
           pagePath: '/ovg-map',
         }),
       });
-      const data = await res.json();
-      if (data.pageView?.id) {
-        setPageViewId(data.pageView.id);
-      }
     } catch (error) {
       console.log('Analytics recording failed:', error);
     }
   }, [getSessionId]);
 
-  // Load sites after authentication
+  // Load sites on mount
   const loadSites = useCallback(async () => {
     setLoading(true);
     try {
@@ -102,33 +90,11 @@ export default function OVGMapPage() {
     }
   }, []);
 
-  // Check for saved auth in session storage
+  // Load sites and record analytics on mount
   useEffect(() => {
-    const savedAuth = sessionStorage.getItem('ovg-map-auth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  // Load sites when authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadSites();
-    }
-  }, [isAuthenticated, loadSites]);
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (VALID_PASSWORDS.includes(password.toUpperCase())) {
-      setIsAuthenticated(true);
-      setPasswordError('');
-      sessionStorage.setItem('ovg-map-auth', 'true');
-      await recordPageView(password.toUpperCase());
-    } else {
-      setPasswordError('Invalid password. Please try again.');
-    }
-  };
+    loadSites();
+    recordPageView();
+  }, [loadSites, recordPageView]);
 
   // Filter sites by status
   const filteredSites = filterStatus === 'all' 
@@ -142,60 +108,6 @@ export default function OVGMapPage() {
     prospect: sites.filter(s => s.status === 'prospect').length,
     total: sites.length,
   };
-
-  // Password gate
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <div className="bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-gray-700">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="w-8 h-8 text-blue-400" />
-              </div>
-              <h1 className="text-2xl font-bold text-white mb-2">OVG Territory Map</h1>
-              <p className="text-gray-400">
-                This page is password protected. Please enter the access code to view the OVG engagement map.
-              </p>
-            </div>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                  Access Code
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Enter access code"
-                  autoFocus
-                />
-                {passwordError && (
-                  <p className="mt-2 text-sm text-red-400">{passwordError}</p>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-              >
-                Access Map
-              </button>
-            </form>
-
-            <div className="mt-6 pt-6 border-t border-gray-700">
-              <p className="text-xs text-gray-500 text-center">
-                Checkit Sales Enablement • Confidential
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -269,7 +181,7 @@ export default function OVGMapPage() {
           <div className="bg-gray-800/50 rounded-lg p-4 mb-6 border border-gray-700">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
                 </div>
                 <div>
@@ -278,7 +190,7 @@ export default function OVGMapPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center shrink-0">
                   <Clock className="w-5 h-5 text-yellow-500" />
                 </div>
                 <div>
@@ -287,7 +199,7 @@ export default function OVGMapPage() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-gray-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-gray-500/20 rounded-lg flex items-center justify-center shrink-0">
                   <Target className="w-5 h-5 text-gray-400" />
                 </div>
                 <div>
@@ -324,7 +236,7 @@ export default function OVGMapPage() {
           <div className="max-h-[400px] overflow-y-auto">
             {filteredSites.length === 0 ? (
               <div className="p-8 text-center text-gray-400">
-                No venues found. Use the API to add OVG venues.
+                No venues found.
               </div>
             ) : (
               <table className="w-full">

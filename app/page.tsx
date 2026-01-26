@@ -392,14 +392,11 @@ export default function HomePage() {
 
           {/* Platform Screenshot */}
           <div className="mt-16 relative max-w-5xl mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="rounded-2xl overflow-hidden border border-border shadow-2xl shadow-accent/10">
-              <img 
-                src="/checkit v6-1.webp" 
-                alt="Checkit V6 Platform Dashboard" 
-                className="w-full h-auto"
-              />
-            </div>
+            <img 
+              src="/checkit v6-1.webp" 
+              alt="Checkit V6 Platform Dashboard" 
+              className="w-full h-auto"
+            />
           </div>
         </div>
       </section>

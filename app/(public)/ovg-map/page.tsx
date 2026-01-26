@@ -11,7 +11,10 @@ import {
   Eye,
   X,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
 
 // Dynamically import map component to avoid SSR issues with Leaflet
@@ -42,12 +45,17 @@ interface OVGSite {
   contact_phone: string | null;
 }
 
+type SortField = 'status' | 'name' | 'venue_type' | 'location';
+type SortDirection = 'asc' | 'desc';
+
 export default function OVGMapPage() {
   const [sites, setSites] = useState<OVGSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSite, setSelectedSite] = useState<OVGSite | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showLegend, setShowLegend] = useState(true);
+  const [sortField, setSortField] = useState<SortField>('status');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
   // Generate session ID for tracking
   const getSessionId = useCallback(() => {
@@ -96,10 +104,53 @@ export default function OVGMapPage() {
     recordPageView();
   }, [loadSites, recordPageView]);
 
-  // Filter sites by status
-  const filteredSites = filterStatus === 'all' 
+  // Handle column sort
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Get sort icon for column header
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 opacity-40" />;
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="w-4 h-4" /> 
+      : <ArrowDown className="w-4 h-4" />;
+  };
+
+  // Status priority for sorting (contracted first, then engaged, then prospect)
+  const statusPriority = { contracted: 1, engaged: 2, prospect: 3 };
+
+  // Filter and sort sites
+  const filteredSites = (filterStatus === 'all' 
     ? sites 
-    : sites.filter(s => s.status === filterStatus);
+    : sites.filter(s => s.status === filterStatus)
+  ).sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortField) {
+      case 'status':
+        comparison = statusPriority[a.status] - statusPriority[b.status];
+        break;
+      case 'name':
+        comparison = (a.name || '').localeCompare(b.name || '');
+        break;
+      case 'venue_type':
+        comparison = (a.venue_type || '').localeCompare(b.venue_type || '');
+        break;
+      case 'location':
+        const locA = [a.city, a.state].filter(Boolean).join(', ');
+        const locB = [b.city, b.state].filter(Boolean).join(', ');
+        comparison = locA.localeCompare(locB);
+        break;
+    }
+    
+    return sortDirection === 'asc' ? comparison : -comparison;
+  });
 
   // Count by status
   const statusCounts = {
@@ -242,10 +293,38 @@ export default function OVGMapPage() {
               <table className="w-full">
                 <thead className="bg-gray-900/50 sticky top-0">
                   <tr>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Status</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Venue</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden md:table-cell">Type</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden sm:table-cell">Location</th>
+                    <th 
+                      className="text-left px-4 py-3 text-sm font-medium text-gray-400 cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <span className="flex items-center gap-1">
+                        Status {getSortIcon('status')}
+                      </span>
+                    </th>
+                    <th 
+                      className="text-left px-4 py-3 text-sm font-medium text-gray-400 cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <span className="flex items-center gap-1">
+                        Venue {getSortIcon('name')}
+                      </span>
+                    </th>
+                    <th 
+                      className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden md:table-cell cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort('venue_type')}
+                    >
+                      <span className="flex items-center gap-1">
+                        Type {getSortIcon('venue_type')}
+                      </span>
+                    </th>
+                    <th 
+                      className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden sm:table-cell cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort('location')}
+                    >
+                      <span className="flex items-center gap-1">
+                        Location {getSortIcon('location')}
+                      </span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700/50">

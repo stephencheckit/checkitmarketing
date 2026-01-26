@@ -40,7 +40,15 @@ import {
   TrendingUp,
   Activity,
   Radio,
-  Sparkles
+  Sparkles,
+  Brain,
+  Gauge,
+  DollarSign,
+  Wrench,
+  LineChart,
+  ShieldAlert,
+  Trash2,
+  CalendarCheck
 } from 'lucide-react';
 
 // Hero stats
@@ -617,8 +625,135 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Asset Intelligence Section */}
+      <section className="py-16 lg:py-24 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-surface to-surface" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium bg-purple-500/20 text-purple-400 rounded-full mb-6">
+                <Brain className="w-4 h-4" />
+                Platform Add-On
+              </span>
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                Asset Intelligence
+              </h2>
+              <p className="text-lg text-muted mb-6">
+                Unlock predictive insights and performance data for your freezers, fridges, and critical assets. 
+                Move beyond traditional monitoring to predict failures before they happen.
+              </p>
+              
+              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                    <Gauge className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Be Proactive</h4>
+                    <p className="text-sm text-muted">Identify underperforming assets before costly failures</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                    <Wrench className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Optimize Assets</h4>
+                    <p className="text-sm text-muted">Extend asset life and replace only when necessary</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                    <ShieldAlert className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Reduce Risk</h4>
+                    <p className="text-sm text-muted">Protect critical inventory from unexpected failures</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                    <CalendarCheck className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-foreground">Plan Confidently</h4>
+                    <p className="text-sm text-muted">Budget accurately with data-driven insights</p>
+                  </div>
+                </div>
+              </div>
+
+              <a
+                href="https://www.checkit.net/asset-intelligence"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Learn About Asset Intelligence
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+
+            <div className="relative">
+              {/* How it works */}
+              <div className="bg-surface border border-purple-500/30 rounded-2xl p-6 shadow-xl">
+                <h3 className="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+                  <LineChart className="w-5 h-5 text-purple-400" />
+                  How It Works
+                </h3>
+                
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                      1
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Connect Data to Checkit</h4>
+                      <p className="text-sm text-muted">Your sensors are already capturing real-time data</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                      2
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Turn On Asset Intelligence</h4>
+                      <p className="text-sm text-muted">AI/ML models analyze patterns and predict outcomes</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                      3
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-foreground">Access Predictive Insights</h4>
+                      <p className="text-sm text-muted">Filterable dashboard highlights predictions and savings</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <div className="mt-6 pt-6 border-t border-border">
+                  <p className="text-sm text-muted italic mb-3">
+                    &ldquo;Asset Intelligence allows me to have a real plan in place of what is priority, 
+                    what&apos;s costing the most to run, and what potentially needs new investment.&rdquo;
+                  </p>
+                  <p className="text-xs text-purple-400 font-medium">
+                    Philip King, BWG Foods, Operations Development Manager
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Industries Section */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24 bg-surface-elevated/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">

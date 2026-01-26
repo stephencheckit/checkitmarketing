@@ -118,14 +118,13 @@ export default function OVGAnalyticsPage() {
   const exportCSV = () => {
     if (!analytics?.recentVisitors) return;
     
-    const headers = ['Date', 'City', 'Region', 'Country', 'Browser', 'Password Used'];
+    const headers = ['Date', 'City', 'Region', 'Country', 'Browser'];
     const rows = analytics.recentVisitors.map(v => [
       new Date(v.viewed_at).toISOString(),
       v.visitor_city || 'Unknown',
       v.visitor_region || 'Unknown',
       v.visitor_country || 'Unknown',
       formatUserAgent(v.user_agent),
-      v.password_used || 'N/A',
     ]);
     
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -368,7 +367,6 @@ export default function OVGAnalyticsPage() {
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Time</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Location</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Browser</th>
-                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Password</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700/50">
@@ -388,11 +386,6 @@ export default function OVGAnalyticsPage() {
                       <td className="px-4 py-3 text-gray-400 text-sm">
                         {formatUserAgent(visitor.user_agent)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
-                          {visitor.password_used || 'N/A'}
-                        </span>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -405,23 +398,47 @@ export default function OVGAnalyticsPage() {
           </div>
         </div>
 
-        {/* Map Link */}
-        <div className="mt-6 p-4 bg-blue-900/30 rounded-xl border border-blue-700/50">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-semibold text-blue-300">OVG Map Access</h3>
-              <p className="text-sm text-blue-400/80 mt-1">
-                Share this link with prospects. Password: <code className="bg-blue-900/50 px-2 py-0.5 rounded">CHECKIT-OVG-2026</code>
-              </p>
+        {/* Quick Links */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a
+            href="/ovg-map"
+            target="_blank"
+            className="flex items-center gap-3 p-4 bg-blue-900/30 rounded-xl border border-blue-700/50 hover:bg-blue-900/50 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+              <MapPin className="w-5 h-5 text-white" />
             </div>
-            <a
-              href="/ovg-map"
-              target="_blank"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-            >
-              Open Map
-            </a>
-          </div>
+            <div>
+              <h3 className="font-semibold text-white">OVG Territory Map</h3>
+              <p className="text-sm text-blue-400/80">View interactive map</p>
+            </div>
+          </a>
+          <a
+            href="/case-studies/texas-tech"
+            target="_blank"
+            className="flex items-center gap-3 p-4 bg-green-900/30 rounded-xl border border-green-700/50 hover:bg-green-900/50 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center group-hover:bg-green-500 transition-colors">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">Texas Tech Case Study</h3>
+              <p className="text-sm text-green-400/80">View success story</p>
+            </div>
+          </a>
+          <a
+            href="/ovg"
+            target="_blank"
+            className="flex items-center gap-3 p-4 bg-purple-900/30 rounded-xl border border-purple-700/50 hover:bg-purple-900/50 transition-colors group"
+          >
+            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+              <Globe className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white">OVG Microsite</h3>
+              <p className="text-sm text-purple-400/80">View landing page</p>
+            </div>
+          </a>
         </div>
       </div>
     </div>

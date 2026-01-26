@@ -1449,6 +1449,378 @@ export async function getItemsNeedingAITagging(limit: number = 20) {
   `;
 }
 
+// ============================================
+// OVG SITES & ANALYTICS OPERATIONS
+// ============================================
+
+export async function initializeOVGTables() {
+  // OVG Sites/Venues table
+  await sql`
+    CREATE TABLE IF NOT EXISTS ovg_sites (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(500) NOT NULL,
+      venue_type VARCHAR(100),
+      address VARCHAR(500),
+      city VARCHAR(255),
+      state VARCHAR(100),
+      zip VARCHAR(20),
+      country VARCHAR(100) DEFAULT 'USA',
+      latitude DECIMAL(10, 8),
+      longitude DECIMAL(11, 8),
+      status VARCHAR(50) DEFAULT 'prospect',
+      notes TEXT,
+      contact_name VARCHAR(255),
+      contact_email VARCHAR(255),
+      contact_phone VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // Page view analytics for OVG map
+  await sql`
+    CREATE TABLE IF NOT EXISTS ovg_page_analytics (
+      id SERIAL PRIMARY KEY,
+      visitor_ip VARCHAR(45),
+      visitor_city VARCHAR(255),
+      visitor_region VARCHAR(255),
+      visitor_country VARCHAR(100),
+      visitor_latitude DECIMAL(10, 8),
+      visitor_longitude DECIMAL(11, 8),
+      user_agent TEXT,
+      referrer TEXT,
+      password_used VARCHAR(100),
+      session_id VARCHAR(100),
+      page_path VARCHAR(255) DEFAULT '/ovg-map',
+      time_on_page INTEGER,
+      viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // Indexes for performance
+  await sql`CREATE INDEX IF NOT EXISTS idx_ovg_sites_status ON ovg_sites(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ovg_sites_state ON ovg_sites(state)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ovg_analytics_viewed ON ovg_page_analytics(viewed_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ovg_analytics_ip ON ovg_page_analytics(visitor_ip)`;
+}
+
+export type OVGSiteStatus = 'contracted' | 'engaged' | 'prospect';
+
+export interface OVGSite {
+  id: number;
+  name: string;
+  venue_type: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  country: string;
+  latitude: number | null;
+  longitude: number | null;
+  status: OVGSiteStatus;
+  notes: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Get all OVG sites
+export async function getOVGSites(status?: OVGSiteStatus) {
+  if (status) {
+    return await sql`
+      SELECT * FROM ovg_sites 
+      WHERE status = ${status}
+      ORDER BY state, city, name
+    `;
+  }
+  return await sql`
+    SELECT * FROM ovg_sites 
+    ORDER BY state, city, name
+  `;
+}
+
+// Get OVG site by ID
+export async function getOVGSiteById(id: number) {
+  const result = await sql`
+    SELECT * FROM ovg_sites WHERE id = ${id}
+  `;
+  return result[0] || null;
+}
+
+// Create OVG site
+export async function createOVGSite(site: {
+  name: string;
+  venueType?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  status?: OVGSiteStatus;
+  notes?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}) {
+  const result = await sql`
+    INSERT INTO ovg_sites (
+      name, venue_type, address, city, state, zip, country,
+      latitude, longitude, status, notes, 
+      contact_name, contact_email, contact_phone
+    )
+    VALUES (
+      ${site.name}, ${site.venueType || null}, ${site.address || null},
+      ${site.city || null}, ${site.state || null}, ${site.zip || null},
+      ${site.country || 'USA'}, ${site.latitude || null}, ${site.longitude || null},
+      ${site.status || 'prospect'}, ${site.notes || null},
+      ${site.contactName || null}, ${site.contactEmail || null}, ${site.contactPhone || null}
+    )
+    RETURNING *
+  `;
+  return result[0];
+}
+
+// Update OVG site
+export async function updateOVGSite(id: number, updates: {
+  name?: string;
+  venueType?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  status?: OVGSiteStatus;
+  notes?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}) {
+  const result = await sql`
+    UPDATE ovg_sites SET
+      name = COALESCE(${updates.name || null}, name),
+      venue_type = COALESCE(${updates.venueType || null}, venue_type),
+      address = COALESCE(${updates.address || null}, address),
+      city = COALESCE(${updates.city || null}, city),
+      state = COALESCE(${updates.state || null}, state),
+      zip = COALESCE(${updates.zip || null}, zip),
+      country = COALESCE(${updates.country || null}, country),
+      latitude = COALESCE(${updates.latitude || null}, latitude),
+      longitude = COALESCE(${updates.longitude || null}, longitude),
+      status = COALESCE(${updates.status || null}, status),
+      notes = COALESCE(${updates.notes || null}, notes),
+      contact_name = COALESCE(${updates.contactName || null}, contact_name),
+      contact_email = COALESCE(${updates.contactEmail || null}, contact_email),
+      contact_phone = COALESCE(${updates.contactPhone || null}, contact_phone),
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] || null;
+}
+
+// Bulk update OVG site statuses
+export async function bulkUpdateOVGSiteStatus(ids: number[], status: OVGSiteStatus) {
+  await sql`
+    UPDATE ovg_sites 
+    SET status = ${status}, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ANY(${ids})
+  `;
+}
+
+// Delete OVG site
+export async function deleteOVGSite(id: number) {
+  await sql`DELETE FROM ovg_sites WHERE id = ${id}`;
+}
+
+// Bulk insert OVG sites (for seeding)
+export async function bulkInsertOVGSites(sites: Array<{
+  name: string;
+  venueType?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  country?: string;
+  latitude?: number;
+  longitude?: number;
+  status?: OVGSiteStatus;
+}>) {
+  const results = [];
+  for (const site of sites) {
+    const saved = await createOVGSite(site);
+    results.push(saved);
+  }
+  return results;
+}
+
+// Get OVG site statistics
+export async function getOVGSiteStats() {
+  const byStatus = await sql`
+    SELECT status, COUNT(*) as count
+    FROM ovg_sites
+    GROUP BY status
+  `;
+
+  const byState = await sql`
+    SELECT state, COUNT(*) as count
+    FROM ovg_sites
+    WHERE state IS NOT NULL
+    GROUP BY state
+    ORDER BY count DESC
+  `;
+
+  const byType = await sql`
+    SELECT venue_type, COUNT(*) as count
+    FROM ovg_sites
+    WHERE venue_type IS NOT NULL
+    GROUP BY venue_type
+    ORDER BY count DESC
+  `;
+
+  return { byStatus, byState, byType };
+}
+
+// ---- OVG PAGE ANALYTICS ----
+
+export interface OVGPageView {
+  id: number;
+  visitor_ip: string | null;
+  visitor_city: string | null;
+  visitor_region: string | null;
+  visitor_country: string | null;
+  visitor_latitude: number | null;
+  visitor_longitude: number | null;
+  user_agent: string | null;
+  referrer: string | null;
+  password_used: string | null;
+  session_id: string | null;
+  page_path: string;
+  time_on_page: number | null;
+  viewed_at: string;
+}
+
+// Record a page view
+export async function recordOVGPageView(data: {
+  visitorIp?: string;
+  visitorCity?: string;
+  visitorRegion?: string;
+  visitorCountry?: string;
+  visitorLatitude?: number;
+  visitorLongitude?: number;
+  userAgent?: string;
+  referrer?: string;
+  passwordUsed?: string;
+  sessionId?: string;
+  pagePath?: string;
+}) {
+  const result = await sql`
+    INSERT INTO ovg_page_analytics (
+      visitor_ip, visitor_city, visitor_region, visitor_country,
+      visitor_latitude, visitor_longitude, user_agent, referrer,
+      password_used, session_id, page_path
+    )
+    VALUES (
+      ${data.visitorIp || null}, ${data.visitorCity || null}, 
+      ${data.visitorRegion || null}, ${data.visitorCountry || null},
+      ${data.visitorLatitude || null}, ${data.visitorLongitude || null},
+      ${data.userAgent || null}, ${data.referrer || null},
+      ${data.passwordUsed || null}, ${data.sessionId || null},
+      ${data.pagePath || '/ovg-map'}
+    )
+    RETURNING *
+  `;
+  return result[0];
+}
+
+// Update time on page
+export async function updateOVGPageViewDuration(id: number, timeOnPage: number) {
+  await sql`
+    UPDATE ovg_page_analytics 
+    SET time_on_page = ${timeOnPage}
+    WHERE id = ${id}
+  `;
+}
+
+// Get recent page views
+export async function getOVGPageViews(options?: {
+  limit?: number;
+  daysBack?: number;
+}) {
+  const limit = options?.limit || 100;
+  
+  if (options?.daysBack) {
+    return await sql`
+      SELECT * FROM ovg_page_analytics
+      WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${options.daysBack}
+      ORDER BY viewed_at DESC
+      LIMIT ${limit}
+    `;
+  }
+  
+  return await sql`
+    SELECT * FROM ovg_page_analytics
+    ORDER BY viewed_at DESC
+    LIMIT ${limit}
+  `;
+}
+
+// Get analytics summary
+export async function getOVGAnalyticsSummary(daysBack: number = 30) {
+  const totalViews = await sql`
+    SELECT COUNT(*) as count
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+  `;
+
+  const uniqueVisitors = await sql`
+    SELECT COUNT(DISTINCT visitor_ip) as count
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_ip IS NOT NULL
+  `;
+
+  const byLocation = await sql`
+    SELECT visitor_city, visitor_region, visitor_country, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_city IS NOT NULL
+    GROUP BY visitor_city, visitor_region, visitor_country
+    ORDER BY views DESC
+    LIMIT 20
+  `;
+
+  const byDay = await sql`
+    SELECT DATE(viewed_at) as date, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY DATE(viewed_at)
+    ORDER BY date DESC
+  `;
+
+  const recentVisitors = await sql`
+    SELECT DISTINCT ON (visitor_ip) *
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_ip IS NOT NULL
+    ORDER BY visitor_ip, viewed_at DESC
+    LIMIT 50
+  `;
+
+  return {
+    totalViews: totalViews[0]?.count || 0,
+    uniqueVisitors: uniqueVisitors[0]?.count || 0,
+    byLocation,
+    byDay,
+    recentVisitors
+  };
+}
+
 // Get contribution stats (for admin dashboard)
 export async function getContributionStats() {
   const byStatus = await sql`

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { 
   UtensilsCrossed,
   ArrowLeft,
+  ArrowRight,
   CheckCircle2,
   Clock,
   AlertTriangle,
@@ -185,9 +186,13 @@ export default function FoodFacilitiesPage() {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-muted mt-4 text-center">
-                Leading venue and facilities operators trust CheckIt
-              </p>
+              <Link 
+                href="/case-studies/texas-tech"
+                className="flex items-center justify-center gap-2 mt-4 px-4 py-2 bg-red-600/10 text-red-400 text-sm font-medium rounded-lg hover:bg-red-600/20 transition-colors"
+              >
+                Read Texas Tech Case Study
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>

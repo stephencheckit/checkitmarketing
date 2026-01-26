@@ -27,7 +27,8 @@ import {
   Crown,
   Globe,
   ExternalLink,
-  Send
+  Send,
+  MapPin
 } from 'lucide-react';
 import MyContributions from '@/components/MyContributions';
 
@@ -96,6 +97,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/solutioning', label: 'Solutioning', icon: Presentation },
     { href: '/closing', label: 'Closing', icon: Handshake },
     { href: '/tools', label: 'Tools', icon: Calculator },
+    { href: '/ovg-analytics', label: 'OVG Territory', icon: MapPin },
   ];
 
   const trainingItems = [

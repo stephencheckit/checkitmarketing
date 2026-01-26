@@ -595,6 +595,33 @@ export default function IndustriesPage() {
         </div>
       </section>
 
+      {/* Featured Case Study Banner */}
+      <section className="py-12 bg-gradient-to-r from-red-900/20 via-surface to-surface border-y border-red-600/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shrink-0">
+                <Building2 className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs font-medium px-2 py-0.5 bg-red-600/20 text-red-400 rounded">Case Study</span>
+                </div>
+                <h3 className="font-semibold text-foreground">Texas Tech &amp; OVG Hospitality</h3>
+                <p className="text-sm text-muted">See how they achieved ROI in just 2 months with Checkit</p>
+              </div>
+            </div>
+            <Link
+              href="/case-studies/texas-tech"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors shrink-0"
+            >
+              Read Case Study
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Peace of Mind Subscription */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-accent/5 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

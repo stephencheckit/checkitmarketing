@@ -777,7 +777,7 @@ export default function PlatformPage() {
               <img 
                 src="/checkit v6-1.webp" 
                 alt="Checkit Platform Dashboard" 
-                className="w-full h-auto rounded-xl border border-border shadow-2xl"
+                className="w-full h-auto"
               />
             </div>
           </div>

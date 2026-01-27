@@ -337,16 +337,7 @@ export default function HomePage() {
               </a>
             </nav>
 
-            <div className="hidden md:flex items-center gap-3 shrink-0">
-              <a
-                href="https://app.checkit.net"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                Platform Login
-              </a>
+            <div className="hidden md:flex items-center shrink-0">
               <Link
                 href="/login"
                 className="flex items-center gap-2 px-4 py-2 text-sm btn-gradient text-white rounded-lg"
@@ -398,18 +389,9 @@ export default function HomePage() {
                   About Us
                 </a>
                 <div className="border-t border-border my-3" />
-                <a
-                  href="https://app.checkit.net"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Platform Login
-                </a>
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-2 mx-3 mt-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
+                  className="flex items-center justify-center gap-2 mx-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
                 >
                   Employee Portal
                 </Link>

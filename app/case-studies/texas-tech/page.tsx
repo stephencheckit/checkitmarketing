@@ -170,7 +170,7 @@ export default function TexasTechCaseStudy() {
           {/* Customer Logos - Centered */}
           <div className="flex flex-wrap items-center justify-center gap-12 lg:gap-20 mb-12">
             <img 
-              src="/texas-tech-logo.png" 
+              src="/TexasTech_logo.png" 
               alt="Texas Tech University" 
               className="h-20 lg:h-24 object-contain"
             />

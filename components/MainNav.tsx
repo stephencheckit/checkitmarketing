@@ -268,6 +268,19 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               )}
             </div>
 
+            {/* Stories Link */}
+            <Link
+              href="/case-studies"
+              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                pathname.startsWith('/case-studies')
+                  ? 'btn-gradient text-white'
+                  : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden lg:inline">Stories</span>
+            </Link>
+
             {/* Public Microsite Link */}
             <a
               href="/industries"
@@ -456,6 +469,22 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
+              </div>
+
+              {/* Stories */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <Link
+                  href="/case-studies"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    pathname.startsWith('/case-studies')
+                      ? 'bg-accent text-white'
+                      : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Stories
+                </Link>
               </div>
 
               {/* Public Microsite */}

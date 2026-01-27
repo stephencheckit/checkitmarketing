@@ -1512,7 +1512,7 @@ export default function PlatformPage() {
                 <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl p-4 shadow-xl">
                   <div className="flex items-center gap-3">
                     <img 
-                      src="/texas-tech-logo.png" 
+                      src="/TexasTech_logo.png" 
                       alt="Texas Tech" 
                       className="h-12 object-contain"
                     />

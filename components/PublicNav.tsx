@@ -12,12 +12,14 @@ import {
   Layers,
   Building2,
   FileText,
-  Users
+  Users,
+  BookOpen
 } from 'lucide-react';
 
 const navLinks = [
   { href: '/platform', label: 'Platform', icon: Layers },
   { href: '/industries', label: 'Industries', icon: Building2 },
+  { href: '/case-studies', label: 'Stories', icon: BookOpen },
   { href: '/about', label: 'About Us', icon: Users },
 ];
 

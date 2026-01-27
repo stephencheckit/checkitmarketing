@@ -199,7 +199,7 @@ export default function OVGMicrositeHome() {
               />
               <div className="absolute -bottom-4 -right-4 bg-gray-900 rounded-lg p-4 border border-gray-800 shadow-xl">
                 <img 
-                  src="/texas-tech-logo.png" 
+                  src="/TexasTech_logo.png" 
                   alt="Texas Tech" 
                   className="h-12"
                 />

@@ -957,7 +957,7 @@ export default function HomePage() {
               <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-xl">
                 <div className="flex items-center gap-3">
                   <img 
-                    src="/texas-tech-logo.png" 
+                    src="/TexasTech_logo.png" 
                     alt="Texas Tech" 
                     className="h-12 object-contain"
                   />

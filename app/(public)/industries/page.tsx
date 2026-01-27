@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import { 
   Building2, 
-  Pill, 
   ShoppingCart, 
   UtensilsCrossed, 
-  Droplets,
   ArrowRight,
   CheckCircle2,
   Shield,
@@ -25,15 +23,6 @@ const industries = [
     color: 'from-blue-500 to-blue-600'
   },
   {
-    href: '/industries/nhs-pharmacies',
-    name: 'NHS Pharmacies',
-    icon: Pill,
-    description: 'Connected automated monitoring for pharmaceutical compliance',
-    customers: ['NHS Trust Partners'],
-    product: 'CAM+',
-    color: 'from-emerald-500 to-emerald-600'
-  },
-  {
     href: '/industries/food-retail',
     name: 'Food Retail',
     icon: ShoppingCart,
@@ -50,15 +39,6 @@ const industries = [
     customers: ['OVG', 'ISS'],
     product: 'V6',
     color: 'from-purple-500 to-purple-600'
-  },
-  {
-    href: '/industries/medical',
-    name: 'Medical',
-    icon: Droplets,
-    description: 'Compliance monitoring for plasma centers, pharma, and university labs',
-    customers: ['Octapharma', 'Grifols', 'University Labs'],
-    product: 'CAM+',
-    color: 'from-red-500 to-red-600'
   },
   {
     href: '/industries/operations',
@@ -144,7 +124,7 @@ export default function IndustriesPage() {
               <span className="text-gradient">Forward Thinking Operations</span>
             </h1>
             <p className="text-lg text-muted mb-8">
-              From senior living to plasma centers, Checkit delivers purpose-built compliance 
+              From senior living to food service, Checkit delivers purpose-built compliance 
               and monitoring solutions that transform how multi-site organizations operate.
             </p>
           </div>
@@ -307,16 +287,14 @@ export default function IndustriesPage() {
               <ul className="space-y-2">
                 <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
                 <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
-                <li><Link href="/industries/nhs-pharmacies" className="text-sm text-muted hover:text-foreground transition-colors">NHS Pharmacies</Link></li>
                 <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
+                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">&nbsp;</h4>
               <ul className="space-y-2">
-                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
-                <li><Link href="/industries/medical" className="text-sm text-muted hover:text-foreground transition-colors">Medical</Link></li>
                 <li><Link href="/industries/operations" className="text-sm text-muted hover:text-foreground transition-colors">Operations</Link></li>
               </ul>
             </div>

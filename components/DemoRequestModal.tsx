@@ -34,24 +34,31 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
     setError(null);
 
     try {
-      // For now, send via mailto with form data
-      // In production, this would POST to an API endpoint
-      const subject = encodeURIComponent(`Demo Request - ${formData.industry || 'General'}`);
-      const body = encodeURIComponent(
-        `Name: ${formData.name}\n` +
-        `Email: ${formData.email}\n` +
-        `Company: ${formData.company}\n` +
-        `Phone: ${formData.phone || 'Not provided'}\n` +
-        `Industry: ${formData.industry || 'Not specified'}\n\n` +
-        `Message:\n${formData.message || 'No additional message'}`
-      );
-      
-      // Open mailto as fallback
-      window.location.href = `mailto:stephen.newman@checkit.net?subject=${subject}&body=${body}`;
+      const response = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          phone: formData.phone || undefined,
+          industry: formData.industry || undefined,
+          message: formData.message || undefined,
+          sourcePage: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit request');
+      }
       
       setSubmitted(true);
     } catch (err) {
-      setError('Failed to submit request. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to submit request. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -106,7 +113,7 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
               </p>
               <button
                 onClick={handleClose}
-                className="px-4 py-2 btn-gradient text-white text-sm font-medium rounded-lg"
+                className="px-4 py-2 btn-gradient text-white text-sm font-medium rounded-lg cursor-pointer"
               >
                 Close
               </button>
@@ -186,10 +193,8 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
                   >
                     <option value="">Select industry</option>
                     <option value="Senior Living">Senior Living</option>
-                    <option value="NHS Pharmacies">NHS Pharmacies</option>
                     <option value="Food Retail">Food Retail</option>
                     <option value="Food Facilities">Food Facilities</option>
-                    <option value="Medical">Medical</option>
                     <option value="Operations">Operations</option>
                     <option value="Other">Other</option>
                   </select>
@@ -212,7 +217,7 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 btn-gradient text-white text-sm font-medium rounded-lg disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 btn-gradient text-white text-sm font-medium rounded-lg disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? (
                   <>

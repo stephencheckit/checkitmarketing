@@ -24,14 +24,12 @@ import {
   MicOff,
   Lightbulb,
   Square,
-  MessageSquarePlus,
   Newspaper,
   Filter,
   Calendar,
   Tag,
   Briefcase
 } from 'lucide-react';
-import ContributionModal from '@/components/ContributionModal';
 import ApprovedContributionsPanel from '@/components/ApprovedContributionsPanel';
 import { BattlecardData, Competitor, BattlecardCategory, BattlecardVersion, CompanyData } from '@/lib/types';
 
@@ -139,8 +137,6 @@ export default function CompetitorHub() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [speechSupported, setSpeechSupported] = useState(false);
   
-  // Contribution modal (for team contributions that go through review)
-  const [showContribution, setShowContribution] = useState(false);
   
   // News/Feeds state
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -644,14 +640,6 @@ export default function CompetitorHub() {
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : hasChanges ? 'Save' : 'Saved'}
-            </button>
-            
-            <button
-              onClick={() => setShowContribution(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-accent/20 text-accent rounded-lg hover:bg-accent/30 transition-colors cursor-pointer"
-            >
-              <MessageSquarePlus className="w-4 h-4" />
-              Contribute
             </button>
             
             <button
@@ -1581,13 +1569,6 @@ Example: &quot;Jolt is heavily focused on QSR and has strong labeling features, 
         </div>
       )}
 
-      {/* Contribution Modal - for team contributions that go through review */}
-      <ContributionModal
-        isOpen={showContribution}
-        onClose={() => setShowContribution(false)}
-        targetType="competitors"
-        sectionLabel="Competitor Intelligence"
-      />
     </div>
   );
 }

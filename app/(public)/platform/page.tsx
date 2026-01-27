@@ -112,7 +112,6 @@ export const metadata: Metadata = {
     'occupancy sensors',
     'facilities management',
     'senior living compliance',
-    'healthcare compliance',
     'food retail compliance',
     'venue operations'
   ],
@@ -190,11 +189,11 @@ const outcomes = [
     borderColor: 'border-blue-500/30',
   },
   {
-    id: 'monitoring',
-    icon: Activity,
-    title: 'Monitoring',
-    headline: '24/7 Automated Protection',
-    description: 'Continuous sensor monitoring protects your assets, products, and operations around the clock. Real-time alerts mean faster response times and fewer incidents—whether it\'s a temperature excursion, a water leak, or equipment failure.',
+    id: 'safety',
+    icon: Shield,
+    title: 'Safety',
+    headline: 'Protect People and Products',
+    description: 'From food temperatures to cold storage, automated monitoring catches issues before they become incidents. Real-time alerts mean faster response times and fewer safety events.',
     benefits: [
       'Continuous temperature and environmental monitoring',
       'Real-time alerts via app, SMS, email, or phone call',
@@ -204,9 +203,9 @@ const outcomes = [
       'Water leak and flood detection'
     ],
     stats: [
-      { value: '24/7', label: 'Automated monitoring' },
       { value: '99.9%', label: 'Temperature compliance' },
       { value: '73%', label: 'Fewer safety incidents' },
+      { value: '24/7', label: 'Automated protection' },
     ],
     color: 'from-green-500 to-emerald-600',
     bgColor: 'bg-green-500/10',
@@ -670,10 +669,8 @@ const subscriptionBenefits = [
 // Industries served
 const industries = [
   { name: 'Senior Living', href: '/industries/senior-living', icon: Building2 },
-  { name: 'NHS Pharmacies', href: '/industries/nhs-pharmacies', icon: Shield },
   { name: 'Food Retail', href: '/industries/food-retail', icon: Building2 },
   { name: 'Food Facilities', href: '/industries/food-facilities', icon: Building2 },
-  { name: 'Medical', href: '/industries/medical', icon: Activity },
   { name: 'Operations', href: '/industries/operations', icon: Settings },
 ];
 
@@ -815,7 +812,7 @@ export default function PlatformPage() {
               </h2>
               <p className="text-lg text-muted max-w-3xl mx-auto">
                 Every feature we build, every integration we create, drives toward three outcomes 
-                that matter most to operations leaders: Compliance, Monitoring, and Visibility.
+                that matter most to operations leaders: Compliance, Safety, and Visibility.
               </p>
             </div>
 
@@ -1513,14 +1510,14 @@ export default function PlatformPage() {
                     className="w-full h-80 object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -left-6 bg-surface border border-border rounded-xl p-4 shadow-xl">
+                <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl p-4 shadow-xl">
                   <div className="flex items-center gap-3">
                     <img 
                       src="/texas-tech-logo.png" 
                       alt="Texas Tech" 
                       className="h-12 object-contain"
                     />
-                    <div className="w-px h-10 bg-border" />
+                    <div className="w-px h-10 bg-gray-300" />
                     <img 
                       src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
                       alt="OVG Hospitality" 
@@ -1543,18 +1540,7 @@ export default function PlatformPage() {
               See how the Checkit Platform can help your organization achieve compliance confidence, 
               operational efficiency, and real-time visibility across all your locations.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <DemoRequestButton />
-              <a
-                href="https://www.checkit.net"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-              >
-                Learn More at Checkit.net
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
+            <DemoRequestButton />
           </div>
         </section>
 

@@ -10,7 +10,6 @@ import {
   Building2,
   Shield,
   Activity,
-  Eye,
   Pencil,
   X,
   Save,
@@ -27,8 +26,7 @@ import {
   Handshake,
   Store,
   CheckCircle2,
-  RotateCcw,
-  EyeOff
+  RotateCcw
 } from 'lucide-react';
 
 interface Post {
@@ -51,13 +49,13 @@ interface Persona {
 
 const personas: Persona[] = [
   { id: 'ceo', name: 'Kit', role: 'CEO', focus: 'Thought leadership, executive connection, predictive ops', icon: Crown, color: 'amber' },
-  { id: 'uk-vp-sales', name: 'UK VP Sales', role: 'UK VP of Sales', focus: 'Multi-site food safety, temp monitoring, retention/expansion', icon: TrendingUp, color: 'blue' },
-  { id: 'us-vp-sales', name: 'US VP Sales', role: 'US VP of Sales', focus: 'Plasma, critical inventory, senior living, digitizing ops', icon: TrendingUp, color: 'emerald' },
-  { id: 'us-senior-living', name: 'US Senior Living', role: 'US Head of Sales', focus: 'Senior living market, landing new deals', icon: Heart, color: 'rose' },
-  { id: 'us-medical', name: 'US Medical/CAM+', role: 'US Head of Sales - Medical', focus: 'CAM+ expansion, new medical use cases, referrals', icon: Stethoscope, color: 'cyan' },
-  { id: 'uk-nhs', name: 'UK NHS Pharmacy', role: 'UK Head of NHS Pharmacy', focus: 'NHS pharmacy, medical compliance, expanding accounts', icon: Pill, color: 'purple' },
-  { id: 'uk-food-retail', name: 'UK Food Retail', role: 'UK Head of Food Retail', focus: 'BP, JLP, enterprise multi-site, food safety', icon: Store, color: 'orange' },
-  { id: 'uk-cs', name: 'UK Customer Success', role: 'UK Head of CS', focus: 'Expansion, Asset Intelligence upsell, customer value', icon: Handshake, color: 'green' },
+  { id: 'uk-vp-sales', name: 'Tonks', role: 'UK VP of Sales', focus: 'Multi-site food safety, temp monitoring, retention/expansion', icon: TrendingUp, color: 'blue' },
+  { id: 'us-vp-sales', name: 'Ryan', role: 'US VP of Sales', focus: 'Plasma, critical inventory, senior living, digitizing ops', icon: TrendingUp, color: 'emerald' },
+  { id: 'us-senior-living', name: 'Albert', role: 'US Head of Sales', focus: 'Senior living market, landing new deals', icon: Heart, color: 'rose' },
+  { id: 'us-medical', name: 'Megan', role: 'US Head of Sales - Medical', focus: 'CAM+ expansion, new medical use cases, referrals', icon: Stethoscope, color: 'cyan' },
+  { id: 'uk-nhs', name: 'Megan', role: 'UK Head of NHS Pharmacy', focus: 'NHS pharmacy, medical compliance, expanding accounts', icon: Pill, color: 'purple' },
+  { id: 'uk-food-retail', name: 'April', role: 'UK Head of Food Retail', focus: 'BP, JLP, enterprise multi-site, food safety', icon: Store, color: 'orange' },
+  { id: 'uk-cs', name: 'Ellie', role: 'UK Head of CS', focus: 'Expansion, Asset Intelligence upsell, customer value', icon: Handshake, color: 'green' },
 ];
 
 const categories = [
@@ -988,22 +986,6 @@ export default function KitsToolkitPage() {
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-muted uppercase tracking-wider">Filter by person</p>
-            <button
-              onClick={() => setShowUsed(!showUsed)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-all ${
-                showUsed
-                  ? 'bg-surface-elevated text-foreground'
-                  : 'bg-surface text-muted hover:text-foreground'
-              }`}
-            >
-              {showUsed ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-              {showUsed ? 'Showing used' : 'Hiding used'}
-              {getUsedCount(selectedPersona || undefined) > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 bg-accent/20 text-accent rounded text-[10px]">
-                  {getUsedCount(selectedPersona || undefined)}
-                </span>
-              )}
-            </button>
           </div>
           <div className="flex flex-wrap gap-2">
             <button

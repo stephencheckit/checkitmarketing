@@ -138,8 +138,8 @@ export default function CaseStudiesPage() {
               <div className="w-12 h-12 mx-auto rounded-lg bg-emerald-100 flex items-center justify-center mb-4">
                 <Shield className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">Healthcare</h3>
-              <p className="text-sm text-gray-500">Pharmacies, medical facilities</p>
+              <h3 className="font-semibold text-gray-900 mb-1">Operations</h3>
+              <p className="text-sm text-gray-500">Restaurants, hospitality</p>
             </div>
           </div>
         </div>

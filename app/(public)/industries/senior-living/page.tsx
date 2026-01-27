@@ -24,7 +24,7 @@ const productComponents = [
   {
     icon: Wifi,
     title: 'Sensors',
-    description: 'Wireless monitoring of medication fridges, food storage, and equipment—24/7, no manual checks.',
+    description: 'Wireless monitoring of fridges, food storage, and equipment—24/7, no manual checks.',
   },
   {
     icon: Smartphone,
@@ -43,7 +43,7 @@ const outcomes = [
   {
     icon: Utensils,
     title: 'Safety',
-    description: 'Protect residents with automated temperature monitoring for medication storage, food service, and critical equipment.',
+    description: 'Protect residents with automated temperature monitoring for food service, cold storage, and critical equipment.',
     stat: '99.9%',
     statLabel: 'Temperature compliance',
     color: 'text-green-500',
@@ -102,7 +102,7 @@ const solutions = [
   {
     icon: Thermometer,
     title: 'Automated Temperature Monitoring',
-    description: 'Continuous monitoring of medication storage, food holding, and critical equipment. Automatic alerts when temperatures drift out of range.',
+    description: 'Continuous monitoring of cold storage, food holding, and critical equipment. Automatic alerts when temperatures drift out of range.',
     benefit: 'Catch issues before they become violations'
   },
   {
@@ -166,7 +166,7 @@ export default function SeniorLivingPage() {
               </h1>
               
               <p className="text-lg text-muted mb-8">
-                From medication storage to food safety, CheckIt helps senior living communities 
+                From cold storage to food safety, CheckIt helps senior living communities 
                 maintain compliance, protect residents, and give staff more time for care.
               </p>
               
@@ -408,16 +408,14 @@ export default function SeniorLivingPage() {
               <ul className="space-y-2">
                 <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
                 <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
-                <li><Link href="/industries/nhs-pharmacies" className="text-sm text-muted hover:text-foreground transition-colors">NHS Pharmacies</Link></li>
                 <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
+                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">&nbsp;</h4>
               <ul className="space-y-2">
-                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
-                <li><Link href="/industries/medical" className="text-sm text-muted hover:text-foreground transition-colors">Medical</Link></li>
                 <li><Link href="/industries/operations" className="text-sm text-muted hover:text-foreground transition-colors">Operations</Link></li>
               </ul>
             </div>

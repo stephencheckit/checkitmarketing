@@ -183,9 +183,9 @@ const workflowActions = [
     color: 'bg-blue-500',
   },
   {
-    icon: Thermometer,
-    title: 'Temperature Logging',
-    description: 'Manual temperature checks with digital sign-off, photo capture, and corrective actions.',
+    icon: ClipboardList,
+    title: 'Standard Operating Procedures',
+    description: 'Digitize SOPs with step-by-step guidance, verification, and compliance documentation.',
     color: 'bg-red-500',
   },
   {
@@ -219,9 +219,9 @@ const workflowActions = [
     color: 'bg-yellow-500',
   },
   {
-    icon: ClipboardCheck,
-    title: 'Custom Workflows',
-    description: 'Build any workflow you need—from incident reporting to training verification.',
+    icon: Radio,
+    title: 'Much, Much More',
+    description: 'Incident reporting, training verification, maintenance requests, and any workflow you need.',
     color: 'bg-pink-500',
   },
 ];
@@ -273,7 +273,7 @@ const outcomes = [
     icon: Shield,
     title: 'Safety',
     subtitle: 'Protect people and products',
-    description: 'From food temperatures to medication storage, automated monitoring catches issues before they become incidents.',
+    description: 'From food temperatures to cold storage, automated monitoring catches issues before they become incidents.',
     stats: [
       { value: '99.9%', label: 'Temperature compliance' },
       { value: '73%', label: 'Fewer safety incidents' },
@@ -307,13 +307,6 @@ const industries = [
     color: 'from-blue-500 to-blue-600',
   },
   {
-    href: '/industries/nhs-pharmacies',
-    name: 'NHS Pharmacies',
-    icon: Pill,
-    description: 'Connected automated monitoring for pharmaceutical compliance',
-    color: 'from-emerald-500 to-emerald-600',
-  },
-  {
     href: '/industries/food-retail',
     name: 'Food Retail',
     icon: ShoppingCart,
@@ -326,13 +319,6 @@ const industries = [
     icon: UtensilsCrossed,
     description: 'Food service operations for venues and events',
     color: 'from-purple-500 to-purple-600',
-  },
-  {
-    href: '/industries/medical',
-    name: 'Medical',
-    icon: Droplets,
-    description: 'Compliance for plasma centers and labs',
-    color: 'from-red-500 to-red-600',
   },
   {
     href: '/industries/operations',
@@ -661,7 +647,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What Can You Do Section */}
+      {/* What Can You Digitize Section */}
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -670,7 +656,7 @@ export default function HomePage() {
               Digital Workflows
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              What Can You Do?
+              What Can You Digitize?
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Replace paper-based processes with digital checklists, tasks, and workflows 

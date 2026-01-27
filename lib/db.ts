@@ -1999,3 +1999,178 @@ export async function getCustomizedPages(): Promise<Array<{ page_id: string; fie
   `;
   return results as Array<{ page_id: string; field_count: number }>;
 }
+
+// ============================================
+// DEMO REQUESTS (CRM) OPERATIONS
+// ============================================
+
+export async function initializeDemoRequestsTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS demo_requests (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      company VARCHAR(255) NOT NULL,
+      phone VARCHAR(50),
+      industry VARCHAR(100),
+      message TEXT,
+      source_page VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'new',
+      notes TEXT,
+      assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      followed_up_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_demo_requests_status ON demo_requests(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_demo_requests_created ON demo_requests(created_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_demo_requests_email ON demo_requests(email)`;
+}
+
+export type DemoRequestStatus = 'new' | 'contacted' | 'scheduled' | 'completed' | 'not_interested' | 'spam';
+
+export interface DemoRequest {
+  id: number;
+  name: string;
+  email: string;
+  company: string;
+  phone: string | null;
+  industry: string | null;
+  message: string | null;
+  source_page: string | null;
+  status: DemoRequestStatus;
+  notes: string | null;
+  assigned_to: number | null;
+  followed_up_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  assigned_user_name?: string;
+}
+
+// Create a new demo request
+export async function createDemoRequest(data: {
+  name: string;
+  email: string;
+  company: string;
+  phone?: string;
+  industry?: string;
+  message?: string;
+  sourcePage?: string;
+}): Promise<DemoRequest> {
+  const result = await sql`
+    INSERT INTO demo_requests (
+      name, email, company, phone, industry, message, source_page
+    )
+    VALUES (
+      ${data.name}, ${data.email}, ${data.company}, 
+      ${data.phone || null}, ${data.industry || null}, 
+      ${data.message || null}, ${data.sourcePage || null}
+    )
+    RETURNING *
+  `;
+  return result[0] as DemoRequest;
+}
+
+// Get all demo requests
+export async function getDemoRequests(filters?: {
+  status?: DemoRequestStatus;
+  limit?: number;
+  offset?: number;
+}): Promise<DemoRequest[]> {
+  const limit = filters?.limit || 100;
+  const offset = filters?.offset || 0;
+
+  if (filters?.status) {
+    return await sql`
+      SELECT 
+        dr.*,
+        u.name as assigned_user_name
+      FROM demo_requests dr
+      LEFT JOIN users u ON dr.assigned_to = u.id
+      WHERE dr.status = ${filters.status}
+      ORDER BY dr.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    ` as DemoRequest[];
+  }
+
+  return await sql`
+    SELECT 
+      dr.*,
+      u.name as assigned_user_name
+    FROM demo_requests dr
+    LEFT JOIN users u ON dr.assigned_to = u.id
+    ORDER BY dr.created_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  ` as DemoRequest[];
+}
+
+// Get a single demo request by ID
+export async function getDemoRequestById(id: number): Promise<DemoRequest | null> {
+  const result = await sql`
+    SELECT 
+      dr.*,
+      u.name as assigned_user_name
+    FROM demo_requests dr
+    LEFT JOIN users u ON dr.assigned_to = u.id
+    WHERE dr.id = ${id}
+  `;
+  return (result[0] as DemoRequest) || null;
+}
+
+// Update demo request status/notes
+export async function updateDemoRequest(id: number, updates: {
+  status?: DemoRequestStatus;
+  notes?: string;
+  assignedTo?: number;
+  followedUpAt?: Date;
+}): Promise<DemoRequest | null> {
+  const result = await sql`
+    UPDATE demo_requests SET
+      status = COALESCE(${updates.status || null}, status),
+      notes = COALESCE(${updates.notes || null}, notes),
+      assigned_to = COALESCE(${updates.assignedTo || null}, assigned_to),
+      followed_up_at = COALESCE(${updates.followedUpAt || null}, followed_up_at),
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return (result[0] as DemoRequest) || null;
+}
+
+// Get demo request stats
+export async function getDemoRequestStats() {
+  const byStatus = await sql`
+    SELECT status, COUNT(*) as count
+    FROM demo_requests
+    GROUP BY status
+  `;
+
+  const byIndustry = await sql`
+    SELECT industry, COUNT(*) as count
+    FROM demo_requests
+    WHERE industry IS NOT NULL
+    GROUP BY industry
+    ORDER BY count DESC
+  `;
+
+  const recentCount = await sql`
+    SELECT COUNT(*) as count
+    FROM demo_requests
+    WHERE created_at >= NOW() - INTERVAL '7 days'
+  `;
+
+  const totalCount = await sql`
+    SELECT COUNT(*) as count
+    FROM demo_requests
+  `;
+
+  return {
+    byStatus,
+    byIndustry,
+    recentCount: recentCount[0]?.count || 0,
+    totalCount: totalCount[0]?.count || 0,
+  };
+}

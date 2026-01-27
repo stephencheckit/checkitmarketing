@@ -309,19 +309,8 @@ export default function PositioningPage() {
           
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => {
-                setContributionSection(null);
-                setShowContribution(true);
-              }}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors"
-            >
-              <Lightbulb className="w-4 h-4" />
-              Add Insight
-            </button>
-            
-            <button
               onClick={copyToClipboard}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground hover:bg-surface transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Export'}
@@ -332,7 +321,7 @@ export default function PositioningPage() {
                 setShowHistory(true);
                 fetchVersions();
               }}
-              className="flex items-center gap-2 px-3 py-2 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground hover:bg-surface transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
             >
               <History className="w-4 h-4" />
               History
@@ -341,7 +330,7 @@ export default function PositioningPage() {
             <button
               onClick={saveChanges}
               disabled={!hasChanges || saving}
-              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors cursor-pointer ${
                 hasChanges 
                   ? 'bg-accent text-white hover:bg-accent-hover' 
                   : 'bg-surface-elevated text-muted cursor-not-allowed'
@@ -349,6 +338,17 @@ export default function PositioningPage() {
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : hasChanges ? 'Save Changes' : 'Saved'}
+            </button>
+            
+            <button
+              onClick={() => {
+                setContributionSection(null);
+                setShowContribution(true);
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors cursor-pointer"
+            >
+              <Lightbulb className="w-4 h-4" />
+              Quick Insight
             </button>
           </div>
         </div>

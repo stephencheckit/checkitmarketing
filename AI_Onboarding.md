@@ -202,6 +202,8 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 27, 2026 | **Demo Request CRM & Email Notifications** - Complete overhaul of demo request form: (1) Added cursor-pointer to all interactive buttons for better UX, (2) Created `demo_requests` database table with CRM fields (status, notes, assigned_to, followed_up_at), (3) New API endpoint `/api/demo-request` that saves submissions to database, sends thank-you email to requester, and sends internal notification to stephen.newman@checkit.net, (4) Uses Resend for email delivery. Form now persists all leads in Market Hub database. Requires RESEND_API_KEY env var. | AI |
+| Jan 27, 2026 | **Favicon Update** - Swapped favicon from horizontal logo SVG to new checkit-favicon.webp. Added as icon, shortcut icon, and apple touch icon for full browser compatibility. | AI |
 | Jan 27, 2026 | **Page Streamlining & Modal Fix** - Industries page: Removed problem/solution/outcomes/case study/subscription sections, keeping hero, markets grid, value props, and footer for cleaner flow. About page: Removed hero CTAs, certifications section, and CTA section; changed to two-column hero layout (text left, stats right) to differentiate from homepage. Homepage: Added new "What Can You Do?" section with 8 workflow action cards (Opening & Closing, Temperature Logging, Cleaning & Sanitation, Food Safety HACCP, Equipment Checks, Receiving & Inventory, Safety Audits, Custom Workflows); changed Monitoring outcome to Safety outcome. DemoRequestModal: Fixed clipping issue where modal was cut off in nav by using React Portal to render at document body level with z-index 9999. | AI |
 | Jan 27, 2026 | **Comprehensive Platform Page** - New `/platform` page with expansive SEO-optimized content. Covers: Three outcome buckets (Compliance, Monitoring, Visibility), Three delivery components (Sensors, Apps, Platform). Detailed sensor portfolio including temperature, humidity, CO2, water/leak, door/window, motion, occupancy, proximity, touch sensors. Full probe lineup (Checkit Probe, Thermapen, Infrared, TempTest). Connectivity options (Wi-Fi, Ethernet, Cellular). App capabilities across 4 categories (Task Management, Alerts & Response, Capture & Evidence, Sync & Reliability). Platform capabilities (Configure, Report, Analyze) with detailed feature breakdowns. Asset Intelligence add-on section. Peace of Mind subscription model. Schema.org structured data for SEO. Updated PublicNav with Platform, Industries, Case Studies navigation. | AI |
 | Jan 26, 2026 | **Public Homepage** - Complete public-facing homepage at `/` replacing redirect. Includes: Hero with stats and CTAs, Problems section (6 operational challenges with stats), Product components (Sensors + Apps + Platform), Outcomes section (Safety, Compliance, Visibility), Industries grid linking to all 6 industry pages, Featured case study (Texas Tech & OVG) with quote, Why Checkit value props, CTA section. Comprehensive footer with: mobile app downloads (iOS App Store & Google Play), platform login (app.checkit.net), internal login link, industry links, resources, privacy/terms. Navigation bar with Industries, Case Studies, About Us links plus both login options. | AI |
@@ -290,6 +292,9 @@ Open [http://localhost:3000](http://localhost:3000)
 ### User Feed Preferences
 - id, user_id, filters (JSONB), updated_at
 
+### Demo Requests (CRM)
+- id, name, email, company, phone, industry, message, source_page, status, notes, assigned_to, followed_up_at, created_at, updated_at
+
 ---
 
 ## Environment Variables Required
@@ -299,6 +304,7 @@ DATABASE_URL=postgres://...          # Neon Postgres connection
 SESSION_SECRET=...                   # 32+ char secret for sessions
 OPENAI_API_KEY=...                   # For content ideation
 ACCESS_CODES=CHECKIT2026             # Comma-separated access codes for registration
+RESEND_API_KEY=re_...                # Resend API key for demo request email notifications
 ```
 
 ---

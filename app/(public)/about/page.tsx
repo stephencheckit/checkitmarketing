@@ -29,14 +29,13 @@ import {
 
 export const metadata: Metadata = {
   title: 'About Checkit | Powering Predictive Operations Worldwide',
-  description: 'Checkit is a global leader in operational compliance and IoT monitoring solutions. We help organizations transform manual processes into intelligent, predictive operations across food safety, healthcare, and facilities management.',
+  description: 'Checkit is a global leader in operational compliance and IoT monitoring solutions. We help organizations transform manual processes into intelligent, predictive operations across food safety, senior living, and facilities management.',
   keywords: [
     'Checkit',
     'predictive operations',
     'operational compliance',
     'IoT monitoring',
     'food safety software',
-    'healthcare compliance',
     'temperature monitoring',
     'workflow automation',
     'enterprise software',
@@ -121,7 +120,7 @@ const leadership = [
   {
     name: 'Ryan Lucas',
     role: 'VP of Sales, North America',
-    bio: 'Expanding Checkit\'s presence across North American markets with a focus on healthcare and food service.',
+    bio: 'Expanding Checkit\'s presence across North American markets with a focus on senior living and food service.',
   },
   {
     name: 'Sam Mather',
@@ -151,12 +150,11 @@ const milestones = [
 
 // Industries served
 const industries = [
-  'Healthcare & Life Sciences',
   'Food & Beverage',
   'Senior Living & Care',
   'Hospitality & Venues',
   'Retail & Convenience',
-  'Pharmaceutical & Biotech',
+  'Operations & Facilities',
 ];
 
 export default function AboutPage() {
@@ -244,7 +242,7 @@ export default function AboutPage() {
               <p className="text-muted mb-8 leading-relaxed">
                 Checkit is uniquely positioned to make this vision a reality. By combining connected 
                 technology, proprietary data models, and deep domain expertise, we're helping organizations 
-                across healthcare, food service, and facilities management unlock the power of predictive operations.
+                across senior living, food service, and facilities management unlock the power of predictive operations.
               </p>
               
               <div className="grid sm:grid-cols-3 gap-4">
@@ -320,7 +318,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-center gap-2 text-sm text-muted">
                   <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
-                  Healthcare regulatory requirements
+                  Senior living regulatory requirements
                 </li>
                 <li className="flex items-center gap-2 text-sm text-muted">
                   <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
@@ -394,7 +392,7 @@ export default function AboutPage() {
                 Trusted Across Industries & Continents
               </h2>
               <p className="text-muted mb-8 leading-relaxed">
-                From NHS hospitals in the UK to food service operations across North America, 
+                From senior living communities to food service operations across North America and Europe, 
                 Checkit is the platform of choice for organizations that demand reliability, 
                 compliance, and operational excellence.
               </p>
@@ -480,7 +478,7 @@ export default function AboutPage() {
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Our leadership team brings decades of experience from enterprise software, 
-              healthcare technology, and operational excellence.
+              technology innovation, and operational excellence.
             </p>
           </div>
 

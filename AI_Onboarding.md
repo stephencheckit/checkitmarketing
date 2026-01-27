@@ -202,6 +202,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 27, 2026 | **Stories Nav + Texas Tech Logo Update** - Added "Stories" link to MainNav (portal) and PublicNav (public pages) pointing to `/case-studies`. Updated Texas Tech logo across all pages (home, OVG, platform, case study) to new `TexasTech_logo.png`. | AI |
 | Jan 27, 2026 | **OVG Accounts - Navigation Fix** - Fixed naming to OVG (not OBG). Removed separate Tools dropdown. Accounts now under Sales dropdown: Discovery, Solutioning, Closing, Tools, Accounts. | AI |
 | Jan 27, 2026 | **OVG Accounts - Light CRM Features** - Added searchable accounts list with filtering by status. Editable account detail modal with inline editing for status (prospect/engaged/contracted), contact info (name/email/phone), and notes. Search by account name, city, state, or contact. Shows top 50 accounts with pagination indication. | AI |
 | Jan 27, 2026 | **OVG Accounts & Stats Bar Update** - Created OVG Accounts page. Added voice capture widget route mappings. Updated OVG microsite stats bar to show "Multiple Sites, 24/7 Monitoring, 100% Protection" instead of venue counts. | AI |

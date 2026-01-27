@@ -1,7 +1,16 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import MainNav from '@/components/MainNav';
 import QuickCaptureFAB from '@/components/QuickCaptureFAB';
+
+export const metadata: Metadata = {
+  title: {
+    default: 'Checkit GTM Hub for Internal Employees & Partners',
+    template: '%s | Checkit GTM Hub',
+  },
+  description: 'Go-to-market tools and enablement for Checkit employees and partners.',
+};
 
 export default async function PortalLayout({
   children,

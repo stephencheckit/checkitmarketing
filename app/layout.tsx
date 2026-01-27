@@ -10,8 +10,11 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: "Checkit GTM Hub",
-  description: "Go-to-market tools and enablement for Checkit",
+  title: {
+    default: "Checkit V6 | Compliance, Safety, and Visibility for Operational Leaders",
+    template: "%s | Checkit",
+  },
+  description: "Transform operations with intelligent compliance. Checkit V6 combines IoT sensors, mobile apps, and cloud analytics.",
   icons: {
     icon: "/checkit-favicon.webp",
     shortcut: "/checkit-favicon.webp",

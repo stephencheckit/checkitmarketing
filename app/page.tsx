@@ -519,7 +519,7 @@ export default function HomePage() {
               The Solution
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Sensors + Apps + Platform
+              One Connected System for Complete Control
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Three integrated components that work together to deliver automated monitoring, 
@@ -729,14 +729,6 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-
-              <button
-                onClick={() => setShowDemoModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors cursor-pointer"
-              >
-                Request a Demo
-                <ArrowRight className="w-4 h-4" />
-              </button>
             </div>
 
             <div className="relative">

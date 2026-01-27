@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { 
   BarChart3, 
   Users, 
@@ -13,8 +14,39 @@ import {
   Clock,
   TrendingUp,
   FileText,
-  Layers
+  Layers,
+  Building2,
+  CheckCircle2,
+  Target
 } from 'lucide-react';
+
+// Dynamically import map component to avoid SSR issues with Leaflet
+const OVGMapComponent = dynamic(() => import('@/components/OVGMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[500px] bg-gray-900 rounded-lg flex items-center justify-center">
+      <div className="text-gray-400">Loading map...</div>
+    </div>
+  ),
+});
+
+interface OVGSite {
+  id: number;
+  name: string;
+  venue_type: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  country: string;
+  latitude: number | null;
+  longitude: number | null;
+  status: 'contracted' | 'engaged' | 'prospect';
+  notes: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+}
 
 interface AnalyticsSummary {
   totalViews: number;
@@ -59,8 +91,10 @@ interface SiteStats {
 export default function OVGAnalyticsPage() {
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
   const [siteStats, setSiteStats] = useState<SiteStats | null>(null);
+  const [sites, setSites] = useState<OVGSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [daysBack, setDaysBack] = useState(30);
+  const [selectedSite, setSelectedSite] = useState<OVGSite | null>(null);
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
@@ -75,8 +109,12 @@ export default function OVGAnalyticsPage() {
       
       setAnalytics(analyticsData);
       
+      // Store sites for the map
+      const allSites = sitesData.sites || [];
+      setSites(allSites);
+      
       // Calculate site stats
-      const sites = sitesData.sites || [];
+      const sites = allSites;
       const byStatus: Record<string, number> = {};
       const byState: Record<string, number> = {};
       const byType: Record<string, number> = {};
@@ -128,8 +166,7 @@ export default function OVGAnalyticsPage() {
 
   const formatPagePath = (path: string) => {
     const pageNames: Record<string, string> = {
-      '/ovg-map': 'Territory Map',
-      '/ovg': 'Microsite Home',
+      '/ovg': 'OVG Hub',
       '/case-studies/texas-tech': 'Texas Tech Case Study',
     };
     return pageNames[path] || path;
@@ -137,12 +174,14 @@ export default function OVGAnalyticsPage() {
 
   const getPageColor = (path: string) => {
     const colors: Record<string, string> = {
-      '/ovg-map': 'bg-blue-500/20 text-blue-400',
       '/ovg': 'bg-purple-500/20 text-purple-400',
       '/case-studies/texas-tech': 'bg-green-500/20 text-green-400',
     };
     return colors[path] || 'bg-gray-500/20 text-gray-400';
   };
+  
+  // Filter out map page from analytics display (only track hub and case study)
+  const filteredByPage = analytics?.byPage?.filter(p => p.page_path !== '/ovg-map') || [];
 
   const exportCSV = () => {
     if (!analytics?.recentVisitors) return;
@@ -332,9 +371,9 @@ export default function OVGAnalyticsPage() {
               </h2>
             </div>
             <div className="p-4">
-              {analytics?.byPage && analytics.byPage.length > 0 ? (
+              {filteredByPage.length > 0 ? (
                 <div className="space-y-3">
-                  {analytics.byPage.map((page, idx) => (
+                  {filteredByPage.map((page, idx) => (
                     <div key={idx} className="flex items-center justify-between">
                       <span className={`px-2 py-1 rounded text-xs font-medium ${getPageColor(page.page_path)}`}>
                         {formatPagePath(page.page_path)}
@@ -343,7 +382,7 @@ export default function OVGAnalyticsPage() {
                         <div className="w-24 bg-gray-700 rounded-full h-2">
                           <div 
                             className="bg-blue-500 rounded-full h-2"
-                            style={{ width: `${Math.min(100, (Number(page.views) / Math.max(...analytics.byPage.map(p => Number(p.views)))) * 100)}%` }}
+                            style={{ width: `${Math.min(100, (Number(page.views) / Math.max(...filteredByPage.map(p => Number(p.views)))) * 100)}%` }}
                           ></div>
                         </div>
                         <span className="font-bold text-white w-8 text-right">{page.views}</span>
@@ -518,20 +557,7 @@ export default function OVGAnalyticsPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
-            href="/ovg-map"
-            target="_blank"
-            className="flex items-center gap-3 p-4 bg-blue-900/30 rounded-xl border border-blue-700/50 hover:bg-blue-900/50 transition-colors group"
-          >
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-              <MapPin className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">OVG Territory Map</h3>
-              <p className="text-sm text-blue-400/80">View interactive map</p>
-            </div>
-          </a>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/case-studies/texas-tech"
             target="_blank"
@@ -554,11 +580,156 @@ export default function OVGAnalyticsPage() {
               <Globe className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-white">OVG Microsite</h3>
+              <h3 className="font-semibold text-white">OVG Hub</h3>
               <p className="text-sm text-purple-400/80">View landing page</p>
             </div>
           </a>
         </div>
+
+        {/* OVG Territory Map - Internal Only */}
+        <div className="mt-8 bg-gray-800/50 rounded-xl border border-gray-700">
+          <div className="p-4 border-b border-gray-700">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-400" />
+                OVG Territory Map
+                <span className="ml-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Internal Only</span>
+              </h2>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-300">Contracted</span>
+                  <span className="font-bold text-white">{siteStats?.byStatus?.find(s => s.status === 'contracted')?.count || 0}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <span className="text-gray-300">Engaged</span>
+                  <span className="font-bold text-white">{siteStats?.byStatus?.find(s => s.status === 'engaged')?.count || 0}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-gray-500"></div>
+                  <span className="text-gray-300">Prospect</span>
+                  <span className="font-bold text-white">{siteStats?.byStatus?.find(s => s.status === 'prospect')?.count || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Map */}
+          <div className="p-4">
+            <div className="rounded-lg overflow-hidden border border-gray-700">
+              <OVGMapComponent 
+                sites={sites} 
+                onSiteSelect={setSelectedSite}
+              />
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="p-4 pt-0">
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="flex items-start gap-3 bg-gray-900/50 rounded-lg p-3">
+                <div className="w-6 h-6 bg-green-500/20 rounded flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-green-400">Contracted</h4>
+                  <p className="text-xs text-gray-500">Active customers with signed agreements</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gray-900/50 rounded-lg p-3">
+                <div className="w-6 h-6 bg-yellow-500/20 rounded flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-yellow-500" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-yellow-400">Engaged</h4>
+                  <p className="text-xs text-gray-500">Active conversations or proposals</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 bg-gray-900/50 rounded-lg p-3">
+                <div className="w-6 h-6 bg-gray-500/20 rounded flex items-center justify-center shrink-0">
+                  <Target className="w-4 h-4 text-gray-400" />
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-300">Prospect</h4>
+                  <p className="text-xs text-gray-500">Identified venues not yet engaged</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Site Detail Modal */}
+        {selectedSite && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-800 rounded-xl max-w-lg w-full border border-gray-700 shadow-2xl">
+              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <h3 className="text-lg font-semibold text-white">{selectedSite.name}</h3>
+                <button
+                  onClick={() => setSelectedSite(null)}
+                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-gray-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
+                    selectedSite.status === 'contracted' 
+                      ? 'bg-green-500/20 text-green-400'
+                      : selectedSite.status === 'engaged'
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${
+                      selectedSite.status === 'contracted' 
+                        ? 'bg-green-500'
+                        : selectedSite.status === 'engaged'
+                        ? 'bg-yellow-500'
+                        : 'bg-gray-500'
+                    }`}></span>
+                    {selectedSite.status.charAt(0).toUpperCase() + selectedSite.status.slice(1)}
+                  </span>
+                  {selectedSite.venue_type && (
+                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                      {selectedSite.venue_type}
+                    </span>
+                  )}
+                </div>
+
+                {(selectedSite.address || selectedSite.city || selectedSite.state) && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Address</h4>
+                    <p className="text-white">
+                      {selectedSite.address && <span>{selectedSite.address}<br /></span>}
+                      {[selectedSite.city, selectedSite.state, selectedSite.zip].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                )}
+
+                {selectedSite.notes && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Notes</h4>
+                    <p className="text-white text-sm">{selectedSite.notes}</p>
+                  </div>
+                )}
+
+                {selectedSite.contact_name && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Contact</h4>
+                    <p className="text-white">{selectedSite.contact_name}</p>
+                    {selectedSite.contact_email && (
+                      <p className="text-blue-400 text-sm">{selectedSite.contact_email}</p>
+                    )}
+                    {selectedSite.contact_phone && (
+                      <p className="text-gray-400 text-sm">{selectedSite.contact_phone}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { 
   CheckCircle2,
   Thermometer,
@@ -18,25 +16,12 @@ import {
   Zap,
   AlertTriangle,
   Wrench,
-  Eye,
   Quote,
   Target,
   Bell,
   Calendar,
-  ClipboardCheck,
-  MapPin,
-  ArrowRight
+  ClipboardCheck
 } from 'lucide-react';
-
-// Dynamically import map component
-const OVGMapComponent = dynamic(() => import('@/components/OVGMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="w-full h-[400px] bg-gray-800 rounded-lg flex items-center justify-center">
-      <div className="text-gray-400">Loading map...</div>
-    </div>
-  ),
-});
 
 // Texas Tech Red: #CC0000 (PANTONE 485)
 const TEXAS_TECH_RED = '#CC0000';
@@ -85,28 +70,8 @@ const operationalAreas = [
   { name: 'Concessions', icon: Utensils, description: 'High-volume service points' },
 ];
 
-interface OVGSite {
-  id: number;
-  name: string;
-  venue_type: string | null;
-  address: string | null;
-  city: string | null;
-  state: string | null;
-  zip: string | null;
-  country: string;
-  latitude: number | null;
-  longitude: number | null;
-  status: 'contracted' | 'engaged' | 'prospect';
-  notes: string | null;
-  contact_name: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
-}
-
 export default function TexasTechCaseStudy() {
   const [animatedMetrics, setAnimatedMetrics] = useState(false);
-  const [sites, setSites] = useState<OVGSite[]>([]);
-  const [mapStats, setMapStats] = useState({ contracted: 0, engaged: 0, total: 0 });
   const metricsRef = useRef<HTMLDivElement>(null);
 
   // Generate session ID for tracking
@@ -136,22 +101,9 @@ export default function TexasTechCaseStudy() {
     }
   }, [getSessionId]);
 
-  // Fetch OVG sites for the map and record page view
+  // Record page view on mount
   useEffect(() => {
     recordPageView();
-    
-    fetch('/api/ovg/sites')
-      .then(res => res.json())
-      .then(data => {
-        const allSites = data.sites || [];
-        setSites(allSites);
-        setMapStats({
-          contracted: allSites.filter((s: OVGSite) => s.status === 'contracted').length,
-          engaged: allSites.filter((s: OVGSite) => s.status === 'engaged').length,
-          total: allSites.length,
-        });
-      })
-      .catch(() => {});
   }, [recordPageView]);
 
   useEffect(() => {
@@ -671,71 +623,6 @@ export default function TexasTechCaseStudy() {
         </div>
       </section>
 
-      {/* OVG Territory Map Section */}
-      <section className="py-16 lg:py-24 bg-gray-900">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium mb-4">
-              <MapPin className="w-4 h-4" />
-              OVG Portfolio
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-              Checkit Across OVG Hospitality
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Texas Tech is just the beginning. See where Checkit is expanding across OVG's nationwide venue portfolio.
-            </p>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <span className="text-2xl font-bold text-white">{mapStats.contracted}</span>
-              </div>
-              <div className="text-sm text-gray-400">Contracted</div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                <span className="text-2xl font-bold text-white">{mapStats.engaged}</span>
-              </div>
-              <div className="text-sm text-gray-400">Engaged</div>
-            </div>
-            <div className="bg-gray-800 rounded-xl p-4 text-center border border-gray-700">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                <span className="text-2xl font-bold text-white">{mapStats.total - mapStats.contracted - mapStats.engaged}</span>
-              </div>
-              <div className="text-sm text-gray-400">Prospects</div>
-            </div>
-          </div>
-
-          {/* Interactive Map */}
-          <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 shadow-xl mb-8">
-            <OVGMapComponent 
-              sites={sites} 
-              onSiteSelect={() => {}}
-            />
-          </div>
-
-          {/* CTA */}
-          <div className="text-center">
-            <Link 
-              href="/ovg-map"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-lg"
-            >
-              <MapPin className="w-5 h-5" />
-              Explore Full Territory Map
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <p className="text-gray-500 text-sm mt-4">
-              Interactive map with sortable venue list and filtering
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Commercial Significance */}
       <section className="py-16 lg:py-24 bg-gray-50">

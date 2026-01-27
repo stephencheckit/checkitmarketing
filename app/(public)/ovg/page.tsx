@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
-  MapPin, 
   CheckCircle2, 
   ThermometerSun, 
   ClipboardCheck, 
@@ -12,7 +11,6 @@ import {
   Building2,
   TrendingUp,
   Clock,
-  ChevronRight,
   ExternalLink,
   FileText
 } from 'lucide-react';
@@ -107,19 +105,11 @@ export default function OVGMicrositeHome() {
 
           <div className="flex flex-wrap gap-4">
             <Link 
-              href="/ovg-map"
+              href="/case-studies/texas-tech"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
             >
-              <MapPin className="w-5 h-5" />
-              View Territory Map
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link 
-              href="/case-studies/texas-tech"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg transition-colors border border-white/20"
-            >
               Read Texas Tech Case Study
-              <ChevronRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
@@ -279,70 +269,6 @@ export default function OVGMicrositeHome() {
         </div>
       </section>
 
-      {/* Territory Map Preview */}
-      <section className="py-20 bg-gray-950">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl overflow-hidden border border-gray-700">
-            <div className="grid md:grid-cols-2">
-              <div className="p-8 md:p-12">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium mb-4">
-                  <MapPin className="w-4 h-4" />
-                  Interactive Map
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  OVG Territory Map
-                </h2>
-                <p className="text-gray-300 mb-6">
-                  Explore our engagement across the OVG Hospitality portfolio. See which venues are 
-                  already live with Checkit and where we're in active discussions.
-                </p>
-                
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span className="text-white font-semibold">{stats.contracted}</span>
-                    </div>
-                    <div className="text-gray-400 text-xs">Contracted</div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                      <span className="text-white font-semibold">{stats.engaged}</span>
-                    </div>
-                    <div className="text-gray-400 text-xs">Engaged</div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 rounded-full bg-gray-500"></div>
-                      <span className="text-white font-semibold">{stats.total - stats.contracted - stats.engaged}</span>
-                    </div>
-                    <div className="text-gray-400 text-xs">Prospects</div>
-                  </div>
-                </div>
-
-                <Link 
-                  href="/ovg-map"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-                >
-                  <MapPin className="w-5 h-5" />
-                  Open Territory Map
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              <div className="relative h-64 md:h-auto">
-                <img 
-                  src="/Texas-Tech-0031.jpg" 
-                  alt="Venue" 
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent md:from-gray-800"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-blue-600">
@@ -360,13 +286,6 @@ export default function OVGMicrositeHome() {
             >
               <FileText className="w-5 h-5" />
               Read Case Study
-            </Link>
-            <Link 
-              href="/ovg-map"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg transition-colors"
-            >
-              <MapPin className="w-5 h-5" />
-              View Territory Map
             </Link>
           </div>
         </div>
@@ -399,11 +318,6 @@ export default function OVGMicrositeHome() {
                 <li>
                   <Link href="/case-studies/texas-tech" className="text-gray-400 hover:text-white text-sm transition-colors">
                     Texas Tech Case Study
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/ovg-map" className="text-gray-400 hover:text-white text-sm transition-colors">
-                    Territory Map
                   </Link>
                 </li>
                 <li>

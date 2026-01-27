@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import DemoRequestButton from '@/components/DemoRequestButton';
 import { 
   Menu,
   X,
@@ -51,14 +52,7 @@ export default function PublicNav() {
 
           {/* Desktop CTA - Fixed width on right */}
           <div className="hidden md:flex items-center shrink-0">
-            <a
-              href="https://www.checkit.net/demo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 text-sm btn-gradient text-white rounded-lg"
-            >
-              Request Demo
-            </a>
+            <DemoRequestButton label="Request Demo" className="px-4 py-2 text-sm" />
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,14 +83,9 @@ export default function PublicNav() {
                 );
               })}
               <div className="border-t border-border my-3" />
-              <a
-                href="https://www.checkit.net/demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 mx-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
-              >
-                Request Demo
-              </a>
+              <div className="mx-3">
+                <DemoRequestButton label="Request Demo" className="w-full justify-center" />
+              </div>
             </nav>
           </div>
         )}

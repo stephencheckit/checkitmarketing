@@ -328,9 +328,6 @@ export default function HomePage() {
               <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
                 Industries
               </Link>
-              <Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">
-                Case Studies
-              </Link>
               <a 
                 href="https://www.checkit.net" 
                 target="_blank" 
@@ -376,13 +373,6 @@ export default function HomePage() {
                   className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
                 >
                   Industries
-                </Link>
-                <Link
-                  href="/case-studies"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  Case Studies
                 </Link>
                 <a 
                   href="https://www.checkit.net" 

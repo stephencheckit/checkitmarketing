@@ -16,7 +16,6 @@ import {
 const navLinks = [
   { href: '/platform', label: 'Platform', icon: Layers },
   { href: '/industries', label: 'Industries', icon: Building2 },
-  { href: '/case-studies', label: 'Case Studies', icon: FileText },
 ];
 
 export default function PublicNav() {

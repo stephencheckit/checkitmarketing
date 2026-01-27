@@ -22,7 +22,15 @@ import {
   Lightbulb,
   Rocket,
   ChevronRight,
-  Quote
+  Quote,
+  ExternalLink,
+  LogIn,
+  Headphones,
+  Apple,
+  Play,
+  Facebook,
+  Linkedin,
+  Youtube
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -100,6 +108,46 @@ const leadership = [
     name: 'David Davies',
     role: 'Chief Product Officer',
     bio: 'Leading product strategy and innovation, ensuring Checkit remains at the forefront of operational technology.',
+  },
+  {
+    name: 'Julie Webbe',
+    role: 'Chief Human Resources Officer',
+    bio: 'Driving organizational excellence and talent development to build high-performing teams across global operations.',
+  },
+  {
+    name: 'Alex Curran',
+    role: 'Non-Executive Director',
+    bio: 'CEO of Aptitude Software with extensive experience in global financial software and enterprise transformation.',
+  },
+  {
+    name: 'Jon Lister',
+    role: 'VP of Engineering',
+    bio: 'Leading our engineering teams to deliver robust, scalable solutions that power predictive operations worldwide.',
+  },
+  {
+    name: 'Steve Tonks',
+    role: 'VP of Sales, EMEA',
+    bio: 'Driving growth across Europe, Middle East and Africa with deep expertise in enterprise software sales.',
+  },
+  {
+    name: 'Ryan Lucas',
+    role: 'VP of Sales, North America',
+    bio: 'Expanding Checkit\'s presence across North American markets with a focus on healthcare and food service.',
+  },
+  {
+    name: 'Sam Mather',
+    role: 'VP of Commercial Operations',
+    bio: 'Optimizing go-to-market strategies and commercial processes to accelerate customer success.',
+  },
+  {
+    name: 'Ellie Baverstock',
+    role: 'Head of Customer Success',
+    bio: 'Ensuring customers achieve maximum value from Checkit through dedicated support and strategic guidance.',
+  },
+  {
+    name: 'Stephen Newman',
+    role: 'Head of Marketing',
+    bio: 'Building brand awareness and driving demand generation across global markets.',
   },
 ];
 
@@ -540,13 +588,13 @@ export default function AboutPage() {
               </div>
               <div className="text-center lg:text-right">
                 <a
-                  href="https://www.checkit.net/about-us"
+                  href="https://www.checkit.net/certifications"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
                 >
                   View All Certifications
-                  <ArrowRight className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4" />
                 </a>
               </div>
             </div>
@@ -576,6 +624,167 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border py-12 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {/* Brand */}
+            <div className="lg:col-span-2">
+              <img 
+                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
+                alt="Checkit" 
+                className="h-6 mb-4"
+              />
+              <p className="text-sm text-muted mb-6 max-w-sm">
+                Purpose-built compliance and monitoring solutions for operational excellence. 
+                Sensors, apps, and cloud analytics working together.
+              </p>
+              
+              {/* App Downloads */}
+              <div className="flex flex-col gap-2">
+                <span className="text-xs text-muted uppercase tracking-wider font-medium">Get the Mobile App</span>
+                <div className="flex items-center gap-3">
+                  <a 
+                    href="https://apps.apple.com/us/app/checkit-cwm/id6463000375"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 bg-surface-elevated border border-border rounded-lg hover:border-accent/50 transition-colors"
+                  >
+                    <Apple className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="text-[10px] text-muted leading-none">Download on the</div>
+                      <div className="text-sm font-semibold text-foreground leading-tight">App Store</div>
+                    </div>
+                  </a>
+                  <a 
+                    href="https://play.google.com/store/apps/details?id=net.checkit.checkitandroid&hl=en_GB"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 bg-surface-elevated border border-border rounded-lg hover:border-accent/50 transition-colors"
+                  >
+                    <Play className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="text-[10px] text-muted leading-none">GET IT ON</div>
+                      <div className="text-sm font-semibold text-foreground leading-tight">Google Play</div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            {/* Platform */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-4">Platform</h4>
+              <ul className="space-y-2">
+                <li><Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
+                <li><Link href="/platform#sensors" className="text-sm text-muted hover:text-foreground transition-colors">Sensors</Link></li>
+                <li><Link href="/platform#apps" className="text-sm text-muted hover:text-foreground transition-colors">Mobile Apps</Link></li>
+                <li><Link href="/platform#platform" className="text-sm text-muted hover:text-foreground transition-colors">Cloud Platform</Link></li>
+                <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
+              </ul>
+            </div>
+            
+            {/* Access */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-4">Access</h4>
+              <ul className="space-y-2">
+                <li>
+                  <a 
+                    href="https://app.checkit.net" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Platform Login
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/login" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                  >
+                    <LogIn className="w-3 h-3" />
+                    Employee Portal
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://www.checkit.net/support/raise-a-ticket" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                  >
+                    <Headphones className="w-3 h-3" />
+                    Submit Support Ticket
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Bottom bar */}
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted">
+              &copy; {new Date().getFullYear()} Checkit. All rights reserved.
+            </p>
+            
+            {/* Social Links */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://www.facebook.com/Checkit.net" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://x.com/_checkit" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="X (Twitter)"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a 
+                href="https://www.linkedin.com/company/checkit-ltd" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://www.youtube.com/channel/UC_YtXdvdVvgENqnPndHrAAA" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <a href="https://www.checkit.net/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
+                Privacy Policy
+              </a>
+              <a href="https://www.checkit.net/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
+                Terms of Service
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

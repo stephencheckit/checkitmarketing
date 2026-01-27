@@ -62,8 +62,8 @@ export default function CaseStudiesPage() {
                 className="group block bg-surface-elevated border border-border rounded-2xl overflow-hidden hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all"
               >
                 <div className="flex flex-col md:flex-row">
-                  {/* Left side - Accent gradient */}
-                  <div className="bg-gradient-to-br from-accent to-accent/80 p-6 md:p-8 md:w-1/3 flex flex-col justify-center">
+                  {/* Left side - Dark gradient background for logo visibility */}
+                  <div className="bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 p-6 md:p-8 md:w-1/3 flex flex-col justify-center">
                     {study.logo ? (
                       <img 
                         src={study.logo} 

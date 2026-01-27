@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
-  ChevronDown, 
+  ChevronDown,
+  ChevronRight,
   Target, 
   Building2, 
   FileText, 
@@ -28,7 +29,8 @@ import {
   Globe,
   ExternalLink,
   Send,
-  MapPin
+  MapPin,
+  Users
 } from 'lucide-react';
 import MyContributions from '@/components/MyContributions';
 
@@ -42,8 +44,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const router = useRouter();
   const [marketingOpen, setMarketingOpen] = useState(false);
   const [salesOpen, setSalesOpen] = useState(false);
+  const [accountsOpen, setAccountsOpen] = useState(false);
   const [trainingOpen, setTrainingOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileAccountsOpen, setMobileAccountsOpen] = useState(false);
   const [showMyContributions, setShowMyContributions] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [contributionCount, setContributionCount] = useState(0);
@@ -97,8 +101,13 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/solutioning', label: 'Solutioning', icon: Presentation },
     { href: '/closing', label: 'Closing', icon: Handshake },
     { href: '/tools', label: 'Tools', icon: Calculator },
-    { href: '/ovg-analytics', label: 'Accounts', icon: Building2 },
   ];
+
+  const accountItems = [
+    { href: '/ovg-analytics', label: 'OVG', icon: Building2 },
+  ];
+  
+  const isAccountsActive = accountItems.some(item => pathname.startsWith(item.href));
 
   const trainingItems = [
     { href: '/learn', label: 'Learn', icon: BookOpen },
@@ -108,7 +117,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
   const isActive = (href: string) => pathname.startsWith(href);
   const isMarketingActive = marketingItems.some(item => pathname.startsWith(item.href));
-  const isSalesActive = salesItems.some(item => pathname.startsWith(item.href));
+  const isSalesActive = salesItems.some(item => pathname.startsWith(item.href)) || isAccountsActive;
   const isTrainingActive = trainingItems.some(item => pathname.startsWith(item.href));
 
   return (
@@ -186,7 +195,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
             <div 
               className="relative"
               onMouseEnter={() => setSalesOpen(true)}
-              onMouseLeave={() => setSalesOpen(false)}
+              onMouseLeave={() => {
+                setSalesOpen(false);
+                setAccountsOpen(false);
+              }}
             >
               <button
                 className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
@@ -220,6 +232,52 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                         </Link>
                       );
                     })}
+                    
+                    {/* Accounts Submenu Trigger */}
+                    <div 
+                      className="relative"
+                      onMouseEnter={() => setAccountsOpen(true)}
+                      onMouseLeave={() => setAccountsOpen(false)}
+                    >
+                      <button
+                        className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors cursor-pointer ${
+                          isAccountsActive
+                            ? 'bg-accent/20 text-accent'
+                            : 'text-muted hover:text-foreground hover:bg-surface'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          Accounts
+                        </span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      
+                      {/* Accounts Nested Submenu */}
+                      {accountsOpen && (
+                        <div className="absolute left-full top-0 pl-1">
+                          <div className="w-40 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                            {accountItems.map((item) => {
+                              const Icon = item.icon;
+                              return (
+                                <Link
+                                  key={item.href}
+                                  href={item.href}
+                                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                                    isActive(item.href)
+                                      ? 'bg-accent/20 text-accent'
+                                      : 'text-muted hover:text-foreground hover:bg-surface'
+                                  }`}
+                                >
+                                  <Icon className="w-4 h-4" />
+                                  {item.label}
+                                </Link>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -433,6 +491,45 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
+                
+                {/* Accounts Submenu */}
+                <button
+                  onClick={() => setMobileAccountsOpen(!mobileAccountsOpen)}
+                  className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                    isAccountsActive
+                      ? 'bg-accent text-white'
+                      : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Accounts
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${mobileAccountsOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {mobileAccountsOpen && (
+                  <div className="ml-6 border-l border-border pl-2">
+                    {accountItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent text-white'
+                              : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Training Section */}

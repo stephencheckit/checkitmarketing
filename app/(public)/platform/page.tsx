@@ -1509,14 +1509,14 @@ export default function PlatformPage() {
                     className="w-full h-80 object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-sm border border-white/20 rounded-xl p-4 shadow-xl">
+                <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-800 backdrop-blur-sm border border-gray-700 rounded-xl p-4 shadow-xl">
                   <div className="flex items-center gap-3">
                     <img 
                       src="/TexasTech_logo.png" 
                       alt="Texas Tech" 
                       className="h-12 object-contain"
                     />
-                    <div className="w-px h-10 bg-gray-300" />
+                    <div className="w-px h-10 bg-gray-600" />
                     <img 
                       src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
                       alt="OVG Hospitality" 

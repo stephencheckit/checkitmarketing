@@ -202,6 +202,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 27, 2026 | **3-Level Nav + Dark Gradient Logos** - Added nested navigation (Sales > Accounts > OVG) for 3-level hierarchy. Updated all Texas Tech logo containers with dark gradient backgrounds (from-gray-950 via-gray-900 to-gray-800) for white text visibility on homepage, platform, case study, and stories pages. | AI |
 | Jan 27, 2026 | **Stories Page Styling + Microsite Only** - Restyled Stories/case studies page with dark theme, PublicNav, background effects, and Texas Tech logo on featured card. Removed Stories from employee portal nav (microsite only). Industry cards now link to respective pages. | AI |
 | Jan 27, 2026 | **Stories Nav + Texas Tech Logo Update** - Added "Stories" link to PublicNav (public pages) pointing to `/case-studies`. Updated Texas Tech logo across all pages (home, OVG, platform, case study) to new `TexasTech_logo.png`. | AI |
 | Jan 27, 2026 | **OVG Accounts - Navigation Fix** - Fixed naming to OVG (not OBG). Removed separate Tools dropdown. Accounts now under Sales dropdown: Discovery, Solutioning, Closing, Tools, Accounts. | AI |

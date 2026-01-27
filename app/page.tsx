@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import DemoRequestModal from '@/components/DemoRequestModal';
+import DemoRequestButton from '@/components/DemoRequestButton';
 import { 
   ArrowRight,
   Menu,

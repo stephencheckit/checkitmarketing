@@ -1018,10 +1018,15 @@ export default function HomePage() {
                   </a>
                 </li>
                 <li>
-                  <Link href="/login" className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors">
+                  <a 
+                    href="/login" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                  >
                     <LogIn className="w-3 h-3" />
                     Employee Portal
-                  </Link>
+                  </a>
                 </li>
                 <li>
                   <a 

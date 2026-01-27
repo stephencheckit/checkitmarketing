@@ -9,18 +9,12 @@ import {
   Shield,
   TrendingUp,
   Building2,
-  ChefHat,
-  Utensils,
   BarChart3,
   Award,
   Zap,
   AlertTriangle,
-  Wrench,
-  Quote,
-  Target,
   Bell,
   ClipboardCheck,
-  Heart,
   Smartphone,
   Cloud,
   FileCheck,
@@ -176,18 +170,11 @@ export default function MorningstarCaseStudy() {
           {/* Customer Logo - Centered */}
           <div className="flex justify-center mb-12">
             <div className="bg-white rounded-xl px-8 py-6 border border-gray-200 shadow-lg">
-              <div className="flex items-center gap-4">
-                <div 
-                  className="w-16 h-16 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: `${MORNINGSTAR_TEAL}15` }}
-                >
-                  <Heart className="w-8 h-8" style={{ color: MORNINGSTAR_TEAL }} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Morningstar Senior Living</h2>
-                  <p className="text-gray-500">Senior Living Dining &amp; Compliance</p>
-                </div>
-              </div>
+              <img 
+                src="/morningstar-logo-500x125.png" 
+                alt="Morningstar Senior Living"
+                className="h-16 lg:h-20 w-auto object-contain"
+              />
             </div>
           </div>
           

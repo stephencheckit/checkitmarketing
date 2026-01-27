@@ -17,7 +17,6 @@ import {
   Menu,
   X,
   MessageSquare,
-  Lightbulb,
   Search,
   Presentation,
   Handshake,
@@ -32,7 +31,6 @@ import {
   MapPin,
   Users
 } from 'lucide-react';
-import MyContributions from '@/components/MyContributions';
 
 interface MainNavProps {
   userName?: string;
@@ -48,25 +46,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const [trainingOpen, setTrainingOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAccountsOpen, setMobileAccountsOpen] = useState(false);
-  const [showMyContributions, setShowMyContributions] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [contributionCount, setContributionCount] = useState(0);
   
   const isAdmin = userRole === 'admin';
   const [pendingReviewCount, setPendingReviewCount] = useState(0);
-
-  // Fetch user's own contribution count
-  const fetchContributionCount = async () => {
-    try {
-      const response = await fetch('/api/contributions?view=my');
-      const data = await response.json();
-      if (response.ok && data.contributions) {
-        setContributionCount(data.contributions.length);
-      }
-    } catch (error) {
-      console.error('Failed to fetch contribution count:', error);
-    }
-  };
 
   // Fetch pending review count for admins
   const fetchPendingReviewCount = async () => {
@@ -83,12 +66,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   };
 
   useEffect(() => {
-    fetchContributionCount();
     fetchPendingReviewCount();
     
-    // Listen for contribution updates
+    // Listen for contribution updates (for pending count)
     const handleContributionUpdate = () => {
-      fetchContributionCount();
       fetchPendingReviewCount();
     };
     
@@ -390,15 +371,8 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               <button
                 className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-elevated transition-colors cursor-pointer"
               >
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
-                    <User className="w-4 h-4" />
-                  </div>
-                  {contributionCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent text-white text-[10px] font-medium rounded-full flex items-center justify-center">
-                      {contributionCount > 9 ? '9+' : contributionCount}
-                    </span>
-                  )}
+                <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
+                  <User className="w-4 h-4" />
                 </div>
                 <ChevronDown className={`w-4 h-4 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -413,25 +387,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                       </div>
                     )}
                     
-                    <button
-                      onClick={() => {
-                        setShowMyContributions(true);
-                        setProfileOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4" />
-                        My Contributions
-                      </span>
-                      {contributionCount > 0 && (
-                        <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full">
-                          {contributionCount}
-                        </span>
-                      )}
-                    </button>
-                    
-                    <div className="border-t border-border mt-1 pt-1">
+                    <div className="border-t border-border">
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
@@ -597,17 +553,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
               {/* Account Section */}
               <div className="pt-2 mt-2 border-t border-border">
-                <button
-                  onClick={() => {
-                    setShowMyContributions(true);
-                    setMobileOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors w-full cursor-pointer"
-                >
-                  <Lightbulb className="w-4 h-4" />
-                  My Contributions
-                </button>
-                
                 {isAdmin && (
                   <Link
                     href="/admin/contributions"
@@ -644,11 +589,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
         )}
       </div>
       
-      {/* My Contributions Modal */}
-      <MyContributions
-        isOpen={showMyContributions}
-        onClose={() => setShowMyContributions(false)}
-      />
     </header>
   );
 }

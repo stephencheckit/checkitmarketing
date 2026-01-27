@@ -35,7 +35,8 @@ const caseStudies = [
       { value: '100%', label: 'Audit Trail' },
     ],
     featured: true,
-    logo: null,
+    logo: '/morningstar-logo-500x125.png',
+    logoBgWhite: true,
   },
 ];
 
@@ -76,8 +77,8 @@ export default function CaseStudiesPage() {
                 className="group block bg-surface-elevated border border-border rounded-2xl overflow-hidden hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all"
               >
                 <div className="flex flex-col md:flex-row">
-                  {/* Left side - Dark background for logo visibility */}
-                  <div className="bg-gray-950 p-6 md:p-8 md:w-1/3 flex flex-col justify-center">
+                  {/* Left side - Dark or white background for logo visibility */}
+                  <div className={`p-6 md:p-8 md:w-1/3 flex flex-col justify-center ${(study as typeof study & { logoBgWhite?: boolean }).logoBgWhite ? 'bg-white border-r border-gray-200' : 'bg-gray-950'}`}>
                     {study.logo ? (
                       <img 
                         src={study.logo} 
@@ -89,11 +90,11 @@ export default function CaseStudiesPage() {
                         <Building2 className="w-7 h-7 text-white" />
                       </div>
                     )}
-                    <h2 className="text-2xl font-bold text-white mb-1">{study.title}</h2>
-                    <p className="text-white/70">{study.subtitle}</p>
+                    <h2 className={`text-2xl font-bold mb-1 ${(study as typeof study & { logoBgWhite?: boolean }).logoBgWhite ? 'text-gray-900' : 'text-white'}`}>{study.title}</h2>
+                    <p className={(study as typeof study & { logoBgWhite?: boolean }).logoBgWhite ? 'text-gray-500' : 'text-white/70'}>{study.subtitle}</p>
                     
                     {study.featured && (
-                      <span className="inline-block mt-4 px-3 py-1 bg-white/20 text-white text-xs font-medium rounded-full w-fit">
+                      <span className={`inline-block mt-4 px-3 py-1 text-xs font-medium rounded-full w-fit ${(study as typeof study & { logoBgWhite?: boolean }).logoBgWhite ? 'bg-gray-100 text-gray-700' : 'bg-white/20 text-white'}`}>
                         Featured
                       </span>
                     )}

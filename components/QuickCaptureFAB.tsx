@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createPortal } from 'react-dom';
-import { Mic, Square, Loader2, X, Send, ChevronDown, GripVertical } from 'lucide-react';
+import { Mic, Square, Loader2, X, Send, ChevronDown, GripVertical, CheckCircle } from 'lucide-react';
 import { useVoiceRecording, formatRecordingTime } from '@/lib/useVoiceRecording';
 import { useToast } from './ToastProvider';
 
@@ -43,7 +43,7 @@ const defaultMapping: RouteMapping = {
 
 const STORAGE_KEY = 'quickCaptureFABPosition_v4'; // Bumped version to reset all positions
 
-type FABState = 'idle' | 'recording' | 'transcribing' | 'preview' | 'submitting';
+type FABState = 'idle' | 'recording' | 'transcribing' | 'preview' | 'submitting' | 'success';
 
 export default function QuickCaptureFAB() {
   const pathname = usePathname();
@@ -265,10 +265,16 @@ export default function QuickCaptureFAB() {
       // Notify other components that a contribution was added
       window.dispatchEvent(new CustomEvent('contribution-updated'));
 
-      setTranscribedText('');
+      // Show success state briefly before resetting
+      setState('success');
       setIsExpanded(false);
-      setState('idle');
-      setSelectedTarget(null);
+      
+      // Reset after showing success animation
+      setTimeout(() => {
+        setTranscribedText('');
+        setState('idle');
+        setSelectedTarget(null);
+      }, 2000);
     } catch (err) {
       toast({ 
         type: 'error', 
@@ -429,6 +435,20 @@ export default function QuickCaptureFAB() {
         </div>
       )}
 
+      {/* Success Status */}
+      {state === 'success' && (
+        <div 
+          className="fixed z-[9997] bg-green-500/20 border border-green-500/30 rounded-lg px-4 py-2 flex items-center gap-3 animate-slide-in"
+          style={{
+            left: position.x - 80,
+            top: position.y - 50,
+          }}
+        >
+          <CheckCircle className="w-4 h-4 text-green-400" />
+          <span className="text-sm text-green-400">Insight captured!</span>
+        </div>
+      )}
+
       {/* FAB Widget */}
       <div 
         className="fixed z-[9998] flex items-center gap-1 bg-surface-elevated border border-border rounded-full shadow-lg h-14"
@@ -452,12 +472,14 @@ export default function QuickCaptureFAB() {
         {/* Mic Button */}
         <button
           onClick={handleFABClick}
-          disabled={state === 'transcribing' || state === 'submitting' || micPermission === 'denied'}
+          disabled={state === 'transcribing' || state === 'submitting' || state === 'success' || micPermission === 'denied'}
           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all mr-1 ${
             state === 'recording'
               ? 'bg-red-500 hover:bg-red-600 animate-pulse'
               : state === 'transcribing'
               ? 'bg-accent/50 cursor-wait'
+              : state === 'success'
+              ? 'bg-green-500'
               : micPermission === 'denied'
               ? 'bg-surface cursor-not-allowed'
               : 'bg-accent hover:bg-accent/90 hover:scale-105'
@@ -469,6 +491,8 @@ export default function QuickCaptureFAB() {
               ? 'Stop recording'
               : state === 'transcribing'
               ? 'Transcribing...'
+              : state === 'success'
+              ? 'Insight captured!'
               : 'Start quick voice capture'
           }
         >
@@ -476,6 +500,8 @@ export default function QuickCaptureFAB() {
             <Square className="w-5 h-5 text-white" />
           ) : state === 'transcribing' ? (
             <Loader2 className="w-5 h-5 text-white animate-spin" />
+          ) : state === 'success' ? (
+            <CheckCircle className="w-5 h-5 text-white" />
           ) : (
             <Mic className={`w-5 h-5 ${micPermission === 'denied' ? 'text-muted' : 'text-white'}`} />
           )}

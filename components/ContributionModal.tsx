@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Lightbulb, AlertCircle, HelpCircle, PenLine, Eye, EyeOff, Mic, Square, Loader2 } from 'lucide-react';
+import { X, Lightbulb, AlertCircle, HelpCircle, PenLine, Eye, EyeOff, Mic, Square, Loader2, CheckCircle } from 'lucide-react';
 import { useVoiceRecording, formatRecordingTime } from '@/lib/useVoiceRecording';
 import { useToast } from './ToastProvider';
 
@@ -69,6 +69,7 @@ export default function ContributionModal({
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const availableTypes = contributionTypes.filter(t => t.availableFor.includes(targetType));
@@ -148,10 +149,15 @@ export default function ContributionModal({
       // Notify other components that a contribution was added
       window.dispatchEvent(new CustomEvent('contribution-updated'));
 
-      // Reset and close
-      resetForm();
-      onClose();
-      onSuccess?.();
+      // Show success state briefly before closing
+      setIsSuccess(true);
+      
+      // Reset and close after brief delay
+      setTimeout(() => {
+        resetForm();
+        onClose();
+        onSuccess?.();
+      }, 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
       toast({ type: 'error', message: err instanceof Error ? err.message : 'Failed to submit' });
@@ -165,6 +171,7 @@ export default function ContributionModal({
     setContent('');
     setIsAnonymous(false);
     setError(null);
+    setIsSuccess(false);
   };
 
   const handleClose = () => {
@@ -220,8 +227,19 @@ export default function ContributionModal({
           </button>
         </div>
 
+        {/* Success State */}
+        {isSuccess && (
+          <div className="p-8 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Insight Captured!</h3>
+            <p className="text-sm text-muted">Your contribution has been submitted for review.</p>
+          </div>
+        )}
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        {!isSuccess && <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* Contribution Type Selection */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
@@ -401,7 +419,7 @@ export default function ContributionModal({
               {isSubmitting ? 'Submitting...' : 'Submit Contribution'}
             </button>
           </div>
-        </form>
+        </form>}
         </div>
       </div>
     </div>

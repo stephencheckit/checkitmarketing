@@ -510,21 +510,6 @@ export default function MorningstarCaseStudy() {
         </div>
       </section>
 
-      {/* Simple Footer */}
-      <footer className="py-10 border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <img 
-              src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-              alt="Checkit" 
-              className="h-6 invert opacity-60"
-            />
-            <p className="text-sm text-gray-400">
-              &copy; {new Date().getFullYear()} Checkit. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

@@ -63,8 +63,8 @@ export default function RegisterPage() {
               className="h-8"
             />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Checkit Marketing Hub</h1>
-          <p className="text-muted">Register to access marketing tools and enablement</p>
+          <h1 className="text-2xl font-bold mb-2">Checkit GTM Hub</h1>
+          <p className="text-muted">Register to access go-to-market tools and enablement</p>
         </div>
 
         {/* Form */}

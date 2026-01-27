@@ -10,8 +10,11 @@ const leagueSpartan = League_Spartan({
 });
 
 export const metadata: Metadata = {
-  title: "Checkit Marketing Hub",
-  description: "Marketing tools and enablement for Checkit",
+  title: "Checkit GTM Hub",
+  description: "Go-to-market tools and enablement for Checkit",
+  icons: {
+    icon: "/checkit-logo-horizontal-standard-rgb-white.svg",
+  },
 };
 
 export default function RootLayout({

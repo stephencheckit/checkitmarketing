@@ -1,8 +1,8 @@
-# AI Onboarding - Checkit Marketing
+# AI Onboarding - Checkit GTM Hub
 
 ## Project Overview
 
-**Name:** Checkit Marketing GTM Platform  
+**Name:** Checkit GTM Hub  
 **Type:** Web Application  
 **Status:** 🟢 Active development - Full marketing toolkit + V6 Enablement Portal
 

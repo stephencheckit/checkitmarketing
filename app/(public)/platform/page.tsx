@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+import DemoRequestButton from '@/components/DemoRequestButton';
 import { 
   ArrowRight,
   CheckCircle2,
@@ -733,15 +734,7 @@ export default function PlatformPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                <a
-                  href="https://www.checkit.net/demo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-                >
-                  Request a Demo
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <DemoRequestButton />
                 <Link
                   href="/industries"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
@@ -1334,15 +1327,7 @@ export default function PlatformPage() {
                   </li>
                 </ul>
 
-                <a
-                  href="https://www.checkit.net/demo"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
-                >
-                  Request a Demo
-                  <ArrowRight className="w-4 h-4" />
-                </a>
+                <DemoRequestButton className="bg-purple-600 hover:bg-purple-700" />
               </div>
 
               <div className="bg-surface border border-purple-500/30 rounded-2xl p-6">
@@ -1556,15 +1541,7 @@ export default function PlatformPage() {
               operational efficiency, and real-time visibility across all your locations.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a
-                href="https://www.checkit.net/demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
-              >
-                Request a Demo
-                <ArrowRight className="w-4 h-4" />
-              </a>
+              <DemoRequestButton />
               <a
                 href="https://www.checkit.net"
                 target="_blank"

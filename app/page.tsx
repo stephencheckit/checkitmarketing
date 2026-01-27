@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import DemoRequestModal from '@/components/DemoRequestModal';
 import { 
   ArrowRight,
   Menu,
@@ -295,8 +296,14 @@ const featuredCaseStudy = {
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   return (
+    <>
+      <DemoRequestModal 
+        isOpen={showDemoModal} 
+        onClose={() => setShowDemoModal(false)} 
+      />
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
@@ -753,15 +760,13 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <a
-                href="https://www.checkit.net/demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+              <button
+                onClick={() => setShowDemoModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors cursor-pointer"
               >
                 Request a Demo
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </button>
             </div>
 
             <div className="relative">
@@ -1113,5 +1118,6 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

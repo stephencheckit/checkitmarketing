@@ -41,7 +41,7 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
       );
       
       // Open mailto as fallback
-      window.location.href = `mailto:sales@checkit.net?subject=${subject}&body=${body}`;
+      window.location.href = `mailto:stephen.newman@checkit.net?subject=${subject}&body=${body}`;
       
       setSubmitted(true);
     } catch (err) {

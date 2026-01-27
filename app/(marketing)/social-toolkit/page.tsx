@@ -1104,130 +1104,142 @@ export default function SocialToolkitPage() {
               {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
             </div>
 
-            {/* Posts */}
-            <div className="space-y-4">
-          {filteredPosts.map((post) => {
-            const category = categories.find(c => c.id === post.category);
-            const isEditing = editingId === post.id;
-            const postIsUsed = isPostUsed(post.id);
-            
-            return (
-              <div
-                key={post.id}
-                className={`bg-surface border rounded-xl p-5 transition-colors ${
-                  isEditing ? 'border-accent/50' : postIsUsed ? 'border-green-500/30 opacity-60' : 'border-border hover:border-accent/30'
-                }`}
-              >
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted">{category?.name}</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={cancelEdit} className="text-muted hover:text-foreground text-sm">Cancel</button>
-                        <button onClick={() => saveEdit(post.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
-                          <Save className="w-4 h-4" /> Save
-                        </button>
-                      </div>
-                    </div>
-                    <input
-                      type="text"
-                      value={editForm.title}
-                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                      className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground font-semibold"
-                    />
-                    <textarea
-                      value={editForm.content}
-                      onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
-                      className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground text-sm min-h-[250px] font-sans leading-relaxed"
-                    />
-                    <input
-                      type="text"
-                      value={editForm.hashtags}
-                      onChange={(e) => setEditForm({ ...editForm, hashtags: e.target.value })}
-                      placeholder="Hashtags (comma-separated)"
-                      className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-accent text-sm"
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
+            {/* Posts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredPosts.map((post) => {
+                const category = categories.find(c => c.id === post.category);
+                const isEditing = editingId === post.id;
+                const postIsUsed = isPostUsed(post.id);
+                
+                return (
+                  <div
+                    key={post.id}
+                    className={`bg-surface border rounded-xl p-4 transition-colors flex flex-col ${
+                      isEditing ? 'border-accent/50 md:col-span-2' : postIsUsed ? 'border-green-500/30 opacity-60' : 'border-border hover:border-accent/30'
+                    }`}
+                  >
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
                           <span className="text-xs text-muted">{category?.name}</span>
-                          {postIsUsed && (
-                            <span className="flex items-center gap-1 text-xs text-green-400">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Used
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <button onClick={cancelEdit} className="text-muted hover:text-foreground text-sm">Cancel</button>
+                            <button onClick={() => saveEdit(post.id)} className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600">
+                              <Save className="w-4 h-4" /> Save
+                            </button>
+                          </div>
                         </div>
-                        <h3 className={`text-base font-semibold ${postIsUsed ? 'text-muted' : 'text-foreground'}`}>{post.title}</h3>
-                        <div className="flex flex-wrap gap-1 mt-2">
+                        <input
+                          type="text"
+                          value={editForm.title}
+                          onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                          className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground font-semibold"
+                        />
+                        <textarea
+                          value={editForm.content}
+                          onChange={(e) => setEditForm({ ...editForm, content: e.target.value })}
+                          className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-foreground text-sm min-h-[250px] font-sans leading-relaxed"
+                        />
+                        <input
+                          type="text"
+                          value={editForm.hashtags}
+                          onChange={(e) => setEditForm({ ...editForm, hashtags: e.target.value })}
+                          placeholder="Hashtags (comma-separated)"
+                          className="w-full bg-surface-elevated border border-border rounded-lg px-3 py-2 text-accent text-sm"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        {/* Header */}
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted">{category?.name}</span>
+                            {postIsUsed && (
+                              <span className="flex items-center gap-1 text-xs text-green-400">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Used
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            <button onClick={() => startEdit(post)} className="p-1.5 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg" title="Edit">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => deletePost(post.id)} className="p-1.5 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg" title="Delete">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <h3 className={`text-sm font-semibold mb-2 ${postIsUsed ? 'text-muted' : 'text-foreground'}`}>{post.title}</h3>
+
+                        {/* Personas */}
+                        <div className="flex flex-wrap gap-1 mb-3">
                           {post.personas.map(personaId => {
                             const persona = personas.find(p => p.id === personaId);
                             const usedByThisPersona = isPostUsedByPersona(post.id, personaId);
                             return persona ? (
                               <span 
                                 key={personaId} 
-                                className={`px-2 py-0.5 text-xs rounded border flex items-center gap-1 ${getPersonaColor(personaId)} ${usedByThisPersona ? 'opacity-50' : ''}`}
+                                className={`px-1.5 py-0.5 text-[10px] rounded border flex items-center gap-1 ${getPersonaColor(personaId)} ${usedByThisPersona ? 'opacity-50' : ''}`}
                               >
-                                {usedByThisPersona && <CheckCircle2 className="w-2.5 h-2.5" />}
+                                {usedByThisPersona && <CheckCircle2 className="w-2 h-2" />}
                                 {persona.name}
                               </span>
                             ) : null;
                           })}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => startEdit(post)} className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg" title="Edit">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => deletePost(post.id)} className="p-2 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg" title="Delete">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        {selectedPersona && isPostUsedByPersona(post.id, selectedPersona) ? (
-                          <button
-                            onClick={() => markAsUnused(post.id, selectedPersona)}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ml-1 bg-surface-elevated text-muted hover:text-foreground"
-                            title="Mark as unused (can use again)"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" /> Reuse
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleCopy(post, true)}
-                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ml-1 ${
-                              copiedId === post.id
-                                ? 'bg-green-500 text-white'
-                                : 'bg-accent text-white hover:bg-accent-hover'
-                            }`}
-                            title={selectedPersona ? "Copy and mark as used" : "Copy (select a person to track usage)"}
-                          >
-                            {copiedId === post.id ? (
-                              <><Check className="w-3.5 h-3.5" /> Done</>
-                            ) : (
-                              <><Copy className="w-3.5 h-3.5" /> {selectedPersona ? 'Copy & Use' : 'Copy'}</>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </div>
 
-                    <div className={`bg-background rounded-lg p-4 mb-3 border border-border ${postIsUsed ? 'opacity-75' : ''}`}>
-                      <pre className="text-foreground/80 text-sm whitespace-pre-wrap font-sans leading-relaxed">{post.content}</pre>
-                    </div>
+                        {/* Content Preview */}
+                        <div className={`bg-background rounded-lg p-3 mb-3 border border-border flex-1 ${postIsUsed ? 'opacity-75' : ''}`}>
+                          <pre className="text-foreground/80 text-xs whitespace-pre-wrap font-sans leading-relaxed line-clamp-6">{post.content}</pre>
+                        </div>
 
-                    <div className="flex flex-wrap gap-1">
-                      {post.hashtags.map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 text-xs bg-surface-elevated text-accent rounded">#{tag}</span>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                        {/* Hashtags */}
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {post.hashtags.slice(0, 4).map((tag) => (
+                            <span key={tag} className="px-1.5 py-0.5 text-[10px] bg-surface-elevated text-accent rounded">#{tag}</span>
+                          ))}
+                          {post.hashtags.length > 4 && (
+                            <span className="text-[10px] text-muted">+{post.hashtags.length - 4}</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 mt-auto pt-2 border-t border-border">
+                          {selectedPersona && isPostUsedByPersona(post.id, selectedPersona) ? (
+                            <button
+                              onClick={() => markAsUnused(post.id, selectedPersona)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all bg-surface-elevated text-muted hover:text-foreground"
+                              title="Mark as unused (can use again)"
+                            >
+                              <RotateCcw className="w-3 h-3" /> Reuse
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleCopy(post, true)}
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                                copiedId === post.id
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-accent text-white hover:bg-accent-hover'
+                              }`}
+                              title={selectedPersona ? "Copy and mark as used" : "Copy (select a person to track usage)"}
+                            >
+                              {copiedId === post.id ? (
+                                <><Check className="w-3 h-3" /> Done</>
+                              ) : (
+                                <><Copy className="w-3 h-3" /> {selectedPersona ? 'Copy & Use' : 'Copy'}</>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
             {filteredPosts.length === 0 && (
               <div className="text-center py-12 text-muted">

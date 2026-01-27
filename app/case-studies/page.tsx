@@ -44,18 +44,16 @@ export default function CaseStudiesPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <section className="relative pt-12 pb-8 lg:pt-16 lg:pb-10 overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <span className="inline-block px-4 py-1.5 text-sm font-medium bg-accent/20 text-accent rounded-full mb-4">
               Customer Success
             </span>
-            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
+            <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
               Real Results from Real Operations
             </h1>
             <p className="text-lg text-muted">
@@ -67,7 +65,7 @@ export default function CaseStudiesPage() {
       </section>
 
       {/* Case Studies Grid */}
-      <section className="py-16 lg:py-24">
+      <section className="py-10 lg:py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
             {caseStudies.map((study) => (

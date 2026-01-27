@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { 
   MapPin, 
   Building2, 
@@ -14,7 +15,9 @@ import {
   ChevronUp,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  BarChart3,
+  ArrowLeft
 } from 'lucide-react';
 
 // Dynamically import map component to avoid SSR issues with Leaflet
@@ -134,26 +137,27 @@ export default function OVGMapPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Internal Notice Banner */}
-      <div className="bg-yellow-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <div className="flex items-center justify-center text-sm font-medium">
-            <span>Internal Use Only - OVG Territory Map</span>
-          </div>
-        </div>
-      </div>
-
       {/* Header */}
       <div className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Oak View Group Territory Map</h1>
-                <p className="text-sm text-gray-400">Checkit Engagement Status</p>
+            <div className="flex items-center gap-4">
+              <Link 
+                href="/ovg-analytics"
+                className="flex items-center gap-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm text-gray-300 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <BarChart3 className="w-4 h-4" />
+                Analytics
+              </Link>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-white">OVG Territory Map</h1>
+                  <p className="text-sm text-gray-400">Checkit Engagement Status</p>
+                </div>
               </div>
             </div>
             

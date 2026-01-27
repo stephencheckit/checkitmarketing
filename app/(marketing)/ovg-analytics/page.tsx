@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { 
   BarChart3, 
   Users, 
@@ -17,7 +18,8 @@ import {
   Layers,
   Building2,
   CheckCircle2,
-  Target
+  Target,
+  Maximize2
 } from 'lucide-react';
 
 // Dynamically import map component to avoid SSR issues with Leaflet
@@ -593,8 +595,14 @@ export default function OVGAnalyticsPage() {
               <h2 className="font-semibold text-white flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-blue-400" />
                 OVG Territory Map
-                <span className="ml-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Internal Only</span>
               </h2>
+              <Link
+                href="/ovg-map"
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors"
+              >
+                <Maximize2 className="w-4 h-4" />
+                Full Screen
+              </Link>
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500"></div>

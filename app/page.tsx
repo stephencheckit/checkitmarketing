@@ -1033,7 +1033,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-border py-12 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
             {/* Brand */}
             <div className="lg:col-span-2">
               <img 
@@ -1086,8 +1086,16 @@ export default function HomePage() {
                 <li><Link href="/platform#sensors" className="text-sm text-muted hover:text-foreground transition-colors">Sensors</Link></li>
                 <li><Link href="/platform#apps" className="text-sm text-muted hover:text-foreground transition-colors">Mobile Apps</Link></li>
                 <li><Link href="/platform#platform" className="text-sm text-muted hover:text-foreground transition-colors">Cloud Platform</Link></li>
+              </ul>
+            </div>
+            
+            {/* More */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-4">More</h4>
+              <ul className="space-y-2">
                 <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
-                <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Case Studies</Link></li>
+                <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Stories</Link></li>
+                <li><Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">About Us</Link></li>
               </ul>
             </div>
             

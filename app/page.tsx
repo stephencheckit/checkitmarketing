@@ -366,6 +366,9 @@ export default function HomePage() {
               <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
                 Industries
               </Link>
+              <Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">
+                Stories
+              </Link>
               <Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">
                 About Us
               </Link>
@@ -401,6 +404,13 @@ export default function HomePage() {
                   className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
                 >
                   Industries
+                </Link>
+                <Link
+                  href="/case-studies"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  Stories
                 </Link>
                 <Link
                   href="/about"

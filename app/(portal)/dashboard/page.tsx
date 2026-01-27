@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { LayoutDashboard, BookOpen, AlertTriangle, ChevronRight, Clock, CheckCircle } from 'lucide-react';
 import LeaderboardWidget from '@/components/LeaderboardWidget';
+import AdminInboxWidget from '@/components/AdminInboxWidget';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -116,6 +117,11 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Admin Inbox (admins only) */}
+      {session.role === 'admin' && (
+        <AdminInboxWidget />
+      )}
 
       {/* Leaderboard + Critical Notice Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -41,7 +41,7 @@ const defaultMapping: RouteMapping = {
   label: 'General'
 };
 
-const STORAGE_KEY = 'quickCaptureFABPosition_v3';
+const STORAGE_KEY = 'quickCaptureFABPosition_v4'; // Bumped version to reset all positions
 
 type FABState = 'idle' | 'recording' | 'transcribing' | 'preview' | 'submitting';
 

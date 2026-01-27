@@ -53,8 +53,9 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const [contributionCount, setContributionCount] = useState(0);
   
   const isAdmin = userRole === 'admin';
+  const [pendingReviewCount, setPendingReviewCount] = useState(0);
 
-  // Fetch contribution count
+  // Fetch user's own contribution count
   const fetchContributionCount = async () => {
     try {
       const response = await fetch('/api/contributions?view=my');
@@ -67,19 +68,35 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     }
   };
 
+  // Fetch pending review count for admins
+  const fetchPendingReviewCount = async () => {
+    if (!isAdmin) return;
+    try {
+      const response = await fetch('/api/contributions/pending-count');
+      const data = await response.json();
+      if (response.ok) {
+        setPendingReviewCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending review count:', error);
+    }
+  };
+
   useEffect(() => {
     fetchContributionCount();
+    fetchPendingReviewCount();
     
     // Listen for contribution updates
     const handleContributionUpdate = () => {
       fetchContributionCount();
+      fetchPendingReviewCount();
     };
     
     window.addEventListener('contribution-updated', handleContributionUpdate);
     return () => {
       window.removeEventListener('contribution-updated', handleContributionUpdate);
     };
-  }, []);
+  }, [isAdmin]);
 
 
   const handleLogout = async () => {
@@ -342,18 +359,27 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/admin"
-              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer ${
-                pathname.startsWith('/admin')
-                  ? 'bg-accent/20 text-accent'
-                  : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-              }`}
-              title="Admin"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span className="hidden lg:inline">Admin</span>
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/contributions"
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer ${
+                  pathname.startsWith('/admin')
+                    ? 'bg-accent/20 text-accent'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+                title="Review Inbox"
+              >
+                <div className="relative">
+                  <MessageSquare className="w-4 h-4" />
+                  {pendingReviewCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                      {pendingReviewCount > 9 ? '9+' : pendingReviewCount}
+                    </span>
+                  )}
+                </div>
+                <span className="hidden lg:inline">Inbox</span>
+              </Link>
+            )}
             
             {/* Profile Dropdown */}
             <div 
@@ -582,14 +608,23 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   My Contributions
                 </button>
                 
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Admin
-                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin/contributions"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between px-4 py-3 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4" />
+                      Review Inbox
+                    </span>
+                    {pendingReviewCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                        {pendingReviewCount}
+                      </span>
+                    )}
+                  </Link>
+                )}
               </div>
 
               <div className="pt-2 mt-2 border-t border-border">

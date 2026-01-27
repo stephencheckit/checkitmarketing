@@ -1,4 +1,5 @@
 import PublicNav from '@/components/PublicNav';
+import PublicFooter from '@/components/PublicFooter';
 
 export default function PublicLayout({
   children,
@@ -11,6 +12,7 @@ export default function PublicLayout({
       <main>
         {children}
       </main>
+      <PublicFooter />
     </div>
   );
 }

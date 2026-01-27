@@ -10,12 +10,14 @@ import {
   ChevronDown,
   Layers,
   Building2,
-  FileText
+  FileText,
+  Users
 } from 'lucide-react';
 
 const navLinks = [
   { href: '/platform', label: 'Platform', icon: Layers },
   { href: '/industries', label: 'Industries', icon: Building2 },
+  { href: '/about', label: 'About Us', icon: Users },
 ];
 
 export default function PublicNav() {
@@ -45,14 +47,6 @@ export default function PublicNav() {
                 {link.label}
               </Link>
             ))}
-            <a 
-              href="https://www.checkit.net" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-sm text-muted hover:text-foreground transition-colors"
-            >
-              About Us
-            </a>
           </nav>
 
           {/* Desktop CTA - Fixed width on right */}
@@ -94,15 +88,6 @@ export default function PublicNav() {
                   </Link>
                 );
               })}
-              <a 
-                href="https://www.checkit.net" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-              >
-                <ExternalLink className="w-4 h-4" />
-                About Us
-              </a>
               <div className="border-t border-border my-3" />
               <a
                 href="https://www.checkit.net/demo"

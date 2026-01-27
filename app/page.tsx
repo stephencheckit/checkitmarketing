@@ -328,14 +328,9 @@ export default function HomePage() {
               <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
                 Industries
               </Link>
-              <a 
-                href="https://www.checkit.net" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-muted hover:text-foreground transition-colors"
-              >
+              <Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">
                 About Us
-              </a>
+              </Link>
             </nav>
 
             <div className="hidden md:flex items-center shrink-0">
@@ -374,14 +369,13 @@ export default function HomePage() {
                 >
                   Industries
                 </Link>
-                <a 
-                  href="https://www.checkit.net" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                <Link
+                  href="/about"
+                  onClick={() => setMobileOpen(false)}
                   className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
                 >
                   About Us
-                </a>
+                </Link>
                 <div className="border-t border-border my-3" />
                 <Link
                   href="/login"

@@ -8,6 +8,9 @@ import {
   Menu,
   X,
   Headphones,
+  Facebook,
+  Linkedin,
+  Youtube,
   Building2,
   Pill,
   ShoppingCart,
@@ -1100,6 +1103,49 @@ export default function HomePage() {
             <p className="text-sm text-muted">
               &copy; {new Date().getFullYear()} Checkit. All rights reserved.
             </p>
+            
+            {/* Social Links */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="https://www.facebook.com/Checkit.net" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://x.com/_checkit" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="X (Twitter)"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a 
+                href="https://www.linkedin.com/company/checkit-ltd" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://www.youtube.com/channel/UC_YtXdvdVvgENqnPndHrAAA" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-muted hover:text-foreground transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+            </div>
+
             <div className="flex items-center gap-6">
               <a href="https://www.checkit.net/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
                 Privacy Policy

@@ -110,11 +110,6 @@ const leadership = [
     bio: 'Leading product strategy and innovation, ensuring Checkit remains at the forefront of operational technology.',
   },
   {
-    name: 'Julie Webbe',
-    role: 'Chief Human Resources Officer',
-    bio: 'Driving organizational excellence and talent development to build high-performing teams across global operations.',
-  },
-  {
     name: 'Alex Curran',
     role: 'Non-Executive Director',
     bio: 'CEO of Aptitude Software with extensive experience in global financial software and enterprise transformation.',
@@ -491,9 +486,9 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {leadership.map((person) => (
-              <div key={person.name} className="bg-surface border border-border rounded-xl p-6 hover:border-accent/30 transition-colors">
+              <div key={person.name} className="bg-surface border border-border rounded-xl p-6 hover:border-accent/30 transition-colors w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)]">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-accent to-purple-500 flex items-center justify-center mb-4">
                   <span className="text-xl font-bold text-white">
                     {person.name.split(' ').map(n => n[0]).join('')}

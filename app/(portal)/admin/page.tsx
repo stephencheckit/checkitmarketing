@@ -1,8 +1,9 @@
 import { getSession } from '@/lib/session';
-import { getAllUsers, getAllProgress, getCertificationStats } from '@/lib/db';
+import { getAllUsers, getAllProgress, getCertificationStats, getDemoRequestStats } from '@/lib/db';
 import { MODULES } from '@/lib/modules';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus } from 'lucide-react';
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -19,6 +20,14 @@ export default async function AdminPage() {
   const users = await getAllUsers();
   const progressData = await getAllProgress();
   const certStats = await getCertificationStats();
+  
+  // Get demo request stats
+  let demoStats = { totalCount: 0, recentCount: 0 };
+  try {
+    demoStats = await getDemoRequestStats();
+  } catch (e) {
+    // Table might not exist yet
+  }
 
   // Calculate totals
   const totalUsers = users.length;
@@ -34,7 +43,46 @@ export default async function AdminPage() {
           <ShieldCheck className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
           Admin Dashboard
         </h1>
-        <p className="text-sm text-muted mt-1">Track team progress and certification status.</p>
+        <p className="text-sm text-muted mt-1">Track team progress, review contributions, and manage leads.</p>
+      </div>
+
+      {/* Admin Navigation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Link 
+          href="/admin/contributions"
+          className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-yellow-500/10">
+              <MessageSquare className="w-5 h-5 text-yellow-400" />
+            </div>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Review Contributions</h2>
+          </div>
+          <p className="text-sm text-muted">Review and approve pending team contributions</p>
+        </Link>
+
+        <Link 
+          href="/admin/leads"
+          className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <UserPlus className="w-5 h-5 text-blue-400" />
+            </div>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Demo Requests</h2>
+          </div>
+          <p className="text-sm text-muted">{demoStats.totalCount} total leads • {demoStats.recentCount} this week</p>
+        </Link>
+
+        <div className="bg-surface border border-border rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-green-500/10">
+              <Users className="w-5 h-5 text-green-400" />
+            </div>
+            <h2 className="font-semibold text-foreground">Team Overview</h2>
+          </div>
+          <p className="text-sm text-muted">{totalUsers} users • {certificationRate}% certified</p>
+        </div>
       </div>
 
       {/* Stats overview */}

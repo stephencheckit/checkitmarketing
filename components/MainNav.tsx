@@ -284,20 +284,18 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
           {/* User Menu */}
           <div className="hidden md:flex items-center gap-3">
-            {isAdmin && (
-              <Link
-                href="/admin/contributions"
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer ${
-                  pathname.startsWith('/admin/contributions')
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                }`}
-                title="Review Contributions"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span className="hidden lg:inline">Review</span>
-              </Link>
-            )}
+            <Link
+              href="/admin"
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer ${
+                pathname.startsWith('/admin')
+                  ? 'bg-accent/20 text-accent'
+                  : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+              }`}
+              title="Admin"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span className="hidden lg:inline">Admin</span>
+            </Link>
             
             {/* Profile Dropdown */}
             <div 
@@ -487,16 +485,14 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   My Contributions
                 </button>
                 
-                {isAdmin && (
-                  <Link
-                    href="/admin/contributions"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Review Contributions
-                  </Link>
-                )}
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Admin
+                </Link>
               </div>
 
               <div className="pt-2 mt-2 border-t border-border">

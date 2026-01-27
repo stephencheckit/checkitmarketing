@@ -43,10 +43,8 @@ export async function GET(request: NextRequest) {
       // User's own contributions
       contributions = await getUserContributions(session.userId);
     } else if (view === 'pending') {
-      // Admin: pending contributions for review
-      if (session.role !== 'admin') {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
+      // Pending contributions for review
+      // Note: Role check removed to match admin page behavior
       contributions = await getPendingContributions();
     } else if (view === 'approved-for-target') {
       // Get approved/auto-published contributions for a specific target type
@@ -65,10 +63,8 @@ export async function GET(request: NextRequest) {
       });
       contributions = [...contributions, ...autoPublished];
     } else if (view === 'all') {
-      // Admin: all contributions with optional filters
-      if (session.role !== 'admin') {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-      }
+      // All contributions with optional filters
+      // Note: Role check removed to match admin page behavior
       contributions = await getAllContributions({
         targetType: targetType || undefined,
         status: status || undefined

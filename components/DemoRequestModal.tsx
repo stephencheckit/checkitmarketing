@@ -68,8 +68,14 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-xl shadow-xl max-w-md w-full border border-border">
+    <div 
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      onClick={handleClose}
+    >
+      <div 
+        className="bg-surface rounded-xl shadow-xl max-w-md w-full border border-border my-auto max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">Request a Demo</h2>

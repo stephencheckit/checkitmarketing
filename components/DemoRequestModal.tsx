@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Send, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface DemoRequestModalProps {
@@ -10,6 +11,11 @@ interface DemoRequestModalProps {
 }
 
 export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequestModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,11 +71,11 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4 overflow-y-auto"
       onClick={handleClose}
     >
       <div 
@@ -228,6 +234,7 @@ export default function DemoRequestModal({ isOpen, onClose, industry }: DemoRequ
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

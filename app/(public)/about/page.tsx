@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
-import DemoRequestButton from '@/components/DemoRequestButton';
 import { 
   ArrowRight,
   Globe2,
-  Award,
   Users,
   Building2,
   Target,
@@ -17,12 +15,8 @@ import {
   BarChart3,
   Clock,
   MapPin,
-  Briefcase,
   Heart,
   Lightbulb,
-  Rocket,
-  ChevronRight,
-  Quote,
   ExternalLink,
   LogIn,
   Headphones,
@@ -168,60 +162,64 @@ const industries = [
 export default function AboutPage() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Hero Section - Two column layout */}
+      <section className="relative py-20 lg:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-purple-500/5" />
+        <div className="absolute top-10 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center max-w-4xl mx-auto">
-            <span className="inline-block px-4 py-1.5 text-sm font-medium bg-accent/10 text-accent rounded-full mb-6">
-              About Checkit
-            </span>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Powering{' '}
-              <span className="text-gradient">Predictive Operations</span>{' '}
-              Worldwide
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-muted mb-8 max-w-3xl mx-auto">
-              We're on a mission to eliminate operational waste and transform how organizations 
-              manage compliance, safety, and performance. Our platform combines IoT sensors, 
-              mobile apps, and AI-powered analytics to deliver predictable, scalable, and simple operations.
-            </p>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left column - Text content */}
+            <div>
+              <span className="inline-block px-4 py-1.5 text-sm font-medium bg-accent/10 text-accent rounded-full mb-6">
+                About Checkit
+              </span>
+              
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 leading-tight">
+                Powering{' '}
+                <span className="text-gradient">Predictive Operations</span>{' '}
+                Worldwide
+              </h1>
+              
+              <p className="text-lg text-muted mb-8">
+                We're on a mission to eliminate operational waste and transform how organizations 
+                manage compliance, safety, and performance. Our platform combines IoT sensors, 
+                mobile apps, and AI-powered analytics to deliver predictable, scalable, and simple operations.
+              </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <DemoRequestButton />
-              <Link
-                href="/platform"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-              >
-                Explore Platform
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 border-y border-border bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {companyStats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="text-center">
-                  <div className="w-12 h-12 mx-auto rounded-lg bg-accent/10 flex items-center justify-center mb-3">
-                    <Icon className="w-6 h-6 text-accent" />
-                  </div>
-                  <div className="text-3xl lg:text-4xl font-bold text-foreground mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted">{stat.label}</div>
+              {/* Quick highlights */}
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <span>ISO 17025 Accredited</span>
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <span>25+ Countries</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <CheckCircle2 className="w-4 h-4 text-success" />
+                  <span>10+ Years</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Stats grid */}
+            <div className="grid grid-cols-2 gap-4">
+              {companyStats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="bg-surface/80 backdrop-blur border border-border rounded-xl p-6 text-center">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-accent/10 flex items-center justify-center mb-3">
+                      <Icon className="w-5 h-5 text-accent" />
+                    </div>
+                    <div className="text-2xl lg:text-3xl font-bold text-foreground mb-1">{stat.value}</div>
+                    <div className="text-xs text-muted">{stat.label}</div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -545,77 +543,6 @@ export default function AboutPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Certifications Section */}
-      <section className="py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-accent/10 via-surface to-purple-500/10 rounded-2xl p-8 lg:p-12">
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-4">
-                  Enterprise-Grade Compliance & Security
-                </h2>
-                <p className="text-muted mb-6">
-                  Checkit meets the highest standards for quality, security, and regulatory compliance. 
-                  Our certifications give you confidence that your data and operations are protected.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-4 py-2">
-                    <Award className="w-5 h-5 text-accent" />
-                    <span className="text-sm font-medium text-foreground">ISO 17025</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-4 py-2">
-                    <Award className="w-5 h-5 text-accent" />
-                    <span className="text-sm font-medium text-foreground">UKAS Accredited</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-4 py-2">
-                    <Shield className="w-5 h-5 text-accent" />
-                    <span className="text-sm font-medium text-foreground">SOC 2 Type II</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-surface border border-border rounded-lg px-4 py-2">
-                    <Shield className="w-5 h-5 text-accent" />
-                    <span className="text-sm font-medium text-foreground">GDPR Compliant</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-center lg:text-right">
-                <a
-                  href="https://www.checkit.net/certifications"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-                >
-                  View All Certifications
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-r from-accent/10 via-surface to-purple-500/10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Ready to Transform Your Operations?
-          </h2>
-          <p className="text-lg text-muted mb-8 max-w-2xl mx-auto">
-            Join hundreds of organizations worldwide who trust Checkit to power their 
-            compliance, monitoring, and operational intelligence.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <DemoRequestButton />
-            <Link
-              href="/platform"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-            >
-              Explore the Platform
-              <ArrowRight className="w-4 h-4" />
-            </Link>
           </div>
         </div>
       </section>

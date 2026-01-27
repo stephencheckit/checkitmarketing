@@ -59,7 +59,13 @@ import {
   LineChart,
   ShieldAlert,
   Trash2,
-  CalendarCheck
+  CalendarCheck,
+  DoorOpen,
+  SprayCan,
+  Package,
+  FileCheck,
+  ClipboardCheck,
+  Settings
 } from 'lucide-react';
 
 // Hero stats
@@ -168,6 +174,58 @@ const useCases = [
   },
 ];
 
+// Workflow actions - What can you do
+const workflowActions = [
+  {
+    icon: DoorOpen,
+    title: 'Opening & Closing Checks',
+    description: 'Standardize daily routines with digital checklists for shift start and end procedures.',
+    color: 'bg-blue-500',
+  },
+  {
+    icon: Thermometer,
+    title: 'Temperature Logging',
+    description: 'Manual temperature checks with digital sign-off, photo capture, and corrective actions.',
+    color: 'bg-red-500',
+  },
+  {
+    icon: SprayCan,
+    title: 'Cleaning & Sanitation',
+    description: 'Schedule and track cleaning tasks with verification steps and compliance documentation.',
+    color: 'bg-cyan-500',
+  },
+  {
+    icon: Utensils,
+    title: 'Food Safety (HACCP)',
+    description: 'HACCP-compliant workflows for food handling, preparation, and storage checks.',
+    color: 'bg-emerald-500',
+  },
+  {
+    icon: Settings,
+    title: 'Equipment Checks',
+    description: 'Daily, weekly, or monthly equipment inspections with maintenance logging.',
+    color: 'bg-orange-500',
+  },
+  {
+    icon: Package,
+    title: 'Receiving & Inventory',
+    description: 'Goods-in checks, delivery verification, and stock rotation workflows.',
+    color: 'bg-purple-500',
+  },
+  {
+    icon: FileCheck,
+    title: 'Safety Audits',
+    description: 'Health and safety inspections, fire safety checks, and compliance audits.',
+    color: 'bg-yellow-500',
+  },
+  {
+    icon: ClipboardCheck,
+    title: 'Custom Workflows',
+    description: 'Build any workflow you need—from incident reporting to training verification.',
+    color: 'bg-pink-500',
+  },
+];
+
 // Product components
 const productComponents = [
   {
@@ -212,10 +270,10 @@ const outcomes = [
     textColor: 'text-blue-500',
   },
   {
-    icon: Activity,
-    title: 'Monitoring',
-    subtitle: '24/7 automated protection',
-    description: 'Continuous sensor monitoring protects your assets, products, and operations around the clock.',
+    icon: Shield,
+    title: 'Safety',
+    subtitle: 'Protect people and products',
+    description: 'From food temperatures to medication storage, automated monitoring catches issues before they become incidents.',
     stats: [
       { value: '99.9%', label: 'Temperature compliance' },
       { value: '73%', label: 'Fewer safety incidents' },
@@ -595,6 +653,47 @@ export default function HomePage() {
                   </h3>
                   <p className="text-sm text-muted leading-relaxed">
                     {useCase.description}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* What Can You Do Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/10 text-accent rounded-full mb-4">
+              <ClipboardList className="w-4 h-4 inline mr-1" />
+              Digital Workflows
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              What Can You Do?
+            </h2>
+            <p className="text-lg text-muted max-w-2xl mx-auto">
+              Replace paper-based processes with digital checklists, tasks, and workflows 
+              that drive accountability and ensure nothing gets missed.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {workflowActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <div 
+                  key={action.title} 
+                  className="bg-surface border border-border rounded-xl p-5 hover:border-accent/30 transition-all group"
+                >
+                  <div className={`w-10 h-10 rounded-lg ${action.color} flex items-center justify-center mb-3`}>
+                    <Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
+                    {action.title}
+                  </h3>
+                  <p className="text-sm text-muted leading-relaxed">
+                    {action.description}
                   </p>
                 </div>
               );

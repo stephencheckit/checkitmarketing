@@ -464,7 +464,7 @@ export default function HomePage() {
               The Problem
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Operational Non-Compliance & Waste
+              Operational Non-Compliance & Waste is a Drain
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Manual processes, paper logs, and disconnected systems create compliance gaps, 
@@ -875,14 +875,14 @@ export default function HomePage() {
                   className="w-full h-80 object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-surface border border-border rounded-xl p-4 shadow-xl">
+              <div className="absolute -bottom-6 -left-6 bg-white rounded-xl p-4 shadow-xl">
                 <div className="flex items-center gap-3">
                   <img 
                     src="/texas-tech-logo.png" 
                     alt="Texas Tech" 
                     className="h-12 object-contain"
                   />
-                  <div className="w-px h-10 bg-border" />
+                  <div className="w-px h-10 bg-gray-200" />
                   <img 
                     src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
                     alt="OVG Hospitality" 

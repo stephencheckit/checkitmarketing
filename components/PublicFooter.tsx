@@ -103,7 +103,7 @@ export default function PublicFooter() {
                   className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
                 >
                   <LogIn className="w-3 h-3" />
-                  Employee Portal
+                  GTM Hub
                 </a>
               </li>
               <li>

@@ -21,13 +21,15 @@ import {
   Layers,
   User,
   Heart,
-  Pill,
   ShoppingCart,
-  Stethoscope,
   Handshake,
   Store,
   CheckCircle2,
-  RotateCcw
+  RotateCcw,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  List
 } from 'lucide-react';
 
 interface Post {
@@ -53,8 +55,6 @@ const personas: Persona[] = [
   { id: 'uk-vp-sales', name: 'Tonks', role: 'UK VP of Sales', focus: 'Multi-site food safety, temp monitoring, retention/expansion', icon: TrendingUp, color: 'blue' },
   { id: 'us-vp-sales', name: 'Ryan', role: 'US VP of Sales', focus: 'Plasma, critical inventory, senior living, digitizing ops', icon: TrendingUp, color: 'emerald' },
   { id: 'us-senior-living', name: 'Albert', role: 'US Head of Sales', focus: 'Senior living market, landing new deals', icon: Heart, color: 'rose' },
-  { id: 'us-medical', name: 'Megan', role: 'US Head of Sales - Medical', focus: 'CAM+ expansion, new medical use cases, referrals', icon: Stethoscope, color: 'cyan' },
-  { id: 'uk-nhs', name: 'Megan', role: 'UK Head of NHS Pharmacy', focus: 'NHS pharmacy, medical compliance, expanding accounts', icon: Pill, color: 'purple' },
   { id: 'uk-food-retail', name: 'April', role: 'UK Head of Food Retail', focus: 'BP, JLP, enterprise multi-site, food safety', icon: Store, color: 'orange' },
   { id: 'uk-cs', name: 'Ellie', role: 'UK Head of CS', focus: 'Expansion, Asset Intelligence upsell, customer value', icon: Handshake, color: 'green' },
 ];
@@ -66,8 +66,6 @@ const categories = [
   { id: 'multisite', name: 'Multi-Site Operations', icon: Building2 },
   { id: 'food-safety', name: 'Food Safety & Retail', icon: ShoppingCart },
   { id: 'senior-living', name: 'Senior Living', icon: Heart },
-  { id: 'medical', name: 'Medical & Plasma', icon: Stethoscope },
-  { id: 'nhs', name: 'NHS & Pharmacy', icon: Pill },
   { id: 'expansion', name: 'Customer Expansion', icon: TrendingUp },
   { id: 'compliance', name: 'Compliance & Safety', icon: Shield },
 ];
@@ -454,141 +452,6 @@ Not a source of anxiety.`,
     hashtags: ['SeniorLiving', 'StateSurvey', 'Compliance', 'Operations']
   },
 
-  // MEDICAL & PLASMA - US VP SALES, US MEDICAL
-  {
-    id: 'medical-1',
-    category: 'medical',
-    personas: ['us-vp-sales', 'us-medical'],
-    title: 'Protecting Critical Inventory',
-    content: `In plasma centers, a single freezer failure can destroy $500K in product.
-
-In pharma, temperature excursions can invalidate entire batches.
-
-In blood banks, cold chain breaks can cost lives.
-
-The stakes in medical and life sciences aren't measured in dollars alone.
-
-They're measured in treatments that never reach patients.
-
-Continuous monitoring. Instant alerts. Predictive warnings.
-
-This isn't operational optimization. It's operational necessity.`,
-    hashtags: ['PlasmaCenter', 'ColdChain', 'MedicalCompliance', 'LifeSciences']
-  },
-  {
-    id: 'medical-2',
-    category: 'medical',
-    personas: ['us-medical', 'us-vp-sales'],
-    title: 'FDA/AABB Compliance Reality',
-    content: `FDA inspections don't give second chances.
-
-AABB accreditation isn't optional.
-
-In plasma and blood products, compliance isn't a box to check.
-
-It's the foundation everything else builds on.
-
-The centers with the cleanest records have something in common:
-
-→ Automated documentation
-→ Real-time temperature monitoring
-→ Auditable, tamper-evident records
-→ Proactive issue identification
-
-When the inspector arrives, they're not scrambling.
-
-They're showcasing.`,
-    hashtags: ['FDA', 'AABB', 'PlasmaCenter', 'Compliance']
-  },
-  {
-    id: 'medical-3',
-    category: 'medical',
-    personas: ['us-medical'],
-    title: 'Expanding CAM+ Use Cases',
-    content: `The same precision monitoring that protects plasma works everywhere critical inventory lives.
-
-→ University research labs with irreplaceable samples
-→ Pharmaceutical distribution centers
-→ Veterinary vaccine storage
-→ Biotech startups with priceless compounds
-
-Every organization with temperature-sensitive inventory faces the same question:
-
-"Can we afford a failure?"
-
-The answer is always no.
-
-The solution is always the same: continuous monitoring with intelligent alerting.`,
-    hashtags: ['ColdChain', 'LifeSciences', 'Research', 'Pharma']
-  },
-
-  // NHS & PHARMACY - UK NHS
-  {
-    id: 'nhs-1',
-    category: 'nhs',
-    personas: ['uk-nhs'],
-    title: 'GPhC Compliance Without the Headache',
-    content: `Community pharmacies face a unique compliance challenge.
-
-GPhC requirements. Controlled drugs monitoring. Fridge temperature logs. Cleaning records.
-
-All while serving customers, managing prescriptions, and running a business.
-
-The pharmacies thriving in this environment have one thing in common:
-
-They've automated the compliance burden.
-
-Digital workflows. Automated temperature monitoring. Real-time visibility.
-
-Compliance becomes a byproduct of good operations.
-
-Not a separate job.`,
-    hashtags: ['NHSPharmacy', 'GPhC', 'Compliance', 'CommunityPharmacy']
-  },
-  {
-    id: 'nhs-2',
-    category: 'nhs',
-    personas: ['uk-nhs'],
-    title: 'Controlled Drugs Accountability',
-    content: `Controlled drugs accountability isn't getting easier.
-
-Regulations are tightening. Scrutiny is increasing. Mistakes are costly.
-
-The pharmacies ahead of this curve are:
-
-→ Digitizing CD registers
-→ Automating safe custody checks
-→ Creating auditable trails for every transaction
-→ Eliminating paper-based gaps
-
-This isn't about avoiding penalties.
-
-It's about protecting patients, protecting staff, and protecting the pharmacy's reputation.`,
-    hashtags: ['ControlledDrugs', 'NHSPharmacy', 'Compliance', 'PatientSafety']
-  },
-  {
-    id: 'nhs-3',
-    category: 'nhs',
-    personas: ['uk-nhs'],
-    title: 'Pharmacy Temperature Monitoring',
-    content: `"The fridge was checked at 8am and 6pm."
-
-What about the other 20 hours?
-
-In a pharmacy, temperature excursions don't just mean spoilage.
-
-They mean vaccines that might not work.
-Medicines that might not be effective.
-Patient safety that can't be guaranteed.
-
-Continuous monitoring isn't overkill.
-
-It's the only way to know—with certainty—that medicines are safe.
-
-Every hour. Every day. Every pharmacy.`,
-    hashtags: ['PharmacyCompliance', 'ColdChain', 'VaccineSafety', 'NHS']
-  },
-
   // CUSTOMER EXPANSION - UK CS, ALL SALES
   {
     id: 'expand-1',
@@ -659,7 +522,7 @@ Every successful pilot should have a rollout plan built in from day one.`,
   {
     id: 'expand-4',
     category: 'expansion',
-    personas: ['us-medical', 'us-vp-sales'],
+    personas: ['us-vp-sales'],
     title: 'Referral-Driven Growth',
     content: `In specialized markets, referrals are everything.
 
@@ -683,7 +546,7 @@ Referral-driven growth isn't passive. It's a strategy.`,
   {
     id: 'comp-1',
     category: 'compliance',
-    personas: ['ceo', 'uk-vp-sales', 'us-vp-sales', 'uk-food-retail', 'uk-nhs'],
+    personas: ['ceo', 'uk-vp-sales', 'us-vp-sales', 'uk-food-retail'],
     title: 'Compliance Data as Early Warning',
     content: `Compliance scores don't just tell you about compliance.
 
@@ -704,7 +567,7 @@ Use compliance data as an early warning system—not just a scorecard.`,
   {
     id: 'comp-2',
     category: 'compliance',
-    personas: ['uk-vp-sales', 'uk-food-retail', 'uk-nhs', 'us-senior-living'],
+    personas: ['uk-vp-sales', 'uk-food-retail', 'us-senior-living'],
     title: 'Before the Auditor Arrives',
     content: `The best time to prepare for an audit is not the week before.
 
@@ -796,7 +659,7 @@ It's "what's your next step?"`,
 // Track used posts by persona: { personaId: Set of postIds }
 type UsedPostsMap = Record<string, Set<string>>;
 
-export default function KitsToolkitPage() {
+export default function SocialToolkitPage() {
   const [posts, setPosts] = useState<Post[]>(defaultPosts);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<string | null>(null);
@@ -805,6 +668,12 @@ export default function KitsToolkitPage() {
   const [editForm, setEditForm] = useState<{ title: string; content: string; hashtags: string }>({ title: '', content: '', hashtags: '' });
   const [showNewForm, setShowNewForm] = useState(false);
   const [showUsed, setShowUsed] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [scheduledPosts, setScheduledPosts] = useState<Record<string, string[]>>(() => {
+    // postId -> array of ISO date strings when scheduled
+    return {};
+  });
   const [usedPosts, setUsedPosts] = useState<UsedPostsMap>(() => {
     // Initialize empty sets for each persona
     const initial: UsedPostsMap = {};
@@ -960,6 +829,49 @@ export default function KitsToolkitPage() {
     }
   };
 
+  // Calendar helpers
+  const getDaysInMonth = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay();
+    return { daysInMonth, startingDay };
+  };
+
+  const getDateKey = (year: number, month: number, day: number) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+
+  const schedulePost = (postId: string, dateKey: string) => {
+    setScheduledPosts(prev => {
+      const existing = prev[postId] || [];
+      if (existing.includes(dateKey)) {
+        // Remove if already scheduled
+        return { ...prev, [postId]: existing.filter(d => d !== dateKey) };
+      }
+      return { ...prev, [postId]: [...existing, dateKey] };
+    });
+  };
+
+  const getPostsForDate = (dateKey: string) => {
+    return Object.entries(scheduledPosts)
+      .filter(([_, dates]) => dates.includes(dateKey))
+      .map(([postId]) => posts.find(p => p.id === postId))
+      .filter(Boolean) as Post[];
+  };
+
+  const prevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const nextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -968,19 +880,46 @@ export default function KitsToolkitPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Crown className="w-7 h-7 text-amber-400" />
-              Kit&apos;s Toolkit
+              Social Toolkit
             </h1>
             <p className="text-sm text-muted mt-1">
               Thought leadership posts for the team • Copy, edit, and track usage
             </p>
           </div>
-          <button
-            onClick={() => setShowNewForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Post
-          </button>
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex items-center bg-surface-elevated rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-accent text-white'
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                List
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                  viewMode === 'calendar'
+                    ? 'bg-accent text-white'
+                    : 'text-muted hover:text-foreground'
+                }`}
+              >
+                <Calendar className="w-4 h-4" />
+                Calendar
+              </button>
+            </div>
+            <button
+              onClick={() => setShowNewForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              New Post
+            </button>
+          </div>
         </div>
 
         {/* Persona Filter */}
@@ -1155,15 +1094,17 @@ export default function KitsToolkitPage() {
           </div>
         )}
 
-        {/* Results count */}
-        <div className="mb-4 text-sm text-muted">
-          Showing {filteredPosts.length} posts
-          {selectedPersona && ` for ${personas.find(p => p.id === selectedPersona)?.name}`}
-          {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
-        </div>
+        {viewMode === 'list' ? (
+          <>
+            {/* Results count */}
+            <div className="mb-4 text-sm text-muted">
+              Showing {filteredPosts.length} posts
+              {selectedPersona && ` for ${personas.find(p => p.id === selectedPersona)?.name}`}
+              {selectedCategory && ` in ${categories.find(c => c.id === selectedCategory)?.name}`}
+            </div>
 
-        {/* Posts */}
-        <div className="space-y-4">
+            {/* Posts */}
+            <div className="space-y-4">
           {filteredPosts.map((post) => {
             const category = categories.find(c => c.id === post.category);
             const isEditing = editingId === post.id;
@@ -1287,9 +1228,154 @@ export default function KitsToolkitPage() {
           })}
         </div>
 
-        {filteredPosts.length === 0 && (
-          <div className="text-center py-12 text-muted">
-            No posts match the current filters.
+            {filteredPosts.length === 0 && (
+              <div className="text-center py-12 text-muted">
+                No posts match the current filters.
+              </div>
+            )}
+          </>
+        ) : (
+          /* Calendar View */
+          <div className="bg-surface border border-border rounded-xl p-6">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={prevMonth}
+                className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <h2 className="text-xl font-semibold text-foreground">
+                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+              </h2>
+              <button
+                onClick={nextMonth}
+                className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {/* Day Headers */}
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center text-xs text-muted py-2 font-medium">
+                  {day}
+                </div>
+              ))}
+
+              {/* Calendar Days */}
+              {(() => {
+                const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
+                const days = [];
+                const today = new Date();
+                const isCurrentMonth = today.getMonth() === currentMonth.getMonth() && today.getFullYear() === currentMonth.getFullYear();
+
+                // Empty cells for days before the month starts
+                for (let i = 0; i < startingDay; i++) {
+                  days.push(<div key={`empty-${i}`} className="min-h-[100px] bg-surface-elevated/30 rounded-lg" />);
+                }
+
+                // Days of the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                  const dateKey = getDateKey(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                  const scheduledForDay = getPostsForDate(dateKey);
+                  const isToday = isCurrentMonth && today.getDate() === day;
+
+                  days.push(
+                    <div
+                      key={day}
+                      className={`min-h-[100px] bg-surface-elevated rounded-lg p-2 transition-colors ${
+                        isToday ? 'ring-2 ring-accent' : ''
+                      }`}
+                    >
+                      <div className={`text-sm font-medium mb-1 ${isToday ? 'text-accent' : 'text-muted'}`}>
+                        {day}
+                      </div>
+                      <div className="space-y-1">
+                        {scheduledForDay.slice(0, 3).map((post) => {
+                          const persona = personas.find(p => post.personas.includes(p.id));
+                          return (
+                            <div
+                              key={post.id}
+                              className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${getPersonaColor(persona?.id || '')}`}
+                              title={`${post.title}\nClick to unschedule`}
+                              onClick={() => schedulePost(post.id, dateKey)}
+                            >
+                              {post.title}
+                            </div>
+                          );
+                        })}
+                        {scheduledForDay.length > 3 && (
+                          <div className="text-[10px] text-muted">+{scheduledForDay.length - 3} more</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return days;
+              })()}
+            </div>
+
+            {/* Drag/Drop Area - Unscheduled Posts */}
+            <div className="mt-6 pt-6 border-t border-border">
+              <h3 className="text-sm font-medium text-foreground mb-3">
+                Available Posts ({filteredPosts.length})
+                <span className="text-muted font-normal ml-2">Click a post, then click a date to schedule</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
+                {filteredPosts.map((post) => {
+                  const scheduled = scheduledPosts[post.id]?.length > 0;
+                  return (
+                    <div
+                      key={post.id}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        scheduled
+                          ? 'bg-green-500/10 border-green-500/30'
+                          : 'bg-surface-elevated border-border hover:border-accent/50'
+                      }`}
+                      onClick={() => {
+                        const today = new Date();
+                        const dateKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
+                        schedulePost(post.id, dateKey);
+                      }}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{post.title}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {post.personas.slice(0, 2).map(personaId => {
+                              const persona = personas.find(p => p.id === personaId);
+                              return persona ? (
+                                <span key={personaId} className={`px-1.5 py-0.5 text-[10px] rounded ${getPersonaColor(personaId)}`}>
+                                  {persona.name}
+                                </span>
+                              ) : null;
+                            })}
+                            {post.personas.length > 2 && (
+                              <span className="text-[10px] text-muted">+{post.personas.length - 2}</span>
+                            )}
+                          </div>
+                        </div>
+                        {scheduled && (
+                          <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 ml-2" />
+                        )}
+                      </div>
+                      {scheduledPosts[post.id]?.length > 0 && (
+                        <div className="mt-2 text-[10px] text-muted">
+                          Scheduled: {scheduledPosts[post.id].map(d => {
+                            const date = new Date(d);
+                            return `${date.getMonth() + 1}/${date.getDate()}`;
+                          }).join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 

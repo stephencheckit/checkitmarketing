@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
   Building2,
@@ -18,6 +19,19 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Senior Living Compliance Software | Food Safety & Resident Wellness',
+  description: 'Checkit helps senior living communities maintain food safety compliance, protect resident wellness, and streamline culinary operations across multiple communities. Trusted by Morningstar, Atria, and leading operators.',
+  keywords: ['senior living compliance', 'food safety senior care', 'resident wellness', 'HACCP senior living', 'culinary compliance software'],
+  openGraph: {
+    title: 'Senior Living Compliance Software | Checkit',
+    description: 'Food safety and compliance solutions designed for senior living communities.',
+  },
+  alternates: {
+    canonical: 'https://checkit-marketing.vercel.app/industries/senior-living',
+  },
+};
 
 // Product components for senior living
 const productComponents = [

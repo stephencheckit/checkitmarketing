@@ -1,22 +1,13 @@
-'use client';
-
+import { Metadata } from 'next';
 import Link from 'next/link';
-import { useState } from 'react';
-import DemoRequestModal from '@/components/DemoRequestModal';
+import HomeNav from '@/components/HomeNav';
+import HomeFooter from '@/components/HomeFooter';
 import DemoRequestButton from '@/components/DemoRequestButton';
 import { 
   ArrowRight,
-  Menu,
-  X,
-  Headphones,
-  Facebook,
-  Linkedin,
-  Youtube,
   Building2,
-  Pill,
   ShoppingCart,
   UtensilsCrossed,
-  Droplets,
   CheckCircle2,
   Shield,
   Clock,
@@ -36,15 +27,7 @@ import {
   Smartphone,
   Monitor,
   Layers,
-  Play,
   ChevronRight,
-  Quote,
-  Users,
-  BarChart3,
-  Zap,
-  LogIn,
-  ExternalLink,
-  Apple,
   ClipboardList,
   Droplet,
   Wind,
@@ -54,19 +37,51 @@ import {
   Sparkles,
   Brain,
   Gauge,
-  DollarSign,
   Wrench,
   LineChart,
   ShieldAlert,
-  Trash2,
   CalendarCheck,
   DoorOpen,
   SprayCan,
   Package,
   FileCheck,
-  ClipboardCheck,
-  Settings
+  Settings,
+  Droplets
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Checkit V6 | Intelligent Compliance, Safety & Visibility Platform',
+  description: 'Transform operations with intelligent compliance. Checkit V6 combines IoT sensors, mobile apps, and cloud analytics to deliver automated monitoring, streamlined operations, and complete visibility across all your locations. Trusted by 500+ locations worldwide.',
+  keywords: [
+    'compliance software',
+    'operational compliance',
+    'food safety software',
+    'temperature monitoring',
+    'IoT sensors',
+    'HACCP compliance',
+    'multi-site management',
+    'digital checklists',
+    'audit trail',
+    'senior living compliance',
+    'food retail compliance',
+    'facilities food service'
+  ],
+  openGraph: {
+    title: 'Checkit V6 | Intelligent Compliance Platform',
+    description: 'Transform operations with intelligent compliance. IoT sensors, mobile apps, and cloud analytics for automated monitoring and real-time visibility.',
+    type: 'website',
+    url: 'https://checkit-marketing.vercel.app',
+    images: ['/checkit v6-1.webp'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Checkit V6 | Intelligent Compliance Platform',
+    description: 'Transform operations with intelligent compliance. IoT sensors, mobile apps, and cloud analytics.',
+  },
+  alternates: {
+    canonical: 'https://checkit-marketing.vercel.app',
+  },
+};
 
 // Hero stats
 const heroStats = [
@@ -361,97 +376,10 @@ const featuredCaseStudies = [
 ];
 
 export default function HomePage() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [showDemoModal, setShowDemoModal] = useState(false);
-
   return (
-    <>
-      <DemoRequestModal 
-        isOpen={showDemoModal} 
-        onClose={() => setShowDemoModal(false)} 
-      />
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-16">
-            <Link href="/" className="flex items-center shrink-0">
-              <img 
-                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-                alt="Checkit" 
-                className="h-6"
-              />
-            </Link>
-
-            <nav className="hidden md:flex items-center justify-center gap-6 flex-1">
-              <Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">
-                Platform
-              </Link>
-              <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
-                Industries
-              </Link>
-              <Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">
-                Stories
-              </Link>
-              <Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">
-                About Us
-              </Link>
-            </nav>
-
-            <div className="hidden md:flex items-center shrink-0">
-              <DemoRequestButton label="Request Demo" />
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer ml-auto"
-            >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          {mobileOpen && (
-            <div className="md:hidden border-t border-border py-4">
-              <nav className="space-y-1">
-                <Link
-                  href="/platform"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  Platform
-                </Link>
-                <Link
-                  href="/industries"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  Industries
-                </Link>
-                <Link
-                  href="/case-studies"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  Stories
-                </Link>
-                <Link
-                  href="/about"
-                  onClick={() => setMobileOpen(false)}
-                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-                >
-                  About Us
-                </Link>
-                <div className="border-t border-border my-3" />
-                <div className="mx-3">
-                  <DemoRequestButton label="Request Demo" className="w-full justify-center" />
-                </div>
-              </nav>
-            </div>
-          )}
-        </div>
-      </header>
+      {/* Navigation - Client Component */}
+      <HomeNav />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32 overflow-hidden">
@@ -500,7 +428,7 @@ export default function HomePage() {
           <div className="mt-16 relative max-w-5xl mx-auto">
             <img 
               src="/checkit v6-1.webp" 
-              alt="Checkit V6 Platform Dashboard" 
+              alt="Checkit V6 Platform Dashboard showing real-time compliance monitoring across multiple locations" 
               className="w-full h-auto"
             />
           </div>
@@ -536,7 +464,7 @@ export default function HomePage() {
               The Problem
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Operational Non-Compliance & Waste is a Drain
+              Operational Non-Compliance &amp; Waste is a Drain
             </h2>
             <p className="text-lg text-muted max-w-2xl mx-auto">
               Manual processes, paper logs, and disconnected systems create compliance gaps, 
@@ -1097,197 +1025,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12 bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-            {/* Brand */}
-            <div className="lg:col-span-2">
-              <img 
-                src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-                alt="Checkit" 
-                className="h-6 mb-4"
-              />
-              <p className="text-sm text-muted mb-6 max-w-sm">
-                Purpose-built compliance and monitoring solutions for operational excellence. 
-                Sensors, apps, and cloud analytics working together.
-              </p>
-              
-              {/* App Downloads */}
-              <div className="flex flex-col gap-2">
-                <span className="text-xs text-muted uppercase tracking-wider font-medium">Get the Mobile App</span>
-                <div className="flex items-center gap-3">
-                  <a 
-                    href="https://apps.apple.com/us/app/checkit-cwm/id6463000375"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-surface-elevated border border-border rounded-lg hover:border-accent/50 transition-colors"
-                  >
-                    <Apple className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="text-[10px] text-muted leading-none">Download on the</div>
-                      <div className="text-sm font-semibold text-foreground leading-tight">App Store</div>
-                    </div>
-                  </a>
-                  <a 
-                    href="https://play.google.com/store/apps/details?id=net.checkit.checkitandroid&hl=en_GB"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-2 bg-surface-elevated border border-border rounded-lg hover:border-accent/50 transition-colors"
-                  >
-                    <Play className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="text-[10px] text-muted leading-none">GET IT ON</div>
-                      <div className="text-sm font-semibold text-foreground leading-tight">Google Play</div>
-                    </div>
-                  </a>
-                </div>
-              </div>
-            </div>
-            
-            {/* Platform */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-4">Platform</h4>
-              <ul className="space-y-2">
-                <li><Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
-                <li><Link href="/platform#sensors" className="text-sm text-muted hover:text-foreground transition-colors">Sensors</Link></li>
-                <li><Link href="/platform#apps" className="text-sm text-muted hover:text-foreground transition-colors">Mobile Apps</Link></li>
-                <li><Link href="/platform#platform" className="text-sm text-muted hover:text-foreground transition-colors">Cloud Platform</Link></li>
-              </ul>
-            </div>
-            
-            {/* More */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-4">More</h4>
-              <ul className="space-y-2">
-                <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
-                <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Stories</Link></li>
-                <li><Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">About Us</Link></li>
-              </ul>
-            </div>
-            
-            {/* Login & Access */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-4">Access</h4>
-              <ul className="space-y-2">
-                <li>
-                  <a 
-                    href="https://app.checkit.net" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Platform Login
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/login" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    <LogIn className="w-3 h-3" />
-                    GTM Hub
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="https://www.checkit.net/support/raise-a-ticket" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    <Headphones className="w-3 h-3" />
-                    Submit Support Ticket
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="https://apps.apple.com/us/app/checkit-cwm/id6463000375" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    <Apple className="w-3 h-3" />
-                    iOS App
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="https://play.google.com/store/apps/details?id=net.checkit.checkitandroid&hl=en_GB" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    <Play className="w-3 h-3" />
-                    Android App
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          {/* Bottom bar */}
-          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-muted">
-              &copy; {new Date().getFullYear()} Checkit. All rights reserved.
-            </p>
-            
-            {/* Social Links */}
-            <div className="flex items-center gap-4">
-              <a 
-                href="https://www.facebook.com/Checkit.net" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted hover:text-foreground transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://x.com/_checkit" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted hover:text-foreground transition-colors"
-                aria-label="X (Twitter)"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </a>
-              <a 
-                href="https://www.linkedin.com/company/checkit-ltd" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted hover:text-foreground transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://www.youtube.com/channel/UC_YtXdvdVvgENqnPndHrAAA" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-muted hover:text-foreground transition-colors"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <a href="https://www.checkit.net/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
-                Privacy Policy
-              </a>
-              <a href="https://www.checkit.net/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
-                Terms of Service
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <HomeFooter />
     </div>
-    </>
   );
 }

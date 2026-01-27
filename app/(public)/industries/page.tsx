@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
   Building2, 
@@ -11,6 +12,18 @@ import {
   Globe2,
   Award
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Industries We Serve | Senior Living, Food Retail & Facilities',
+  description: 'Checkit delivers industry-specific compliance and monitoring solutions for senior living communities, food retail operations, and facilities food service. Purpose-built for multi-site operational excellence.',
+  openGraph: {
+    title: 'Industries We Serve | Checkit',
+    description: 'Purpose-built compliance and monitoring solutions for senior living, food retail, and facilities food service.',
+  },
+  alternates: {
+    canonical: 'https://checkit-marketing.vercel.app/industries',
+  },
+};
 
 const industries = [
   {

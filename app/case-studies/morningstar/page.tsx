@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Script from 'next/script';
 import { 
   CheckCircle2,
   Thermometer,
@@ -25,6 +26,46 @@ import {
 
 // Morningstar Teal/Green - Senior Living health-focused
 const MORNINGSTAR_TEAL = '#0D9488';
+
+// Article schema for AI search
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Morningstar Senior Living: Modernizing Food Safety & Compliance at Scale',
+  description: 'How Morningstar Senior Living transformed food safety compliance across 41 communities with Checkit\'s digital platform, reducing admin time and improving audit readiness.',
+  image: 'https://checkit-marketing.vercel.app/morningstar-of-arvada.jpg',
+  author: {
+    '@type': 'Organization',
+    name: 'Checkit'
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Checkit',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg'
+    }
+  },
+  datePublished: '2024-06-01',
+  dateModified: '2025-01-01',
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': 'https://checkit-marketing.vercel.app/case-studies/morningstar'
+  },
+  about: {
+    '@type': 'Organization',
+    name: 'Morningstar Senior Living',
+    description: 'Senior living operator with 41 communities nationwide'
+  },
+  mentions: [
+    {
+      '@type': 'Product',
+      name: 'Checkit V6 Platform',
+      description: 'Digital compliance and monitoring platform'
+    }
+  ],
+  keywords: ['senior living compliance', 'food safety', 'HACCP', 'digital transformation', 'Morningstar Senior Living', 'case study']
+};
 
 // Key metrics
 const metrics = [
@@ -129,6 +170,12 @@ export default function MorningstarCaseStudy() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      {/* Article Schema for AI Search */}
+      <Script
+        id="morningstar-article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* Cover Page Hero */}
       <section className="relative min-h-[80vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}

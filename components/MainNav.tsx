@@ -29,7 +29,8 @@ import {
   ExternalLink,
   Send,
   MapPin,
-  Users
+  Users,
+  Settings
 } from 'lucide-react';
 
 interface MainNavProps {
@@ -91,7 +92,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/content', label: 'Content', icon: FileText },
     { href: '/channels', label: 'Channels', icon: Megaphone },
     { href: '/outbound', label: 'Outbound', icon: Send },
-    { href: '/kits-toolkit', label: "Kit's Toolkit", icon: Crown },
+    { href: '/social-toolkit', label: "Social Toolkit", icon: Crown },
   ];
 
   const salesItems = [
@@ -385,6 +386,16 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                         <p className="text-sm font-medium text-foreground">{userName}</p>
                         <p className="text-xs text-muted mt-0.5">{userRole === 'admin' ? 'Administrator' : 'Team Member'}</p>
                       </div>
+                    )}
+                    
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-surface transition-colors"
+                      >
+                        <Settings className="w-4 h-4" />
+                        Admin Settings
+                      </Link>
                     )}
                     
                     <div className="border-t border-border">

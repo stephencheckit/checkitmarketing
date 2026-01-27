@@ -20,6 +20,57 @@ export const metadata: Metadata = {
     shortcut: "/checkit-favicon.webp",
     apple: "/checkit-favicon.webp",
   },
+  metadataBase: new URL('https://checkit-marketing.vercel.app'),
+};
+
+// Organization and WebSite structured data for AI search engines
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Checkit',
+  url: 'https://checkit-marketing.vercel.app',
+  logo: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg',
+  description: 'Checkit delivers intelligent compliance and monitoring solutions combining IoT sensors, mobile apps, and cloud analytics for operational excellence.',
+  sameAs: [
+    'https://www.linkedin.com/company/checkit-ltd',
+    'https://www.facebook.com/Checkit.net',
+    'https://x.com/_checkit',
+    'https://www.youtube.com/channel/UC_YtXdvdVvgENqnPndHrAAA'
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'sales',
+    url: 'https://www.checkit.net/support/raise-a-ticket'
+  },
+  foundingDate: '2005',
+  numberOfEmployees: {
+    '@type': 'QuantitativeValue',
+    minValue: 50,
+    maxValue: 200
+  },
+  areaServed: ['US', 'GB', 'EU'],
+  knowsAbout: [
+    'Food Safety Compliance',
+    'Temperature Monitoring',
+    'HACCP Compliance',
+    'Operational Compliance',
+    'IoT Sensors',
+    'Senior Living Operations',
+    'Food Retail Operations',
+    'Facilities Food Service'
+  ]
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Checkit',
+  url: 'https://checkit-marketing.vercel.app',
+  description: 'Intelligent compliance and monitoring platform for multi-site operations.',
+  publisher: {
+    '@type': 'Organization',
+    name: 'Checkit'
+  }
 };
 
 export default function RootLayout({
@@ -29,6 +80,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Organization Schema for AI Search */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        {/* WebSite Schema for AI Search */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+      </head>
       <body
         className={`${leagueSpartan.variable} font-sans antialiased min-h-screen w-full`}
       >

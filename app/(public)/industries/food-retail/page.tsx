@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
   ShoppingCart,
@@ -18,6 +19,19 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Food Retail Compliance Software | Convenience Stores & Food-to-Go',
+  description: 'Checkit helps food retailers maintain temperature compliance, food safety standards, and operational efficiency across hundreds of convenience stores and food-to-go locations. Trusted by BP and major retailers.',
+  keywords: ['food retail compliance', 'convenience store food safety', 'food-to-go compliance', 'temperature monitoring retail', 'HACCP food retail'],
+  openGraph: {
+    title: 'Food Retail Compliance Software | Checkit',
+    description: 'Food safety and compliance solutions for convenience stores and food-to-go operations.',
+  },
+  alternates: {
+    canonical: 'https://checkit-marketing.vercel.app/industries/food-retail',
+  },
+};
 
 // Product components for food retail
 const productComponents = [

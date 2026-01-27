@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
   ArrowRight,
@@ -6,6 +7,18 @@ import {
   Users,
   Shield
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Customer Success Stories | Real Results from Real Operations',
+  description: 'See how leading organizations like Texas Tech, OVG Hospitality, and Morningstar Senior Living use Checkit to transform compliance, protect operations, and achieve ROI within months.',
+  openGraph: {
+    title: 'Customer Success Stories | Checkit',
+    description: 'Real results from real operations - see how organizations achieve compliance and ROI with Checkit.',
+  },
+  alternates: {
+    canonical: 'https://checkit-marketing.vercel.app/case-studies',
+  },
+};
 
 // Case studies data
 const caseStudies = [

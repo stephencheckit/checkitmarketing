@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Script from 'next/script';
 import { 
   CheckCircle2,
   Thermometer,
@@ -25,6 +26,53 @@ import {
 
 // Texas Tech Red: #CC0000 (PANTONE 485)
 const TEXAS_TECH_RED = '#CC0000';
+
+// Article schema for AI search
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Texas Tech & OVG Hospitality: Protecting Revenue & Guest Experience at Scale',
+  description: 'How OVG Hospitality at Texas Tech achieved ROI within 2 months using Checkit for temperature monitoring and food safety compliance in college football hospitality.',
+  image: 'https://checkit-marketing.vercel.app/Jones.jpg',
+  author: {
+    '@type': 'Organization',
+    name: 'Checkit'
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: 'Checkit',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg'
+    }
+  },
+  datePublished: '2024-09-01',
+  dateModified: '2025-01-01',
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': 'https://checkit-marketing.vercel.app/case-studies/texas-tech'
+  },
+  about: [
+    {
+      '@type': 'Organization',
+      name: 'Texas Tech University',
+      description: 'Major college athletics program'
+    },
+    {
+      '@type': 'Organization',
+      name: 'OVG Hospitality',
+      description: 'Premium hospitality operator for venues and events'
+    }
+  ],
+  mentions: [
+    {
+      '@type': 'Product',
+      name: 'Checkit V6 Platform',
+      description: 'Digital compliance and monitoring platform'
+    }
+  ],
+  keywords: ['food facilities compliance', 'stadium food safety', 'OVG Hospitality', 'Texas Tech', 'temperature monitoring', 'case study', 'ROI']
+};
 
 // Key metrics
 const metrics = [
@@ -125,6 +173,12 @@ export default function TexasTechCaseStudy() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
+      {/* Article Schema for AI Search */}
+      <Script
+        id="texas-tech-article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* Cover Page Hero */}
       <section className="relative min-h-[80vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden">
         {/* Background Image */}

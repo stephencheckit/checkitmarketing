@@ -304,6 +304,9 @@ export default function HomePage() {
             </Link>
 
             <nav className="hidden md:flex items-center gap-6">
+              <Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">
+                Platform
+              </Link>
               <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
                 Industries
               </Link>

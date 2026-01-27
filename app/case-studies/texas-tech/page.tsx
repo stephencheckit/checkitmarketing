@@ -138,13 +138,6 @@ export default function TexasTechCaseStudy() {
         
         {/* Content */}
         <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-          {/* Checkit Logo */}
-          <img 
-            src="/checkit-logo-horizontal-standard-rgb-white.svg" 
-            alt="Checkit" 
-            className="h-10 lg:h-12 mx-auto mb-16 opacity-90"
-          />
-          
           {/* Badge */}
           <span className="inline-block px-5 py-2 text-base font-semibold bg-white/10 backdrop-blur-sm text-white rounded-full mb-8 border border-white/20">
             Case Study

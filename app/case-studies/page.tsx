@@ -23,6 +23,20 @@ const caseStudies = [
     featured: true,
     logo: '/TexasTech_logo.png',
   },
+  {
+    slug: 'morningstar',
+    title: 'Morningstar Senior Living',
+    subtitle: 'Senior Living Dining & Compliance',
+    description: 'How Morningstar modernized food safety and compliance across 41 communities, delivering consistent resident wellness at scale.',
+    industry: 'Senior Living',
+    product: 'V6',
+    stats: [
+      { value: '41', label: 'Communities' },
+      { value: '100%', label: 'Audit Trail' },
+    ],
+    featured: true,
+    logo: null,
+  },
 ];
 
 export default function CaseStudiesPage() {

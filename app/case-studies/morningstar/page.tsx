@@ -18,7 +18,9 @@ import {
   Smartphone,
   Cloud,
   FileCheck,
-  Eye
+  Eye,
+  Quote,
+  ChefHat
 } from 'lucide-react';
 
 // Morningstar Teal/Green - Senior Living health-focused
@@ -325,7 +327,7 @@ export default function MorningstarCaseStudy() {
         </div>
       </section>
 
-      {/* Champion Section */}
+      {/* Featured Quote - Natalie Brown */}
       <section className="relative py-20 lg:py-24 overflow-hidden" style={{ backgroundColor: MORNINGSTAR_TEAL }}>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -335,22 +337,25 @@ export default function MorningstarCaseStudy() {
         </div>
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-6">
-              <Award className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-8">Championing Innovation</h2>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
-              <h3 className="text-2xl font-bold text-white mb-2">Natalie Brown</h3>
-              <p className="text-white/70 text-lg mb-6">VP of Culinary &amp; Innovation Leader</p>
-              <p className="text-xl text-white/90 leading-relaxed">
-                As the culinary leader and project champion, Natalie Brown drove adoption by aligning the 
-                digital transformation with Morningstar&apos;s commitment to resident experience and operational 
-                excellence. Her forward-thinking leadership ensured the team embraced digital tools to replace 
-                burdensome paper workflows and improve consistency.
-              </p>
-            </div>
-          </div>
+          <Quote className="w-16 h-16 text-white/20 mx-auto mb-6" />
+          <blockquote className="text-center">
+            <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light mb-12">
+              &ldquo;Checkit has transformed how we approach food safety across all our communities. 
+              Our teams now spend <strong className="font-bold">less time on paperwork</strong> and 
+              <strong className="font-bold"> more time with residents</strong>. The real-time visibility 
+              gives me confidence that we&apos;re delivering <strong className="font-bold">consistent, 
+              safe dining experiences</strong> every single day.&rdquo;
+            </p>
+            <footer className="flex items-center justify-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
+                <ChefHat className="w-7 h-7 text-white" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold text-white">Natalie Brown</div>
+                <div className="text-white/70">VP of Culinary, Morningstar Senior Living</div>
+              </div>
+            </footer>
+          </blockquote>
         </div>
       </section>
 
@@ -446,6 +451,35 @@ export default function MorningstarCaseStudy() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* CEO Quote - Kit Kyte */}
+      <section className="relative py-20 lg:py-24 overflow-hidden bg-blue-900">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <Quote className="w-16 h-16 text-white/10 mx-auto mb-6" />
+          <blockquote className="text-center">
+            <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light mb-12">
+              &ldquo;Morningstar exemplifies what&apos;s possible when senior living operators commit to 
+              <strong className="font-bold"> digitizing compliance</strong>. Their leadership recognized 
+              that resident wellness starts with <strong className="font-bold">operational excellence</strong>—and 
+              that paper-based processes simply can&apos;t deliver the consistency and visibility required 
+              at scale. We&apos;re proud to support their mission across <strong className="font-bold">41 communities</strong>.&rdquo;
+            </p>
+            <footer className="flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-lg font-bold text-white">Kit Kyte</div>
+                <div className="text-white/50">CEO, Checkit</div>
+              </div>
+            </footer>
+          </blockquote>
         </div>
       </section>
 

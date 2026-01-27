@@ -802,7 +802,7 @@ export default function PlatformPage() {
                   <div 
                     key={outcome.id} 
                     id={outcome.id}
-                    className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center ${isReversed ? 'lg:flex-row-reverse' : ''}`}
+                    className={`grid lg:grid-cols-2 gap-8 lg:gap-12 items-center scroll-mt-20 ${isReversed ? 'lg:flex-row-reverse' : ''}`}
                   >
                     <div className={isReversed ? 'lg:order-2' : ''}>
                       <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${outcome.bgColor} ${outcome.textColor} text-sm font-medium mb-4`}>
@@ -953,7 +953,7 @@ export default function PlatformPage() {
         {/* ============================================ */}
         {/* SENSORS SECTION */}
         {/* ============================================ */}
-        <section id="sensors" className="py-16 lg:py-24">
+        <section id="sensors" className="py-16 lg:py-24 scroll-mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <span className="inline-block px-4 py-1 text-sm font-medium bg-green-500/10 text-green-500 rounded-full mb-4">
@@ -1108,7 +1108,7 @@ export default function PlatformPage() {
         {/* ============================================ */}
         {/* APPS SECTION */}
         {/* ============================================ */}
-        <section id="apps" className="py-16 lg:py-24 bg-surface-elevated/50">
+        <section id="apps" className="py-16 lg:py-24 bg-surface-elevated/50 scroll-mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <span className="inline-block px-4 py-1 text-sm font-medium bg-blue-500/10 text-blue-500 rounded-full mb-4">
@@ -1207,7 +1207,7 @@ export default function PlatformPage() {
         {/* ============================================ */}
         {/* PLATFORM SECTION */}
         {/* ============================================ */}
-        <section id="platform" className="py-16 lg:py-24">
+        <section id="platform" className="py-16 lg:py-24 scroll-mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <span className="inline-block px-4 py-1 text-sm font-medium bg-purple-500/10 text-purple-500 rounded-full mb-4">

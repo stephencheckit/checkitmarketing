@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Menu,
   X,
+  Headphones,
   Building2,
   Pill,
   ShoppingCart,
@@ -1056,6 +1057,17 @@ export default function HomePage() {
                     <LogIn className="w-3 h-3" />
                     Employee Portal
                   </Link>
+                </li>
+                <li>
+                  <a 
+                    href="https://www.checkit.net/support/raise-a-ticket" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                  >
+                    <Headphones className="w-3 h-3" />
+                    Submit Support Ticket
+                  </a>
                 </li>
                 <li>
                   <a 

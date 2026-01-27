@@ -64,6 +64,7 @@ export default function AdminContributionsPage() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [reviewNotes, setReviewNotes] = useState<Record<number, string>>({});
   const [processing, setProcessing] = useState<number | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const fetchContributions = useCallback(async () => {
     try {
@@ -87,6 +88,7 @@ export default function AdminContributionsPage() {
 
   const handleReview = async (id: number, status: 'approved' | 'rejected') => {
     setProcessing(id);
+    setReviewError(null);
     try {
       const response = await fetch(`/api/contributions/${id}`, {
         method: 'PATCH',
@@ -97,22 +99,27 @@ export default function AdminContributionsPage() {
         })
       });
 
-      if (response.ok) {
-        // Remove from list or update status
-        if (filter === 'pending') {
-          setContributions(prev => prev.filter(c => c.id !== id));
-        } else {
-          fetchContributions();
-        }
-        setExpandedId(null);
-        setReviewNotes(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to ${status} contribution`);
       }
+
+      // Remove from list or update status
+      if (filter === 'pending') {
+        setContributions(prev => prev.filter(c => c.id !== id));
+      } else {
+        fetchContributions();
+      }
+      setExpandedId(null);
+      setReviewNotes(prev => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     } catch (error) {
       console.error('Failed to review contribution:', error);
+      setReviewError(error instanceof Error ? error.message : 'Failed to review contribution');
     } finally {
       setProcessing(null);
     }
@@ -149,7 +156,7 @@ export default function AdminContributionsPage() {
             <div className="flex items-center bg-surface-elevated rounded-lg p-1">
               <button
                 onClick={() => setFilter('pending')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
                   filter === 'pending' 
                     ? 'bg-accent text-white' 
                     : 'text-muted hover:text-foreground'
@@ -160,7 +167,7 @@ export default function AdminContributionsPage() {
               </button>
               <button
                 onClick={() => setFilter('all')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
                   filter === 'all' 
                     ? 'bg-accent text-white' 
                     : 'text-muted hover:text-foreground'
@@ -173,7 +180,7 @@ export default function AdminContributionsPage() {
             
             <button
               onClick={fetchContributions}
-              className="p-2 text-muted hover:text-foreground transition-colors"
+              className="p-2 text-muted hover:text-foreground transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -310,12 +317,19 @@ export default function AdminContributionsPage() {
                             />
                           </div>
 
+                          {/* Error Message */}
+                          {reviewError && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                              {reviewError}
+                            </div>
+                          )}
+
                           {/* Action Buttons */}
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleReview(contribution.id, 'rejected')}
                               disabled={isProcessing}
-                              className="flex items-center gap-2 px-4 py-2 text-sm bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                              className="flex items-center gap-2 px-4 py-2 text-sm bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               <XCircle className="w-4 h-4" />
                               Reject
@@ -323,7 +337,7 @@ export default function AdminContributionsPage() {
                             <button
                               onClick={() => handleReview(contribution.id, 'approved')}
                               disabled={isProcessing}
-                              className="flex items-center gap-2 px-4 py-2 text-sm bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50"
+                              className="flex items-center gap-2 px-4 py-2 text-sm bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               <CheckCircle className="w-4 h-4" />
                               Approve

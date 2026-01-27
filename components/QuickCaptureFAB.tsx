@@ -31,6 +31,8 @@ const routeMappings: Record<string, RouteMapping> = {
   '/reference': { targetType: 'positioning', targetSection: 'Reference', label: 'Reference' },
   '/learn': { targetType: 'positioning', targetSection: 'Training', label: 'Training' },
   '/dashboard': { targetType: 'positioning', targetSection: 'General', label: 'General' },
+  '/ovg-analytics': { targetType: 'positioning', targetSection: 'Accounts', label: 'Accounts' },
+  '/tools': { targetType: 'positioning', targetSection: 'Tools', label: 'Tools' },
 };
 
 const defaultMapping: RouteMapping = {

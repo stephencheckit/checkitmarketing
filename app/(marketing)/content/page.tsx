@@ -118,6 +118,7 @@ export default function ContentPage() {
   const [loadingInnovation, setLoadingInnovation] = useState(false);
   const [innovationError, setInnovationError] = useState<string | null>(null);
   const [expandedInnovation, setExpandedInnovation] = useState<Set<number>>(new Set([0]));
+  const [innovationGenerated, setInnovationGenerated] = useState(false); // Track if ideas were already generated
 
   // Load saved ideas on mount
   const loadSavedIdeas = useCallback(async () => {
@@ -352,6 +353,7 @@ export default function ContentPage() {
       const data = await res.json();
       setInnovationIdeas(data.ideas);
       setExpandedInnovation(new Set([0]));
+      setInnovationGenerated(true); // Mark as generated to prevent auto-regeneration
     } catch (err) {
       setInnovationError(err instanceof Error ? err.message : 'Failed to generate innovation ideas');
     } finally {
@@ -359,12 +361,12 @@ export default function ContentPage() {
     }
   }, [competitorFeeds]);
 
-  // Auto-generate innovation when switching to that tab (if we have feeds but no ideas)
+  // Auto-generate innovation when switching to that tab (only once, if we have feeds but never generated)
   useEffect(() => {
-    if (activeTab === 'innovation' && competitorFeeds && innovationIdeas.length === 0 && !loadingInnovation) {
+    if (activeTab === 'innovation' && competitorFeeds && !innovationGenerated && !loadingInnovation) {
       generateInnovationIdeas();
     }
-  }, [activeTab, competitorFeeds, innovationIdeas.length, loadingInnovation, generateInnovationIdeas]);
+  }, [activeTab, competitorFeeds, innovationGenerated, loadingInnovation, generateInnovationIdeas]);
 
   // Generate Checkit response to competitor content
   const generateResponse = async (competitorName: string, item: RSSFeedItem) => {
@@ -453,16 +455,16 @@ export default function ContentPage() {
               <>
                 <button
                   onClick={() => setShowContribution(true)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors cursor-pointer"
                 >
                   <Lightbulb className="w-4 h-4" />
-                  Suggest Idea
+                  Add Contribution
                 </button>
                 
                 <button
                   onClick={generateIdeas}
                   disabled={loading}
-                  className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                  className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium cursor-pointer"
                 >
                   <Sparkles className={`w-4 h-4 ${loading ? 'animate-pulse' : ''}`} />
                   {loading ? 'Generating...' : 'Generate Ideas'}
@@ -473,7 +475,7 @@ export default function ContentPage() {
               <button
                 onClick={() => fetchCompetitorFeeds(true)}
                 disabled={loadingFeeds}
-                className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium cursor-pointer"
               >
                 <RefreshCw className={`w-4 h-4 ${loadingFeeds ? 'animate-spin' : ''}`} />
                 {loadingFeeds ? 'Refreshing...' : 'Refresh Feeds'}
@@ -483,7 +485,7 @@ export default function ContentPage() {
               <button
                 onClick={generateInnovationIdeas}
                 disabled={loadingInnovation || !competitorFeeds}
-                className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium cursor-pointer"
               >
                 <Zap className={`w-4 h-4 ${loadingInnovation ? 'animate-pulse' : ''}`} />
                 {loadingInnovation ? 'Generating...' : 'Generate Innovation Ideas'}
@@ -496,7 +498,7 @@ export default function ContentPage() {
         <div className="flex items-center gap-1 mb-6 bg-surface-elevated rounded-lg p-1 w-fit">
           <button
             onClick={() => setActiveTab('ideas')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors cursor-pointer ${
               activeTab === 'ideas'
                 ? 'bg-accent text-white'
                 : 'text-muted hover:text-foreground'
@@ -507,7 +509,7 @@ export default function ContentPage() {
           </button>
           <button
             onClick={() => setActiveTab('competitor-watch')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors cursor-pointer ${
               activeTab === 'competitor-watch'
                 ? 'bg-accent text-white'
                 : 'text-muted hover:text-foreground'
@@ -518,7 +520,7 @@ export default function ContentPage() {
           </button>
           <button
             onClick={() => setActiveTab('innovation')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm rounded-md transition-colors cursor-pointer ${
               activeTab === 'innovation'
                 ? 'bg-accent text-white'
                 : 'text-muted hover:text-foreground'

@@ -205,7 +205,7 @@ export default function ContributionModal({
               <Lightbulb className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Add Insight</h2>
+              <h2 className="text-lg font-semibold text-foreground">Add Contribution</h2>
               <p className="text-sm text-muted">
                 {targetLabels[targetType]}
                 {sectionLabel && <span className="text-accent"> &gt; {sectionLabel}</span>}
@@ -276,7 +276,7 @@ export default function ContributionModal({
                   type="button"
                   onClick={startRecording}
                   disabled={!contributionType || isTranscribing || micPermission === 'denied'}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Mic className="w-4 h-4" />
                   Start Recording
@@ -285,7 +285,7 @@ export default function ContributionModal({
                 <button
                   type="button"
                   onClick={stopRecording}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors animate-pulse"
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors animate-pulse cursor-pointer"
                 >
                   <Square className="w-4 h-4" />
                   Stop Recording
@@ -313,7 +313,7 @@ export default function ContributionModal({
           {/* Content Input */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Your insight {content && <span className="text-muted font-normal">({content.length} chars)</span>}
+              Your contribution {content && <span className="text-muted font-normal">({content.length} chars)</span>}
             </label>
             <textarea
               value={content}
@@ -389,16 +389,16 @@ export default function ContributionModal({
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
+              className="px-4 py-2 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!contributionType || !content.trim() || isSubmitting || isRecording || isTranscribing}
-              className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Insight'}
+              {isSubmitting ? 'Submitting...' : 'Submit Contribution'}
             </button>
           </div>
         </form>

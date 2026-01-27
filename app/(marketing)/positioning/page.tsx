@@ -348,7 +348,7 @@ export default function PositioningPage() {
               className="flex items-center gap-2 px-3 py-2 text-sm bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors cursor-pointer"
             >
               <Lightbulb className="w-4 h-4" />
-              Quick Insight
+              Add Contribution
             </button>
           </div>
         </div>

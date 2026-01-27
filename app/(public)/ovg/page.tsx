@@ -118,22 +118,18 @@ export default function OVGMicrositeHome() {
       {/* Stats Bar */}
       <section className="bg-gray-900 border-y border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-1">{stats.total}+</div>
-              <div className="text-gray-400 text-sm">OVG Venues</div>
+              <div className="text-3xl md:text-4xl font-bold text-white mb-1">Multiple Sites</div>
+              <div className="text-gray-400 text-sm">Enterprise-Level Coverage</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-green-400 mb-1">{stats.contracted}</div>
-              <div className="text-gray-400 text-sm">Live with Checkit</div>
+              <div className="text-3xl md:text-4xl font-bold text-blue-400 mb-1">24/7</div>
+              <div className="text-gray-400 text-sm">Continuous Monitoring</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-yellow-400 mb-1">{stats.engaged}</div>
-              <div className="text-gray-400 text-sm">In Active Discussions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-400 mb-1">24/7</div>
-              <div className="text-gray-400 text-sm">Automated Monitoring</div>
+              <div className="text-3xl md:text-4xl font-bold text-green-400 mb-1">100%</div>
+              <div className="text-gray-400 text-sm">Protection & Compliance</div>
             </div>
           </div>
         </div>

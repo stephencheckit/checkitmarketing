@@ -40,11 +40,11 @@ export default function InlineAddButton({
       <>
         <button
           onClick={() => setShowModal(true)}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-accent/10 text-accent rounded-full hover:bg-accent/20 transition-colors ${className}`}
-          title={`Add insight for ${sectionLabel}`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-accent/10 text-accent rounded-full hover:bg-accent/20 transition-colors cursor-pointer ${className}`}
+          title={`Add contribution for ${sectionLabel}`}
         >
           <Plus className="w-3 h-3" />
-          Add Tip
+          Add Contribution
         </button>
         <ContributionModal
           isOpen={showModal}
@@ -62,11 +62,11 @@ export default function InlineAddButton({
       <>
         <button
           onClick={() => setShowModal(true)}
-          className={`inline-flex items-center gap-1 text-xs text-muted hover:text-accent transition-colors ${className}`}
-          title={`Add insight for ${sectionLabel}`}
+          className={`inline-flex items-center gap-1 text-xs text-muted hover:text-accent transition-colors cursor-pointer ${className}`}
+          title={`Add contribution for ${sectionLabel}`}
         >
           <Lightbulb className="w-3 h-3" />
-          <span>Add insight</span>
+          <span>Add contribution</span>
         </button>
         <ContributionModal
           isOpen={showModal}
@@ -84,8 +84,8 @@ export default function InlineAddButton({
     <>
       <button
         onClick={() => setShowModal(true)}
-        className={`${sizeClasses[size]} flex items-center justify-center rounded-md bg-surface-elevated border border-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all ${className}`}
-        title={`Add insight for ${sectionLabel}`}
+        className={`${sizeClasses[size]} flex items-center justify-center rounded-md bg-surface-elevated border border-border text-muted hover:text-accent hover:border-accent/50 hover:bg-accent/10 transition-all cursor-pointer ${className}`}
+        title={`Add contribution for ${sectionLabel}`}
       >
         <Plus className={iconSizes[size]} />
       </button>

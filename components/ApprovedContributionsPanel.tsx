@@ -12,17 +12,15 @@ import {
   Clock
 } from 'lucide-react';
 
-interface Contribution {
-  id: number;
-  user_name: string | null;
-  user_email: string | null;
-  target_type: 'positioning' | 'competitors' | 'content';
-  target_section: string | null;
-  contribution_type: 'intel' | 'suggestion' | 'question' | 'correction';
+// Contributed insight stored in document versions
+interface ContributedInsight {
+  contributionId: number;
+  contributorName: string | null;
+  isAnonymous: boolean;
   content: string;
-  is_anonymous: boolean;
-  status: 'approved' | 'auto_published';
-  created_at: string;
+  contributionType: 'intel' | 'suggestion' | 'question' | 'correction';
+  targetSection: string | null;
+  addedAt: string;
 }
 
 interface ApprovedContributionsPanelProps {
@@ -41,36 +39,64 @@ export default function ApprovedContributionsPanel({
   targetType,
   className = ''
 }: ApprovedContributionsPanelProps) {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [insights, setInsights] = useState<ContributedInsight[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchContributions();
+    fetchInsights();
+    
+    // Listen for contribution updates to refresh
+    const handleContributionUpdate = () => {
+      fetchInsights();
+    };
+    window.addEventListener('contribution-updated', handleContributionUpdate);
+    return () => {
+      window.removeEventListener('contribution-updated', handleContributionUpdate);
+    };
   }, [targetType]);
 
-  const fetchContributions = async () => {
+  const fetchInsights = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/contributions?view=approved-for-target&targetType=${targetType}`
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setContributions(data.contributions || []);
+      
+      // Fetch from the appropriate document API to get contributedInsights
+      const endpoint = targetType === 'positioning' 
+        ? '/api/positioning' 
+        : targetType === 'competitors' 
+        ? '/api/battlecard' 
+        : null;
+      
+      if (!endpoint) {
+        setInsights([]);
+        return;
+      }
+      
+      const response = await fetch(endpoint);
+      const result = await response.json();
+      
+      if (response.ok && result.data?.contributedInsights) {
+        // Sort by addedAt descending (newest first)
+        const sortedInsights = [...result.data.contributedInsights].sort(
+          (a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime()
+        );
+        setInsights(sortedInsights);
+      } else {
+        setInsights([]);
       }
     } catch (error) {
-      console.error('Failed to fetch contributions:', error);
+      console.error('Failed to fetch insights:', error);
+      setInsights([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const copyContent = async (contribution: Contribution) => {
+  const copyContent = async (insight: ContributedInsight) => {
     try {
-      await navigator.clipboard.writeText(contribution.content);
-      setCopiedId(contribution.id);
+      await navigator.clipboard.writeText(insight.content);
+      setCopiedId(insight.contributionId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
       console.error('Failed to copy');
@@ -88,8 +114,8 @@ export default function ApprovedContributionsPanel({
     return null; // Don't show anything while loading
   }
 
-  if (contributions.length === 0) {
-    return null; // Don't show panel if no contributions
+  if (insights.length === 0) {
+    return null; // Don't show panel if no insights
   }
 
   return (
@@ -108,7 +134,7 @@ export default function ApprovedContributionsPanel({
               Team Contributions
             </h3>
             <p className="text-xs text-muted">
-              {contributions.length} approved insight{contributions.length !== 1 ? 's' : ''} to incorporate
+              {insights.length} insight{insights.length !== 1 ? 's' : ''} incorporated into this version
             </p>
           </div>
         </div>
@@ -122,49 +148,49 @@ export default function ApprovedContributionsPanel({
       {/* Expanded content */}
       {isExpanded && (
         <div className="border-t border-success/20 p-4 space-y-3 max-h-96 overflow-y-auto">
-          {contributions.map((contribution) => (
+          {insights.map((insight) => (
             <div 
-              key={contribution.id}
+              key={insight.contributionId}
               className="bg-surface border border-border rounded-lg p-3"
             >
               {/* Meta row */}
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-xs">
-                  {contribution.is_anonymous ? (
+                  {insight.isAnonymous ? (
                     <Users className="w-3 h-3 text-muted" />
                   ) : (
                     <User className="w-3 h-3 text-muted" />
                   )}
                   <span className="text-muted">
-                    {contribution.is_anonymous 
+                    {insight.isAnonymous 
                       ? 'Anonymous' 
-                      : contribution.user_name || contribution.user_email
+                      : insight.contributorName || 'Team member'
                     }
                   </span>
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${typeColors[contribution.contribution_type]}`}>
-                    {contribution.contribution_type}
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${typeColors[insight.contributionType]}`}>
+                    {insight.contributionType}
                   </span>
-                  {contribution.target_section && (
-                    <span className="text-muted">• {contribution.target_section}</span>
+                  {insight.targetSection && (
+                    <span className="text-muted">• {insight.targetSection}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-1 text-xs text-muted">
                   <Clock className="w-3 h-3" />
-                  {formatDate(contribution.created_at)}
+                  {formatDate(insight.addedAt)}
                 </div>
               </div>
 
               {/* Content */}
               <p className="text-sm text-foreground whitespace-pre-wrap mb-2">
-                {contribution.content}
+                {insight.content}
               </p>
 
               {/* Copy button */}
               <button
-                onClick={() => copyContent(contribution)}
+                onClick={() => copyContent(insight)}
                 className="flex items-center gap-1.5 text-xs text-muted hover:text-foreground transition-colors"
               >
-                {copiedId === contribution.id ? (
+                {copiedId === insight.contributionId ? (
                   <>
                     <Check className="w-3 h-3 text-success" />
                     <span className="text-success">Copied!</span>

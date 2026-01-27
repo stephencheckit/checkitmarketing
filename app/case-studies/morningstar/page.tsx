@@ -468,10 +468,10 @@ export default function MorningstarCaseStudy() {
           <blockquote className="text-center">
             <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light mb-12">
               &ldquo;Morningstar exemplifies what&apos;s possible when senior living operators commit to 
-              <strong className="font-bold"> digitizing compliance</strong>. Their leadership recognized 
-              that resident wellness starts with <strong className="font-bold">operational excellence</strong>—and 
+              <strong className="font-bold">digitizing compliance</strong>. Their leadership recognized 
+              that resident wellness starts with <strong className="font-bold">excellence at the technology level</strong>—and 
               that paper-based processes simply can&apos;t deliver the consistency and visibility required 
-              at scale. We&apos;re proud to support their mission across <strong className="font-bold">41 communities</strong>.&rdquo;
+              at scale. We&apos;re proud to support their mission across <strong className="font-bold">41 communities</strong> with more to come.&rdquo;
             </p>
             <footer className="flex items-center justify-center">
               <div className="text-center">

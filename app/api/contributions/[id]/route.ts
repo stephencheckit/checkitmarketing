@@ -8,8 +8,22 @@ import {
   createCitation,
   getCurrentPositioningData,
   getCurrentBattlecardData,
+  savePositioningVersion,
+  saveBattlecardVersion,
+  getUserById,
   type TargetType
 } from '@/lib/db';
+
+// Interface for contributed insights stored in document versions
+interface ContributedInsight {
+  contributionId: number;
+  contributorName: string | null;
+  isAnonymous: boolean;
+  content: string;
+  contributionType: string;
+  targetSection: string | null;
+  addedAt: string;
+}
 
 // Initialize tables on first request
 let tablesInitialized = false;
@@ -103,41 +117,104 @@ export async function PATCH(
       return NextResponse.json({ error: 'Contribution not found' }, { status: 404 });
     }
 
-    // If approved, auto-create a citation linking to current version
+    // If approved, create a new version with the contribution incorporated
     let citation = null;
+    let newVersion = null;
     if (status === 'approved') {
       try {
-        // Get current version ID based on target type
-        let versionId: number | null = null;
         const targetType = contribution.target_type as TargetType;
+        
+        // Get contributor name for the insight
+        let contributorName: string | null = null;
+        if (!contribution.is_anonymous && contribution.user_id) {
+          const contributor = await getUserById(contribution.user_id);
+          contributorName = contributor?.name || null;
+        }
+        
+        // Create the insight object to add to the document
+        const newInsight: ContributedInsight = {
+          contributionId: contribution.id,
+          contributorName: contribution.is_anonymous ? null : contributorName,
+          isAnonymous: contribution.is_anonymous,
+          content: contribution.content,
+          contributionType: contribution.contribution_type,
+          targetSection: contribution.target_section,
+          addedAt: new Date().toISOString()
+        };
+        
+        // Generate change notes
+        const contributorLabel = contribution.is_anonymous 
+          ? 'Anonymous' 
+          : (contributorName || 'Team member');
+        const changeNotes = `Added ${contribution.contribution_type} from ${contributorLabel}${
+          contribution.target_section ? ` for ${contribution.target_section}` : ''
+        }`;
         
         if (targetType === 'positioning') {
           const posData = await getCurrentPositioningData();
-          versionId = posData.current_version;
-        } else if (targetType === 'competitors') {
-          const battlecard = await getCurrentBattlecardData();
-          versionId = battlecard.current_version;
-        }
-        // Note: 'content' type doesn't have versioning yet
-        
-        if (versionId) {
+          const currentData = posData.data || { companyName: 'Checkit', sections: [] };
+          
+          // Add contributedInsights array if it doesn't exist
+          const updatedData = {
+            ...currentData,
+            contributedInsights: [
+              ...(currentData.contributedInsights || []),
+              newInsight
+            ]
+          };
+          
+          // Save new version
+          const result = await savePositioningVersion(updatedData, changeNotes);
+          newVersion = result.version;
+          
+          // Create citation linking to the new version
           citation = await createCitation({
             contributionId: contribution.id,
             versionType: targetType,
-            versionId,
+            versionId: newVersion,
+            sectionId: contribution.target_section || undefined
+          });
+          
+        } else if (targetType === 'competitors') {
+          const battlecard = await getCurrentBattlecardData();
+          const currentData = battlecard.data || { ourCompany: {}, competitors: [], categories: [] };
+          
+          // Add contributedInsights array if it doesn't exist
+          const updatedData = {
+            ...currentData,
+            contributedInsights: [
+              ...(currentData.contributedInsights || []),
+              newInsight
+            ]
+          };
+          
+          // Save new version
+          const result = await saveBattlecardVersion(updatedData, changeNotes);
+          newVersion = result.version;
+          
+          // Create citation linking to the new version
+          citation = await createCitation({
+            contributionId: contribution.id,
+            versionType: targetType,
+            versionId: newVersion,
             sectionId: contribution.target_section || undefined
           });
         }
-      } catch (citationError) {
-        console.error('Failed to create citation:', citationError);
-        // Don't fail the approval if citation creation fails
+        // Note: 'content' type doesn't have versioning yet - just approve without version
+        
+      } catch (versionError) {
+        console.error('Failed to create new version with contribution:', versionError);
+        // Don't fail the approval if version creation fails, but log it
       }
     }
 
     return NextResponse.json({ 
       contribution,
       citation,
-      message: `Contribution ${status}${citation ? ' and cited' : ''}`
+      newVersion,
+      message: status === 'approved' 
+        ? `Contribution approved${newVersion ? ` and added to version ${newVersion}` : ''}`
+        : `Contribution ${status}`
     });
   } catch (error) {
     console.error('Error reviewing contribution:', error);

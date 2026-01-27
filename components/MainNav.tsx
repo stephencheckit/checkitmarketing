@@ -42,7 +42,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const router = useRouter();
   const [marketingOpen, setMarketingOpen] = useState(false);
   const [salesOpen, setSalesOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
   const [trainingOpen, setTrainingOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showMyContributions, setShowMyContributions] = useState(false);
@@ -98,10 +97,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/solutioning', label: 'Solutioning', icon: Presentation },
     { href: '/closing', label: 'Closing', icon: Handshake },
     { href: '/tools', label: 'Tools', icon: Calculator },
-  ];
-
-  const toolsItems = [
-    { href: '/ovg-analytics', label: 'Accounts (OBG)', icon: Building2 },
+    { href: '/ovg-analytics', label: 'Accounts', icon: Building2 },
   ];
 
   const trainingItems = [
@@ -113,7 +109,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const isActive = (href: string) => pathname.startsWith(href);
   const isMarketingActive = marketingItems.some(item => pathname.startsWith(item.href));
   const isSalesActive = salesItems.some(item => pathname.startsWith(item.href));
-  const isToolsActive = toolsItems.some(item => pathname.startsWith(item.href));
   const isTrainingActive = trainingItems.some(item => pathname.startsWith(item.href));
 
   return (
@@ -209,49 +204,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 <div className="absolute top-full left-0 pt-1 z-50">
                   <div className="w-48 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {salesItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
-                            isActive(item.href)
-                              ? 'bg-accent/20 text-accent'
-                              : 'text-muted hover:text-foreground hover:bg-surface'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tools Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setToolsOpen(true)}
-              onMouseLeave={() => setToolsOpen(false)}
-            >
-              <button
-                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                  isToolsActive
-                    ? 'btn-gradient text-white'
-                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                }`}
-              >
-                <Calculator className="w-4 h-4" />
-                <span className="hidden lg:inline">Tools</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${toolsOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {toolsOpen && (
-                <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-48 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
-                    {toolsItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <Link
@@ -464,29 +416,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               <div className="pt-2 mt-2 border-t border-border">
                 <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Sales</p>
                 {salesItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                        isActive(item.href)
-                          ? 'bg-accent text-white'
-                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {/* Tools Section */}
-              <div className="pt-2 mt-2 border-t border-border">
-                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Tools</p>
-                {toolsItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <Link

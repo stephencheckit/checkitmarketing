@@ -317,7 +317,7 @@ export default function OVGAnalyticsPage() {
               <BarChart3 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">OBG Accounts</h1>
+              <h1 className="text-2xl font-bold text-white">OVG Accounts</h1>
               <p className="text-gray-400">Account management and visitor tracking</p>
             </div>
           </div>

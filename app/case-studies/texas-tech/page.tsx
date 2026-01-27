@@ -169,13 +169,13 @@ export default function TexasTechCaseStudy() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Customer Logos - Centered */}
           <div className="flex justify-center mb-12">
-            <div className="bg-gradient-to-r from-gray-950 via-gray-900 to-gray-800 rounded-xl px-8 py-6 border border-gray-700 flex items-center gap-6">
+            <div className="bg-gradient-to-r from-gray-950 via-gray-800 to-gray-100 rounded-xl px-8 py-6 border border-gray-300 flex items-center gap-6 shadow-lg">
               <img 
                 src="/TexasTech_logo.png" 
                 alt="Texas Tech University" 
                 className="h-16 lg:h-20 object-contain"
               />
-              <div className="w-px h-12 bg-gray-600" />
+              <div className="w-px h-12 bg-gray-400" />
               <img 
                 src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
                 alt="OVG Hospitality" 

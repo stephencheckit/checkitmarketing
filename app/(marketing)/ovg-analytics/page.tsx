@@ -59,9 +59,16 @@ interface OVGSite {
   contact_phone: string | null;
 }
 
+interface ExcludedLocation {
+  city: string;
+  region?: string;
+}
+
 interface AnalyticsSummary {
   totalViews: number;
   uniqueVisitors: number;
+  excludedViews?: number;
+  excludedLocations?: ExcludedLocation[];
   byLocation: Array<{
     visitor_city: string;
     visitor_region: string;
@@ -82,6 +89,7 @@ interface AnalyticsSummary {
     visitor_region: string;
     visitor_country: string;
     user_agent: string;
+    referrer?: string;
     first_visit: string;
     last_visit: string;
     page_count: number;
@@ -107,6 +115,9 @@ export default function OVGAnalyticsPage() {
   const [daysBack, setDaysBack] = useState(30);
   const [selectedSite, setSelectedSite] = useState<OVGSite | null>(null);
   
+  // Analytics filtering
+  const [excludeInternal, setExcludeInternal] = useState(true);
+  
   // CRM features
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -124,7 +135,7 @@ export default function OVGAnalyticsPage() {
     setLoading(true);
     try {
       const [analyticsRes, sitesRes] = await Promise.all([
-        fetch(`/api/ovg/analytics?view=summary&days=${daysBack}`),
+        fetch(`/api/ovg/analytics?view=summary&days=${daysBack}&excludeInternal=${excludeInternal}`),
         fetch('/api/ovg/sites'),
       ]);
       
@@ -164,7 +175,7 @@ export default function OVGAnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [daysBack]);
+  }, [daysBack, excludeInternal]);
 
   useEffect(() => {
     loadAnalytics();

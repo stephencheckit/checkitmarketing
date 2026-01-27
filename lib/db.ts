@@ -1859,6 +1859,141 @@ export async function getOVGAnalyticsSummary(daysBack: number = 30) {
   };
 }
 
+// Get analytics summary with location exclusions (for filtering internal team visits)
+export async function getOVGAnalyticsSummaryFiltered(
+  daysBack: number = 30, 
+  excludedLocations: Array<{ city: string; region?: string }> = []
+) {
+  // Build exclusion conditions - we need to exclude matching city+region combos
+  const exclusionCities = excludedLocations.map(loc => loc.city);
+  const exclusionRegions = excludedLocations.map(loc => loc.region || '');
+  
+  const totalViews = await sql`
+    SELECT COUNT(*) as count
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+  `;
+
+  const uniqueVisitors = await sql`
+    SELECT COUNT(DISTINCT visitor_ip) as count
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_ip IS NOT NULL
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+  `;
+
+  const byLocation = await sql`
+    SELECT visitor_city, visitor_region, visitor_country, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_city IS NOT NULL
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+    GROUP BY visitor_city, visitor_region, visitor_country
+    ORDER BY views DESC
+    LIMIT 20
+  `;
+
+  const byDay = await sql`
+    SELECT DATE(viewed_at) as date, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+    GROUP BY DATE(viewed_at)
+    ORDER BY date DESC
+  `;
+
+  // Views by page
+  const byPage = await sql`
+    SELECT page_path, COUNT(*) as views
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+    GROUP BY page_path
+    ORDER BY views DESC
+  `;
+
+  // Recent visitors with all their page visits (with device info)
+  const recentVisitors = await sql`
+    SELECT 
+      visitor_ip,
+      visitor_city,
+      visitor_region,
+      visitor_country,
+      user_agent,
+      referrer,
+      MIN(viewed_at) as first_visit,
+      MAX(viewed_at) as last_visit,
+      COUNT(*) as page_count,
+      ARRAY_AGG(DISTINCT page_path) as pages_visited
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_ip IS NOT NULL
+      AND NOT (
+        visitor_city = ANY(${exclusionCities}) 
+        AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+      )
+    GROUP BY visitor_ip, visitor_city, visitor_region, visitor_country, user_agent, referrer
+    ORDER BY last_visit DESC
+    LIMIT 50
+  `;
+
+  // Sessions by pages visited count
+  const sessionsByPageCount = await sql`
+    SELECT 
+      page_count,
+      COUNT(*) as session_count
+    FROM (
+      SELECT visitor_ip, COUNT(DISTINCT page_path) as page_count
+      FROM ovg_page_analytics
+      WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+        AND visitor_ip IS NOT NULL
+        AND NOT (
+          visitor_city = ANY(${exclusionCities}) 
+          AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+        )
+      GROUP BY visitor_ip
+    ) as sessions
+    GROUP BY page_count
+    ORDER BY page_count
+  `;
+
+  // Count excluded views for transparency
+  const excludedViews = await sql`
+    SELECT COUNT(*) as count
+    FROM ovg_page_analytics
+    WHERE viewed_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      AND visitor_city = ANY(${exclusionCities}) 
+      AND (visitor_region = ANY(${exclusionRegions}) OR visitor_region IS NULL)
+  `;
+
+  return {
+    totalViews: totalViews[0]?.count || 0,
+    uniqueVisitors: uniqueVisitors[0]?.count || 0,
+    excludedViews: excludedViews[0]?.count || 0,
+    byLocation,
+    byDay,
+    byPage,
+    recentVisitors,
+    sessionsByPageCount
+  };
+}
+
 // Get contribution stats (for admin dashboard)
 export async function getContributionStats() {
   const byStatus = await sql`

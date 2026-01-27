@@ -954,14 +954,14 @@ export default function HomePage() {
                   className="w-full h-80 object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-gray-950 via-gray-900 to-gray-800 rounded-xl p-4 shadow-xl border border-gray-700">
+              <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-gray-950 via-gray-800 to-gray-100 rounded-xl p-4 shadow-xl border border-gray-300">
                 <div className="flex items-center gap-3">
                   <img 
                     src="/TexasTech_logo.png" 
                     alt="Texas Tech" 
                     className="h-12 object-contain"
                   />
-                  <div className="w-px h-10 bg-gray-600" />
+                  <div className="w-px h-10 bg-gray-400" />
                   <img 
                     src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
                     alt="OVG Hospitality" 

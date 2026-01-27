@@ -3,6 +3,7 @@ import {
   recordOVGPageView,
   getOVGPageViews,
   getOVGAnalyticsSummary,
+  getOVGAnalyticsSummaryFiltered,
   initializeOVGTables
 } from '@/lib/db';
 
@@ -16,6 +17,13 @@ async function ensureTables() {
   }
 }
 
+// Default internal team locations to exclude
+const DEFAULT_EXCLUDED_LOCATIONS = [
+  { city: 'Palm Harbor', region: 'Florida' },      // Stephen
+  { city: 'Brooklyn', region: 'New York' },        // Jordan
+  { city: 'Fredericksburg', region: 'Virginia' },  // Albert/David Ensign
+];
+
 // GET - Fetch analytics data
 export async function GET(request: NextRequest) {
   try {
@@ -25,10 +33,28 @@ export async function GET(request: NextRequest) {
     const view = searchParams.get('view') || 'summary';
     const daysBack = parseInt(searchParams.get('days') || '30');
     const limit = parseInt(searchParams.get('limit') || '100');
+    const excludeInternal = searchParams.get('excludeInternal') !== 'false'; // Default to true
+    
+    // Parse custom exclusions if provided
+    let excludedLocations = excludeInternal ? DEFAULT_EXCLUDED_LOCATIONS : [];
+    const customExclusions = searchParams.get('excludeLocations');
+    if (customExclusions) {
+      try {
+        const parsed = JSON.parse(customExclusions);
+        excludedLocations = [...excludedLocations, ...parsed];
+      } catch {
+        // Ignore parse errors
+      }
+    }
     
     if (view === 'summary') {
-      const summary = await getOVGAnalyticsSummary(daysBack);
-      return NextResponse.json(summary);
+      const summary = excludedLocations.length > 0
+        ? await getOVGAnalyticsSummaryFiltered(daysBack, excludedLocations)
+        : await getOVGAnalyticsSummary(daysBack);
+      return NextResponse.json({
+        ...summary,
+        excludedLocations: excludeInternal ? DEFAULT_EXCLUDED_LOCATIONS : [],
+      });
     }
     
     // Raw page views

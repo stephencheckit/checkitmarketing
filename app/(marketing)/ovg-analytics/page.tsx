@@ -19,7 +19,16 @@ import {
   Building2,
   CheckCircle2,
   Target,
-  Maximize2
+  Maximize2,
+  Search,
+  Edit3,
+  Save,
+  X,
+  Phone,
+  Mail,
+  User,
+  StickyNote,
+  Loader2
 } from 'lucide-react';
 
 // Dynamically import map component to avoid SSR issues with Leaflet
@@ -97,6 +106,19 @@ export default function OVGAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [daysBack, setDaysBack] = useState(30);
   const [selectedSite, setSelectedSite] = useState<OVGSite | null>(null);
+  
+  // CRM features
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    status: '' as 'contracted' | 'engaged' | 'prospect',
+    notes: '',
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+  });
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
@@ -147,6 +169,74 @@ export default function OVGAnalyticsPage() {
   useEffect(() => {
     loadAnalytics();
   }, [loadAnalytics]);
+
+  // Start editing a site
+  const startEditing = (site: OVGSite) => {
+    setEditForm({
+      status: site.status,
+      notes: site.notes || '',
+      contact_name: site.contact_name || '',
+      contact_email: site.contact_email || '',
+      contact_phone: site.contact_phone || '',
+    });
+    setIsEditing(true);
+  };
+
+  // Save site changes
+  const saveSiteChanges = async () => {
+    if (!selectedSite) return;
+    
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/ovg/sites/${selectedSite.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: editForm.status,
+          notes: editForm.notes || null,
+          contactName: editForm.contact_name || null,
+          contactEmail: editForm.contact_email || null,
+          contactPhone: editForm.contact_phone || null,
+        }),
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updatedSite = {
+          ...selectedSite,
+          status: editForm.status,
+          notes: editForm.notes || null,
+          contact_name: editForm.contact_name || null,
+          contact_email: editForm.contact_email || null,
+          contact_phone: editForm.contact_phone || null,
+        };
+        
+        setSites(prev => prev.map(s => s.id === selectedSite.id ? updatedSite : s));
+        setSelectedSite(updatedSite);
+        setIsEditing(false);
+        
+        // Recalculate stats
+        loadAnalytics();
+      }
+    } catch (error) {
+      console.error('Failed to save:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Filter sites based on search and status
+  const filteredSites = sites.filter(site => {
+    const matchesSearch = searchQuery === '' || 
+      site.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      site.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      site.state?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      site.contact_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || site.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString('en-US', {
@@ -558,6 +648,117 @@ export default function OVGAnalyticsPage() {
           </div>
         </div>
 
+        {/* Accounts List - CRM Section */}
+        <div className="mt-8 bg-gray-800/50 rounded-xl border border-gray-700">
+          <div className="p-4 border-b border-gray-700">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-blue-400" />
+                Accounts ({filteredSites.length})
+              </h2>
+              
+              <div className="flex items-center gap-3">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search accounts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm w-48 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                
+                {/* Status Filter */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm"
+                >
+                  <option value="all">All Status</option>
+                  <option value="contracted">Contracted</option>
+                  <option value="engaged">Engaged</option>
+                  <option value="prospect">Prospect</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto max-h-96 overflow-y-auto">
+            <table className="w-full">
+              <thead className="bg-gray-900/50 sticky top-0">
+                <tr>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Account</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Location</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Type</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Status</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Contact</th>
+                  <th className="text-left px-4 py-3 text-sm font-medium text-gray-400"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700/50">
+                {filteredSites.slice(0, 50).map((site) => (
+                  <tr key={site.id} className="hover:bg-gray-700/30 cursor-pointer" onClick={() => setSelectedSite(site)}>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-white">{site.name}</div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-300 text-sm">
+                      {[site.city, site.state].filter(Boolean).join(', ') || '-'}
+                    </td>
+                    <td className="px-4 py-3">
+                      {site.venue_type && (
+                        <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                          {site.venue_type}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                        site.status === 'contracted' 
+                          ? 'bg-green-500/20 text-green-400'
+                          : site.status === 'engaged'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          site.status === 'contracted' 
+                            ? 'bg-green-500'
+                            : site.status === 'engaged'
+                            ? 'bg-yellow-500'
+                            : 'bg-gray-500'
+                        }`}></span>
+                        {site.status.charAt(0).toUpperCase() + site.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-300 text-sm">
+                      {site.contact_name || <span className="text-gray-600">-</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setSelectedSite(site); }}
+                        className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-white transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredSites.length === 0 && (
+              <div className="p-8 text-center text-gray-500">
+                No accounts match your search criteria
+              </div>
+            )}
+            {filteredSites.length > 50 && (
+              <div className="p-4 text-center text-gray-500 text-sm border-t border-gray-700">
+                Showing 50 of {filteredSites.length} accounts. Use search to narrow results.
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Quick Links */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
@@ -667,73 +868,227 @@ export default function OVGAnalyticsPage() {
           </div>
         </div>
 
-        {/* Site Detail Modal */}
+        {/* Site Detail Modal - Editable */}
         {selectedSite && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-xl max-w-lg w-full border border-gray-700 shadow-2xl">
-              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <div className="bg-gray-800 rounded-xl max-w-lg w-full border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-4 border-b border-gray-700 sticky top-0 bg-gray-800">
                 <h3 className="text-lg font-semibold text-white">{selectedSite.name}</h3>
-                <button
-                  onClick={() => setSelectedSite(null)}
-                  className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-gray-400 hover:text-white"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="p-4 space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-                    selectedSite.status === 'contracted' 
-                      ? 'bg-green-500/20 text-green-400'
-                      : selectedSite.status === 'engaged'
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-gray-500/20 text-gray-400'
-                  }`}>
-                    <span className={`w-2 h-2 rounded-full ${
+                  {!isEditing ? (
+                    <button
+                      onClick={() => startEditing(selectedSite)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm text-white transition-colors"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      Edit
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setIsEditing(false)}
+                        className="px-3 py-1.5 text-gray-400 hover:text-white text-sm transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveSiteChanges}
+                        disabled={isSaving}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded-lg text-sm text-white transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4" />
+                        )}
+                        Save
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => { setSelectedSite(null); setIsEditing(false); }}
+                    className="p-2 hover:bg-gray-700 rounded-lg transition-colors text-gray-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-5">
+                {/* Status */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Status
+                  </h4>
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      {(['prospect', 'engaged', 'contracted'] as const).map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => setEditForm(prev => ({ ...prev, status }))}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                            editForm.status === status
+                              ? status === 'contracted'
+                                ? 'bg-green-500/30 text-green-400 border border-green-500'
+                                : status === 'engaged'
+                                ? 'bg-yellow-500/30 text-yellow-400 border border-yellow-500'
+                                : 'bg-gray-500/30 text-gray-300 border border-gray-500'
+                              : 'bg-gray-700/50 text-gray-400 border border-gray-700 hover:border-gray-600'
+                          }`}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
                       selectedSite.status === 'contracted' 
-                        ? 'bg-green-500'
+                        ? 'bg-green-500/20 text-green-400'
                         : selectedSite.status === 'engaged'
-                        ? 'bg-yellow-500'
-                        : 'bg-gray-500'
-                    }`}></span>
-                    {selectedSite.status.charAt(0).toUpperCase() + selectedSite.status.slice(1)}
-                  </span>
-                  {selectedSite.venue_type && (
-                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
-                      {selectedSite.venue_type}
+                        ? 'bg-yellow-500/20 text-yellow-400'
+                        : 'bg-gray-500/20 text-gray-400'
+                    }`}>
+                      <span className={`w-2 h-2 rounded-full ${
+                        selectedSite.status === 'contracted' 
+                          ? 'bg-green-500'
+                          : selectedSite.status === 'engaged'
+                          ? 'bg-yellow-500'
+                          : 'bg-gray-500'
+                      }`}></span>
+                      {selectedSite.status.charAt(0).toUpperCase() + selectedSite.status.slice(1)}
                     </span>
                   )}
                 </div>
 
-                {(selectedSite.address || selectedSite.city || selectedSite.state) && (
+                {/* Venue Type & Address */}
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedSite.venue_type && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-400 mb-1">Type</h4>
+                      <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">
+                        {selectedSite.venue_type}
+                      </span>
+                    </div>
+                  )}
+                  {(selectedSite.city || selectedSite.state) && (
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-400 mb-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        Location
+                      </h4>
+                      <p className="text-white text-sm">
+                        {[selectedSite.city, selectedSite.state].filter(Boolean).join(', ')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {selectedSite.address && (
                   <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Address</h4>
-                    <p className="text-white">
-                      {selectedSite.address && <span>{selectedSite.address}<br /></span>}
+                    <h4 className="text-sm font-medium text-gray-400 mb-1">Full Address</h4>
+                    <p className="text-white text-sm">
+                      {selectedSite.address}<br />
                       {[selectedSite.city, selectedSite.state, selectedSite.zip].filter(Boolean).join(', ')}
                     </p>
                   </div>
                 )}
 
-                {selectedSite.notes && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Notes</h4>
-                    <p className="text-white text-sm">{selectedSite.notes}</p>
-                  </div>
-                )}
+                {/* Contact Info */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Contact Information
+                  </h4>
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Name</label>
+                        <input
+                          type="text"
+                          value={editForm.contact_name}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, contact_name: e.target.value }))}
+                          placeholder="Contact name"
+                          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Email</label>
+                        <input
+                          type="email"
+                          value={editForm.contact_email}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, contact_email: e.target.value }))}
+                          placeholder="email@example.com"
+                          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Phone</label>
+                        <input
+                          type="tel"
+                          value={editForm.contact_phone}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, contact_phone: e.target.value }))}
+                          placeholder="(555) 123-4567"
+                          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedSite.contact_name ? (
+                        <>
+                          <p className="text-white flex items-center gap-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            {selectedSite.contact_name}
+                          </p>
+                          {selectedSite.contact_email && (
+                            <p className="text-blue-400 text-sm flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-gray-500" />
+                              <a href={`mailto:${selectedSite.contact_email}`} className="hover:underline">
+                                {selectedSite.contact_email}
+                              </a>
+                            </p>
+                          )}
+                          {selectedSite.contact_phone && (
+                            <p className="text-gray-300 text-sm flex items-center gap-2">
+                              <Phone className="w-4 h-4 text-gray-500" />
+                              <a href={`tel:${selectedSite.contact_phone}`} className="hover:underline">
+                                {selectedSite.contact_phone}
+                              </a>
+                            </p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-gray-500 text-sm italic">No contact information</p>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                {selectedSite.contact_name && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Contact</h4>
-                    <p className="text-white">{selectedSite.contact_name}</p>
-                    {selectedSite.contact_email && (
-                      <p className="text-blue-400 text-sm">{selectedSite.contact_email}</p>
-                    )}
-                    {selectedSite.contact_phone && (
-                      <p className="text-gray-400 text-sm">{selectedSite.contact_phone}</p>
-                    )}
-                  </div>
-                )}
+                {/* Notes */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                    <StickyNote className="w-4 h-4" />
+                    Notes
+                  </h4>
+                  {isEditing ? (
+                    <textarea
+                      value={editForm.notes}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Add notes about this account..."
+                      rows={4}
+                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 resize-none"
+                    />
+                  ) : (
+                    <div className="bg-gray-900/50 rounded-lg p-3">
+                      {selectedSite.notes ? (
+                        <p className="text-white text-sm whitespace-pre-wrap">{selectedSite.notes}</p>
+                      ) : (
+                        <p className="text-gray-500 text-sm italic">No notes</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

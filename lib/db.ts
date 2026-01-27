@@ -1899,3 +1899,103 @@ export async function getContributionStats() {
     topContributors
   };
 }
+
+// ============================================
+// PAGE CONTENT (INLINE EDITING) OPERATIONS
+// ============================================
+
+export async function initializePageContentTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS page_content (
+      id SERIAL PRIMARY KEY,
+      page_id VARCHAR(100) NOT NULL,
+      field_id VARCHAR(100) NOT NULL,
+      content TEXT NOT NULL,
+      updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(page_id, field_id)
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_page_content_page ON page_content(page_id)`;
+}
+
+export interface PageContentItem {
+  id: number;
+  page_id: string;
+  field_id: string;
+  content: string;
+  updated_by: number | null;
+  updated_at: string;
+}
+
+// Get all content for a page
+export async function getPageContent(pageId: string): Promise<Record<string, string>> {
+  const results = await sql`
+    SELECT field_id, content FROM page_content WHERE page_id = ${pageId}
+  `;
+  
+  const content: Record<string, string> = {};
+  for (const row of results) {
+    content[row.field_id as string] = row.content as string;
+  }
+  return content;
+}
+
+// Get a single content field
+export async function getPageContentField(pageId: string, fieldId: string): Promise<string | null> {
+  const result = await sql`
+    SELECT content FROM page_content 
+    WHERE page_id = ${pageId} AND field_id = ${fieldId}
+  `;
+  return (result[0]?.content as string) || null;
+}
+
+// Update or create a content field
+export async function upsertPageContent(
+  pageId: string, 
+  fieldId: string, 
+  content: string, 
+  userId?: number
+): Promise<PageContentItem> {
+  const result = await sql`
+    INSERT INTO page_content (page_id, field_id, content, updated_by, updated_at)
+    VALUES (${pageId}, ${fieldId}, ${content}, ${userId || null}, CURRENT_TIMESTAMP)
+    ON CONFLICT (page_id, field_id) DO UPDATE SET
+      content = ${content},
+      updated_by = ${userId || null},
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *
+  `;
+  return result[0] as PageContentItem;
+}
+
+// Batch update multiple fields for a page
+export async function batchUpdatePageContent(
+  pageId: string, 
+  updates: Record<string, string>, 
+  userId?: number
+): Promise<void> {
+  for (const [fieldId, content] of Object.entries(updates)) {
+    await upsertPageContent(pageId, fieldId, content, userId);
+  }
+}
+
+// Delete a content field (revert to default)
+export async function deletePageContentField(pageId: string, fieldId: string): Promise<void> {
+  await sql`
+    DELETE FROM page_content 
+    WHERE page_id = ${pageId} AND field_id = ${fieldId}
+  `;
+}
+
+// Get all pages that have custom content
+export async function getCustomizedPages(): Promise<Array<{ page_id: string; field_count: number }>> {
+  const results = await sql`
+    SELECT page_id, COUNT(*) as field_count
+    FROM page_content
+    GROUP BY page_id
+    ORDER BY page_id
+  `;
+  return results as Array<{ page_id: string; field_count: number }>;
+}

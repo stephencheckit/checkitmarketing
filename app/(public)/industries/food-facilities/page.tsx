@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { 
   UtensilsCrossed,
@@ -19,6 +21,7 @@ import {
   Smartphone,
   Monitor
 } from 'lucide-react';
+import EditableText from '@/components/EditableText';
 
 // Product components for food facilities
 const productComponents = [
@@ -162,13 +165,22 @@ export default function FoodFacilitiesPage() {
               </div>
               
               <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
-                Food Safety for{' '}
-                <span className="text-gradient">Venues & Food Service</span>
+                <EditableText
+                  pageId="food-facilities"
+                  fieldId="hero-headline"
+                  defaultValue="Food Safety for Venues & Food Service"
+                  as="span"
+                />
               </h1>
               
               <p className="text-lg text-muted mb-8">
-                From stadiums to corporate catering, CheckIt helps food facilities 
-                maintain compliance even on the busiest event days.
+                <EditableText
+                  pageId="food-facilities"
+                  fieldId="hero-subtitle"
+                  defaultValue="From stadiums to corporate catering, CheckIt helps food facilities maintain compliance even on the busiest event days."
+                  as="span"
+                  multiline
+                />
               </p>
               
             </div>
@@ -199,30 +211,74 @@ export default function FoodFacilitiesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <span className="inline-block px-4 py-1 text-sm font-medium bg-purple-500/10 text-purple-400 rounded-full mb-4">
-              Outcomes That Matter
+              <EditableText
+                pageId="food-facilities"
+                fieldId="outcomes-badge"
+                defaultValue="Outcomes That Matter"
+                as="span"
+              />
             </span>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Safety. Compliance. Visibility.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="outcomes-headline"
+                defaultValue="Safety. Compliance. Visibility."
+                as="span"
+              />
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              When thousands of guests are counting on you, Checkit ensures food safety, 
-              compliance confidence, and complete operational visibility.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="outcomes-subtitle"
+                defaultValue="When thousands of guests are counting on you, Checkit ensures food safety, compliance confidence, and complete operational visibility."
+                as="span"
+                multiline
+              />
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {outcomes.map((outcome) => {
+            {outcomes.map((outcome, index) => {
               const Icon = outcome.icon;
               return (
                 <div key={outcome.title} className="bg-surface border border-border rounded-xl p-6 text-center">
                   <div className={`w-14 h-14 mx-auto rounded-xl ${outcome.bgColor} flex items-center justify-center mb-4`}>
                     <Icon className={`w-7 h-7 ${outcome.color}`} />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">{outcome.title}</h3>
-                  <p className="text-muted text-sm mb-4">{outcome.description}</p>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    <EditableText
+                      pageId="food-facilities"
+                      fieldId={`outcome-${index}-title`}
+                      defaultValue={outcome.title}
+                      as="span"
+                    />
+                  </h3>
+                  <p className="text-muted text-sm mb-4">
+                    <EditableText
+                      pageId="food-facilities"
+                      fieldId={`outcome-${index}-desc`}
+                      defaultValue={outcome.description}
+                      as="span"
+                      multiline
+                    />
+                  </p>
                   <div className={`inline-block ${outcome.bgColor} rounded-lg px-4 py-2`}>
-                    <span className={`text-xl font-bold ${outcome.color}`}>{outcome.stat}</span>
-                    <span className="text-xs text-muted block">{outcome.statLabel}</span>
+                    <span className={`text-xl font-bold ${outcome.color}`}>
+                      <EditableText
+                        pageId="food-facilities"
+                        fieldId={`outcome-${index}-stat`}
+                        defaultValue={outcome.stat}
+                        as="span"
+                      />
+                    </span>
+                    <span className="text-xs text-muted block">
+                      <EditableText
+                        pageId="food-facilities"
+                        fieldId={`outcome-${index}-stat-label`}
+                        defaultValue={outcome.statLabel}
+                        as="span"
+                      />
+                    </span>
                   </div>
                 </div>
               );
@@ -236,16 +292,26 @@ export default function FoodFacilitiesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              The Challenges You Face
+              <EditableText
+                pageId="food-facilities"
+                fieldId="challenges-headline"
+                defaultValue="The Challenges You Face"
+                as="span"
+              />
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Food facilities operate in high-pressure environments where compliance 
-              must be maintained despite complexity and volume.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="challenges-subtitle"
+                defaultValue="Food facilities operate in high-pressure environments where compliance must be maintained despite complexity and volume."
+                as="span"
+                multiline
+              />
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {problems.map((problem) => {
+            {problems.map((problem, index) => {
               const Icon = problem.icon;
               return (
                 <div key={problem.title} className="bg-surface border border-border rounded-xl p-6">
@@ -255,10 +321,21 @@ export default function FoodFacilitiesPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {problem.title}
+                        <EditableText
+                          pageId="food-facilities"
+                          fieldId={`problem-${index}-title`}
+                          defaultValue={problem.title}
+                          as="span"
+                        />
                       </h3>
                       <p className="text-muted text-sm">
-                        {problem.description}
+                        <EditableText
+                          pageId="food-facilities"
+                          fieldId={`problem-${index}-desc`}
+                          defaultValue={problem.description}
+                          as="span"
+                          multiline
+                        />
                       </p>
                     </div>
                   </div>
@@ -274,16 +351,26 @@ export default function FoodFacilitiesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              How CheckIt Solves It
+              <EditableText
+                pageId="food-facilities"
+                fieldId="solutions-headline"
+                defaultValue="How CheckIt Solves It"
+                as="span"
+              />
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Our V6 platform is built for the intensity of food service operations, 
-              delivering compliance without slowing you down.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="solutions-subtitle"
+                defaultValue="Our V6 platform is built for the intensity of food service operations, delivering compliance without slowing you down."
+                as="span"
+                multiline
+              />
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {solutions.map((solution) => {
+            {solutions.map((solution, index) => {
               const Icon = solution.icon;
               return (
                 <div key={solution.title} className="bg-surface border border-border rounded-xl p-6">
@@ -293,14 +380,30 @@ export default function FoodFacilitiesPage() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        {solution.title}
+                        <EditableText
+                          pageId="food-facilities"
+                          fieldId={`solution-${index}-title`}
+                          defaultValue={solution.title}
+                          as="span"
+                        />
                       </h3>
                       <p className="text-muted text-sm mb-3">
-                        {solution.description}
+                        <EditableText
+                          pageId="food-facilities"
+                          fieldId={`solution-${index}-desc`}
+                          defaultValue={solution.description}
+                          as="span"
+                          multiline
+                        />
                       </p>
                       <div className="flex items-center gap-2 text-sm text-success">
                         <CheckCircle2 className="w-4 h-4" />
-                        {solution.benefit}
+                        <EditableText
+                          pageId="food-facilities"
+                          fieldId={`solution-${index}-benefit`}
+                          defaultValue={solution.benefit}
+                          as="span"
+                        />
                       </div>
                     </div>
                   </div>
@@ -316,24 +419,49 @@ export default function FoodFacilitiesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              The Complete Solution
+              <EditableText
+                pageId="food-facilities"
+                fieldId="products-headline"
+                defaultValue="The Complete Solution"
+                as="span"
+              />
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              Sensors, mobile apps, and cloud platform designed for the unique demands 
-              of high-volume event food service.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="products-subtitle"
+                defaultValue="Sensors, mobile apps, and cloud platform designed for the unique demands of high-volume event food service."
+                as="span"
+                multiline
+              />
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {productComponents.map((component) => {
+            {productComponents.map((component, index) => {
               const Icon = component.icon;
               return (
                 <div key={component.title} className="bg-surface border border-border rounded-xl p-6 text-center">
                   <div className="w-12 h-12 mx-auto rounded-lg bg-purple-500/10 flex items-center justify-center mb-4">
                     <Icon className="w-6 h-6 text-purple-500" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{component.title}</h3>
-                  <p className="text-sm text-muted">{component.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    <EditableText
+                      pageId="food-facilities"
+                      fieldId={`product-${index}-title`}
+                      defaultValue={component.title}
+                      as="span"
+                    />
+                  </h3>
+                  <p className="text-sm text-muted">
+                    <EditableText
+                      pageId="food-facilities"
+                      fieldId={`product-${index}-desc`}
+                      defaultValue={component.description}
+                      as="span"
+                      multiline
+                    />
+                  </p>
                 </div>
               );
             })}
@@ -346,11 +474,21 @@ export default function FoodFacilitiesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Why CheckIt for Food Facilities
+              <EditableText
+                pageId="food-facilities"
+                fieldId="why-headline"
+                defaultValue="Why CheckIt for Food Facilities"
+                as="span"
+              />
             </h2>
             <p className="text-muted max-w-2xl mx-auto">
-              We understand that food service operations can&apos;t slow down for compliance. 
-              Our platform works at your pace.
+              <EditableText
+                pageId="food-facilities"
+                fieldId="why-subtitle"
+                defaultValue="We understand that food service operations can't slow down for compliance. Our platform works at your pace."
+                as="span"
+                multiline
+              />
             </p>
           </div>
 
@@ -361,10 +499,21 @@ export default function FoodFacilitiesPage() {
                   <span className="text-xl font-bold text-purple-400">{index + 1}</span>
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {diff.title}
+                  <EditableText
+                    pageId="food-facilities"
+                    fieldId={`diff-${index}-title`}
+                    defaultValue={diff.title}
+                    as="span"
+                  />
                 </h3>
                 <p className="text-sm text-muted">
-                  {diff.description}
+                  <EditableText
+                    pageId="food-facilities"
+                    fieldId={`diff-${index}-desc`}
+                    defaultValue={diff.description}
+                    as="span"
+                    multiline
+                  />
                 </p>
               </div>
             ))}
@@ -376,11 +525,21 @@ export default function FoodFacilitiesPage() {
       <section className="py-16 lg:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Ready to Simplify Event-Day Compliance?
+            <EditableText
+              pageId="food-facilities"
+              fieldId="cta-headline"
+              defaultValue="Ready to Simplify Event-Day Compliance?"
+              as="span"
+            />
           </h2>
           <p className="text-muted mb-8 max-w-2xl mx-auto">
-            See how CheckIt can help your food facilities maintain compliance 
-            even during the busiest events.
+            <EditableText
+              pageId="food-facilities"
+              fieldId="cta-subtitle"
+              defaultValue="See how CheckIt can help your food facilities maintain compliance even during the busiest events."
+              as="span"
+              multiline
+            />
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link

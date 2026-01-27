@@ -25,8 +25,8 @@ export default function PublicNav() {
   return (
     <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+        <div className="flex items-center h-16">
+          {/* Logo - Fixed width on left */}
           <Link href="/" className="flex items-center shrink-0">
             <img 
               src="/checkit-logo-horizontal-standard-rgb-white.svg" 
@@ -35,8 +35,8 @@ export default function PublicNav() {
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          {/* Desktop Navigation - Centered */}
+          <nav className="hidden md:flex items-center justify-center gap-6 flex-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -56,8 +56,8 @@ export default function PublicNav() {
             </a>
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop CTA - Fixed width on right */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             <a
               href="https://app.checkit.net"
               target="_blank"
@@ -80,7 +80,7 @@ export default function PublicNav() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer"
+            className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer ml-auto"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

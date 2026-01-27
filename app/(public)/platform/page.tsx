@@ -700,8 +700,8 @@ export default function PlatformPage() {
               </span>
               
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-                Sensors + Apps + Platform for{' '}
-                <span className="text-gradient">Operational Excellence</span>
+                Protect What Matters.{' '}
+                <span className="text-gradient">Prove It Every Day.</span>
               </h1>
               
               <p className="text-lg sm:text-xl text-muted mb-8 max-w-3xl mx-auto">
@@ -785,7 +785,7 @@ export default function PlatformPage() {
                 What You Get
               </span>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Three Outcomes That Matter
+                Proactively Ensure the Outcomes That Matter
               </h2>
               <p className="text-lg text-muted max-w-3xl mx-auto">
                 Every feature we build, every integration we create, drives toward three outcomes 
@@ -909,7 +909,7 @@ export default function PlatformPage() {
                   <Monitor className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-purple-500 transition-colors">Platform</h3>
-                <p className="text-sm text-accent mb-3">Command Center</p>
+                <p className="text-sm text-accent mb-3">Central Management</p>
                 <p className="text-muted text-sm mb-4">
                   Cloud dashboard for configuration, reporting, and analytics. See everything, manage everyone, and generate audit-ready reports.
                 </p>
@@ -1214,8 +1214,8 @@ export default function PlatformPage() {
                 <Monitor className="w-4 h-4 inline mr-2" />
                 Cloud Platform
               </span>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Your Command Center for Operations
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                Your Central Hub for Operations
               </h2>
               <p className="text-lg text-muted max-w-3xl mx-auto">
                 The Checkit Platform is where you configure your operation, generate compliance reports, 
@@ -1305,12 +1305,12 @@ export default function PlatformPage() {
                 </ul>
 
                 <a
-                  href="https://www.checkit.net/asset-intelligence"
+                  href="https://www.checkit.net/demo"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
                 >
-                  Learn About Asset Intelligence
+                  Request a Demo
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>

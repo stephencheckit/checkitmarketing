@@ -334,12 +334,7 @@ export default function HomePage() {
             </nav>
 
             <div className="hidden md:flex items-center shrink-0">
-              <Link
-                href="/login"
-                className="flex items-center gap-2 px-4 py-2 text-sm btn-gradient text-white rounded-lg"
-              >
-                Employee Portal
-              </Link>
+              <DemoRequestButton label="Request Demo" />
             </div>
 
             {/* Mobile Menu Button */}
@@ -377,12 +372,9 @@ export default function HomePage() {
                   About Us
                 </Link>
                 <div className="border-t border-border my-3" />
-                <Link
-                  href="/login"
-                  className="flex items-center justify-center gap-2 mx-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
-                >
-                  Employee Portal
-                </Link>
+                <div className="mx-3">
+                  <DemoRequestButton label="Request Demo" className="w-full justify-center" />
+                </div>
               </nav>
             </div>
           )}
@@ -411,19 +403,13 @@ export default function HomePage() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+              <DemoRequestButton />
               <Link
                 href="/industries"
-                className="inline-flex items-center gap-2 px-6 py-3 btn-gradient text-white font-medium rounded-lg"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
               >
                 Explore Solutions
                 <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/case-studies/texas-tech"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border"
-              >
-                <Play className="w-4 h-4" />
-                See It In Action
               </Link>
             </div>
 

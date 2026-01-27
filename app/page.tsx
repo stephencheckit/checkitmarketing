@@ -322,19 +322,43 @@ const industries = [
   },
 ];
 
-// Featured case study
-const featuredCaseStudy = {
-  title: 'Texas Tech & OVG Hospitality',
-  subtitle: 'Protecting Revenue & Guest Experience at Scale',
-  quote: 'Within the first two months of using Checkit, the software paid for itself.',
-  author: 'Megan Sunderman',
-  role: 'General Manager, OVG Hospitality',
-  stats: [
-    { value: '2 Months', label: 'To ROI' },
-    { value: '1 Hour', label: 'Fix Time' },
-  ],
-  href: '/case-studies/texas-tech',
-};
+// Featured case studies
+const featuredCaseStudies = [
+  {
+    title: 'Texas Tech & OVG Hospitality',
+    subtitle: 'Protecting Revenue & Guest Experience at Scale',
+    quote: 'Within the first two months of using Checkit, the software paid for itself.',
+    author: 'Megan Sunderman',
+    role: 'General Manager, OVG Hospitality',
+    stats: [
+      { value: '2 Months', label: 'To ROI' },
+      { value: '1 Hour', label: 'Fix Time' },
+    ],
+    href: '/case-studies/texas-tech',
+    image: '/Jones.jpg',
+    logo: '/TexasTech_logo.png',
+    logo2: '/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp',
+    color: 'red',
+    industry: 'Food Facilities',
+  },
+  {
+    title: 'Morningstar Senior Living',
+    subtitle: 'Modernizing Food Safety & Compliance at Scale',
+    quote: 'Our teams now spend less time on paperwork and more time with residents.',
+    author: 'Natalie Brown',
+    role: 'VP of Culinary, Morningstar Senior Living',
+    stats: [
+      { value: '41', label: 'Communities' },
+      { value: '100%', label: 'Audit Trail' },
+    ],
+    href: '/case-studies/morningstar',
+    image: '/morningstar-of-arvada.jpg',
+    logo: '/morningstar-logo-500x125.png',
+    logo2: null,
+    color: 'teal',
+    industry: 'Senior Living',
+  },
+];
 
 export default function HomePage() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -915,71 +939,113 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Case Study */}
-      <section className="py-16 lg:py-24 bg-gradient-to-r from-red-900/20 via-surface to-surface border-y border-red-600/20">
+      {/* Featured Case Studies */}
+      <section className="py-16 lg:py-24 bg-surface-elevated/50 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="inline-block px-4 py-1 text-sm font-medium bg-red-600/20 text-red-400 rounded-full mb-4">
-                Featured Case Study
-              </span>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                {featuredCaseStudy.title}
-              </h2>
-              <p className="text-xl text-muted mb-6">{featuredCaseStudy.subtitle}</p>
-              
-              <blockquote className="border-l-4 border-red-600 pl-4 mb-6">
-                <Quote className="w-8 h-8 text-red-600/30 mb-2" />
-                <p className="text-lg text-foreground italic mb-4">
-                  &ldquo;{featuredCaseStudy.quote}&rdquo;
-                </p>
-                <footer className="text-sm text-muted">
-                  <strong className="text-foreground">{featuredCaseStudy.author}</strong> — {featuredCaseStudy.role}
-                </footer>
-              </blockquote>
+          <div className="text-center mb-12">
+            <span className="inline-block px-4 py-1 text-sm font-medium bg-accent/20 text-accent rounded-full mb-4">
+              Customer Success
+            </span>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Real Results from Real Operations
+            </h2>
+            <p className="text-muted max-w-2xl mx-auto">
+              See how leading organizations use Checkit to transform compliance and protect their operations.
+            </p>
+          </div>
 
-              <div className="flex items-center gap-8 mb-8">
-                {featuredCaseStudy.stats.map((stat) => (
-                  <div key={stat.label}>
-                    <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                    <div className="text-sm text-muted">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-
+          <div className="grid md:grid-cols-2 gap-8">
+            {featuredCaseStudies.map((study) => (
               <Link
-                href={featuredCaseStudy.href}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                key={study.href}
+                href={study.href}
+                className="group bg-surface border border-border rounded-2xl overflow-hidden hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 transition-all"
               >
-                Read Full Case Study
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="relative">
-              <div className="rounded-2xl overflow-hidden border border-border shadow-2xl">
-                <img 
-                  src="/Jones.jpg" 
-                  alt="Texas Tech Stadium" 
-                  className="w-full h-80 object-cover"
-                />
-              </div>
-              <div className="absolute -bottom-6 -left-6 bg-gradient-to-r from-gray-950 via-gray-800 to-gray-100 rounded-xl p-4 shadow-xl border border-gray-300">
-                <div className="flex items-center gap-3">
+                {/* Image */}
+                <div className="relative h-48 overflow-hidden">
                   <img 
-                    src="/TexasTech_logo.png" 
-                    alt="Texas Tech" 
-                    className="h-12 object-contain"
+                    src={study.image} 
+                    alt={study.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="w-px h-10 bg-gray-400" />
-                  <img 
-                    src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
-                    alt="OVG Hospitality" 
-                    className="h-8 object-contain"
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                      study.color === 'red' ? 'bg-red-600/80 text-white' : 'bg-teal-600/80 text-white'
+                    }`}>
+                      {study.industry}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
+
+                {/* Content */}
+                <div className="p-6">
+                  {/* Logo */}
+                  <div className={`inline-flex items-center gap-3 mb-4 px-4 py-2 rounded-lg ${
+                    study.color === 'red' ? 'bg-gradient-to-r from-gray-950 via-gray-800 to-gray-600' : 'bg-white border border-gray-200'
+                  }`}>
+                    <img 
+                      src={study.logo} 
+                      alt={study.title}
+                      className="h-8 object-contain"
+                    />
+                    {study.logo2 && (
+                      <>
+                        <div className="w-px h-6 bg-gray-400" />
+                        <img 
+                          src={study.logo2} 
+                          alt=""
+                          className="h-6 object-contain"
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-foreground mb-2">{study.title}</h3>
+                  <p className="text-muted mb-4">{study.subtitle}</p>
+                  
+                  {/* Quote */}
+                  <blockquote className={`border-l-4 pl-4 mb-4 ${
+                    study.color === 'red' ? 'border-red-600' : 'border-teal-600'
+                  }`}>
+                    <p className="text-sm text-foreground italic mb-2">
+                      &ldquo;{study.quote}&rdquo;
+                    </p>
+                    <footer className="text-xs text-muted">
+                      <strong className="text-foreground">{study.author}</strong>
+                    </footer>
+                  </blockquote>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-6 mb-4">
+                    {study.stats.map((stat) => (
+                      <div key={stat.label}>
+                        <div className="text-lg font-bold text-foreground">{stat.value}</div>
+                        <div className="text-xs text-muted">{stat.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <div className={`flex items-center gap-2 font-medium group-hover:gap-3 transition-all ${
+                    study.color === 'red' ? 'text-red-500' : 'text-teal-500'
+                  }`}>
+                    Read Case Study
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link
+              href="/case-studies"
+              className="inline-flex items-center gap-2 text-accent hover:gap-3 transition-all font-medium"
+            >
+              View All Stories
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

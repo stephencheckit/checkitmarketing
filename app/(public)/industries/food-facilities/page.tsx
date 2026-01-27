@@ -168,7 +168,7 @@ export default function FoodFacilitiesPage() {
                 <EditableText
                   pageId="food-facilities"
                   fieldId="hero-headline"
-                  defaultValue="Food Safety for Venues & Food Service"
+                  defaultValue="Facilities Food Service"
                   as="span"
                 />
               </h1>
@@ -477,7 +477,7 @@ export default function FoodFacilitiesPage() {
               <EditableText
                 pageId="food-facilities"
                 fieldId="why-headline"
-                defaultValue="Why CheckIt for Food Facilities"
+                defaultValue="Why CheckIt for Facilities Food Service"
                 as="span"
               />
             </h2>
@@ -573,14 +573,7 @@ export default function FoodFacilitiesPage() {
                 <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
                 <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
                 <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
-                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">&nbsp;</h4>
-              <ul className="space-y-2">
-                <li><Link href="/industries/operations" className="text-sm text-muted hover:text-foreground transition-colors">Operations</Link></li>
+                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Facilities Food Service</Link></li>
               </ul>
             </div>
             

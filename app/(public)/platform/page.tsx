@@ -670,8 +670,7 @@ const subscriptionBenefits = [
 const industries = [
   { name: 'Senior Living', href: '/industries/senior-living', icon: Building2 },
   { name: 'Food Retail', href: '/industries/food-retail', icon: Building2 },
-  { name: 'Food Facilities', href: '/industries/food-facilities', icon: Building2 },
-  { name: 'Operations', href: '/industries/operations', icon: Settings },
+  { name: 'Facilities Food Service', href: '/industries/food-facilities', icon: Building2 },
 ];
 
 export default function PlatformPage() {

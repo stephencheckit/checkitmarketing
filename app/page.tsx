@@ -315,17 +315,10 @@ const industries = [
   },
   {
     href: '/industries/food-facilities',
-    name: 'Food Facilities',
+    name: 'Facilities Food Service',
     icon: UtensilsCrossed,
     description: 'Food service operations for venues and events',
     color: 'from-purple-500 to-purple-600',
-  },
-  {
-    href: '/industries/operations',
-    name: 'Operations',
-    icon: Building2,
-    description: 'Operational compliance for restaurants and hospitality',
-    color: 'from-slate-500 to-slate-600',
   },
 ];
 

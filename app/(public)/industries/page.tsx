@@ -33,21 +33,12 @@ const industries = [
   },
   {
     href: '/industries/food-facilities',
-    name: 'Food Facilities',
+    name: 'Facilities Food Service',
     icon: UtensilsCrossed,
     description: 'Food service operations for venues, stadiums, and events',
     customers: ['OVG', 'ISS'],
     product: 'V6',
     color: 'from-purple-500 to-purple-600'
-  },
-  {
-    href: '/industries/operations',
-    name: 'Operations',
-    icon: Building2,
-    description: 'Operational compliance for restaurants, hospitality, and more',
-    customers: ['Restaurants', 'Hotels', 'Hospitality'],
-    product: 'V6',
-    color: 'from-slate-500 to-slate-600'
   },
 ];
 
@@ -288,14 +279,7 @@ export default function IndustriesPage() {
                 <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
                 <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
                 <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
-                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">&nbsp;</h4>
-              <ul className="space-y-2">
-                <li><Link href="/industries/operations" className="text-sm text-muted hover:text-foreground transition-colors">Operations</Link></li>
+                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Facilities Food Service</Link></li>
               </ul>
             </div>
             

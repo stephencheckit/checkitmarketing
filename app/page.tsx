@@ -1,6 +1,11 @@
+'use client';
+
 import Link from 'next/link';
+import { useState } from 'react';
 import { 
   ArrowRight,
+  Menu,
+  X,
   Building2,
   Pill,
   ShoppingCart,
@@ -178,32 +183,19 @@ const productComponents = [
   {
     icon: Monitor,
     title: 'Platform',
-    subtitle: 'Command center',
+    subtitle: 'Central management',
     description: 'Cloud dashboard for complete visibility across all locations. Reports and analytics.',
     features: ['Multi-site dashboards', 'Compliance reports', 'Trend analytics', 'Audit trails'],
     color: 'from-purple-500 to-purple-600',
   },
 ];
 
-// Outcomes
+// Outcomes - aligned with platform page (Compliance, Monitoring, Visibility)
 const outcomes = [
-  {
-    icon: Utensils,
-    title: 'Safety',
-    subtitle: 'Protect people and products',
-    description: 'Automated monitoring catches issues before they become incidents.',
-    stats: [
-      { value: '99.9%', label: 'Temperature compliance' },
-      { value: '73%', label: 'Fewer safety incidents' },
-    ],
-    color: 'from-green-500 to-emerald-600',
-    bgColor: 'bg-green-500/10',
-    textColor: 'text-green-500',
-  },
   {
     icon: ShieldCheck,
     title: 'Compliance',
-    subtitle: 'Always audit-ready',
+    subtitle: 'Audit-ready, always',
     description: 'Every check automatically documented with timestamps and digital signatures.',
     stats: [
       { value: '100%', label: 'Digital audit trails' },
@@ -212,6 +204,19 @@ const outcomes = [
     color: 'from-blue-500 to-blue-600',
     bgColor: 'bg-blue-500/10',
     textColor: 'text-blue-500',
+  },
+  {
+    icon: Activity,
+    title: 'Monitoring',
+    subtitle: '24/7 automated protection',
+    description: 'Continuous sensor monitoring protects your assets, products, and operations around the clock.',
+    stats: [
+      { value: '99.9%', label: 'Temperature compliance' },
+      { value: '73%', label: 'Fewer safety incidents' },
+    ],
+    color: 'from-green-500 to-emerald-600',
+    bgColor: 'bg-green-500/10',
+    textColor: 'text-green-500',
   },
   {
     icon: Eye,
@@ -289,12 +294,14 @@ const featuredCaseStudy = {
 };
 
 export default function HomePage() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
       <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center h-16">
             <Link href="/" className="flex items-center shrink-0">
               <img 
                 src="/checkit-logo-horizontal-standard-rgb-white.svg" 
@@ -303,7 +310,7 @@ export default function HomePage() {
               />
             </Link>
 
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center justify-center gap-6 flex-1">
               <Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">
                 Platform
               </Link>
@@ -323,12 +330,12 @@ export default function HomePage() {
               </a>
             </nav>
 
-            <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3 shrink-0">
               <a
                 href="https://app.checkit.net"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm text-muted hover:text-foreground transition-colors"
               >
                 <LogIn className="w-4 h-4" />
                 Platform Login
@@ -340,7 +347,68 @@ export default function HomePage() {
                 Internal Login
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 text-muted hover:text-foreground cursor-pointer ml-auto"
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+
+          {/* Mobile Navigation */}
+          {mobileOpen && (
+            <div className="md:hidden border-t border-border py-4">
+              <nav className="space-y-1">
+                <Link
+                  href="/platform"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  Platform
+                </Link>
+                <Link
+                  href="/industries"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  Industries
+                </Link>
+                <Link
+                  href="/case-studies"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  Case Studies
+                </Link>
+                <a 
+                  href="https://www.checkit.net" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  About Us
+                </a>
+                <div className="border-t border-border my-3" />
+                <a
+                  href="https://app.checkit.net"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Platform Login
+                </a>
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-2 mx-3 mt-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
+                >
+                  Internal Login
+                </Link>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
@@ -686,12 +754,12 @@ export default function HomePage() {
               </div>
 
               <a
-                href="https://www.checkit.net/asset-intelligence"
+                href="https://www.checkit.net/demo"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
               >
-                Learn About Asset Intelligence
+                Request a Demo
                 <ArrowRight className="w-4 h-4" />
               </a>
             </div>
@@ -968,16 +1036,16 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Industries */}
+            {/* Platform */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-4">Industries</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-4">Platform</h4>
               <ul className="space-y-2">
-                <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
-                <li><Link href="/industries/senior-living" className="text-sm text-muted hover:text-foreground transition-colors">Senior Living</Link></li>
-                <li><Link href="/industries/nhs-pharmacies" className="text-sm text-muted hover:text-foreground transition-colors">NHS Pharmacies</Link></li>
-                <li><Link href="/industries/food-retail" className="text-sm text-muted hover:text-foreground transition-colors">Food Retail</Link></li>
-                <li><Link href="/industries/food-facilities" className="text-sm text-muted hover:text-foreground transition-colors">Food Facilities</Link></li>
-                <li><Link href="/industries/medical" className="text-sm text-muted hover:text-foreground transition-colors">Medical</Link></li>
+                <li><Link href="/platform" className="text-sm text-muted hover:text-foreground transition-colors">Overview</Link></li>
+                <li><Link href="/platform#sensors" className="text-sm text-muted hover:text-foreground transition-colors">Sensors</Link></li>
+                <li><Link href="/platform#apps" className="text-sm text-muted hover:text-foreground transition-colors">Mobile Apps</Link></li>
+                <li><Link href="/platform#platform" className="text-sm text-muted hover:text-foreground transition-colors">Cloud Platform</Link></li>
+                <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
+                <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Case Studies</Link></li>
               </ul>
             </div>
             

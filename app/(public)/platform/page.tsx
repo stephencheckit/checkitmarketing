@@ -80,7 +80,8 @@ import {
   BadgeCheck,
   CalendarCheck,
   ExternalLink,
-  LogIn
+  LogIn,
+  Quote
 } from 'lucide-react';
 
 // SEO Metadata
@@ -731,7 +732,7 @@ export default function PlatformPage() {
                 })}
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
                 <a
                   href="https://www.checkit.net/demo"
                   target="_blank"
@@ -749,6 +750,35 @@ export default function PlatformPage() {
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
+
+              {/* Trust stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-border">
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground">500+</div>
+                  <div className="text-sm text-muted">Locations Protected</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground">1M+</div>
+                  <div className="text-sm text-muted">Daily Checks</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground">99.9%</div>
+                  <div className="text-sm text-muted">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground">24/7</div>
+                  <div className="text-sm text-muted">Monitoring</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Screenshot */}
+            <div className="mt-16 relative max-w-5xl mx-auto">
+              <img 
+                src="/checkit v6-1.webp" 
+                alt="Checkit Platform Dashboard" 
+                className="w-full h-auto rounded-xl border border-border shadow-2xl"
+              />
             </div>
           </div>
         </section>
@@ -1440,6 +1470,77 @@ export default function PlatformPage() {
                 View all industries
                 <ArrowRight className="w-4 h-4" />
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Case Study */}
+        <section className="py-16 lg:py-24 bg-gradient-to-r from-red-900/20 via-surface to-surface border-y border-red-600/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="inline-block px-4 py-1 text-sm font-medium bg-red-600/20 text-red-400 rounded-full mb-4">
+                  Featured Case Study
+                </span>
+                <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+                  Texas Tech & OVG Hospitality
+                </h2>
+                <p className="text-xl text-muted mb-6">Protecting Revenue & Guest Experience at Scale</p>
+                
+                <blockquote className="border-l-4 border-red-600 pl-4 mb-6">
+                  <Quote className="w-8 h-8 text-red-600/30 mb-2" />
+                  <p className="text-lg text-foreground italic mb-4">
+                    &ldquo;Within the first two months of using Checkit, the software paid for itself.&rdquo;
+                  </p>
+                  <footer className="text-sm text-muted">
+                    <strong className="text-foreground">Megan Sunderman</strong> — General Manager, OVG Hospitality
+                  </footer>
+                </blockquote>
+
+                <div className="flex items-center gap-8 mb-8">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">2 Months</div>
+                    <div className="text-sm text-muted">To ROI</div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">1 Hour</div>
+                    <div className="text-sm text-muted">Fix Time</div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/case-studies/texas-tech"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                >
+                  Read Full Case Study
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden border border-border shadow-2xl">
+                  <img 
+                    src="/Jones.jpg" 
+                    alt="Texas Tech Stadium" 
+                    className="w-full h-80 object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -left-6 bg-surface border border-border rounded-xl p-4 shadow-xl">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src="/texas-tech-logo.png" 
+                      alt="Texas Tech" 
+                      className="h-12 object-contain"
+                    />
+                    <div className="w-px h-10 bg-border" />
+                    <img 
+                      src="/OVG_Hospitality_Logo_FullColor-f60e36da0b.webp" 
+                      alt="OVG Hospitality" 
+                      className="h-8 object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

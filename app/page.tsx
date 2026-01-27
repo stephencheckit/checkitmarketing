@@ -351,7 +351,7 @@ export default function HomePage() {
                 href="/login"
                 className="flex items-center gap-2 px-4 py-2 text-sm btn-gradient text-white rounded-lg"
               >
-                Internal Login
+                Employee Portal
               </Link>
             </div>
 
@@ -411,7 +411,7 @@ export default function HomePage() {
                   href="/login"
                   className="flex items-center justify-center gap-2 mx-3 mt-3 px-4 py-2.5 btn-gradient text-white rounded-lg"
                 >
-                  Internal Login
+                  Employee Portal
                 </Link>
               </nav>
             </div>
@@ -1072,7 +1072,7 @@ export default function HomePage() {
                 <li>
                   <Link href="/login" className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors">
                     <LogIn className="w-3 h-3" />
-                    Internal Login
+                    Employee Portal
                   </Link>
                 </li>
                 <li>

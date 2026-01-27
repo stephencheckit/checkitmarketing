@@ -267,6 +267,44 @@ export default function OVGAnalyticsPage() {
     return 'Other';
   };
 
+  const getDeviceType = (ua: string): { type: string; icon: string } => {
+    if (!ua) return { type: 'Unknown', icon: '❓' };
+    const uaLower = ua.toLowerCase();
+    if (uaLower.includes('mobile') || uaLower.includes('iphone') || uaLower.includes('android')) {
+      return { type: 'Mobile', icon: '📱' };
+    }
+    if (uaLower.includes('tablet') || uaLower.includes('ipad')) {
+      return { type: 'Tablet', icon: '📱' };
+    }
+    return { type: 'Desktop', icon: '💻' };
+  };
+
+  const getReferrerSource = (referrer: string | undefined): { source: string; color: string } => {
+    if (!referrer) return { source: 'Direct', color: 'bg-gray-500/20 text-gray-400' };
+    const ref = referrer.toLowerCase();
+    if (ref.includes('google')) return { source: 'Google', color: 'bg-blue-500/20 text-blue-400' };
+    if (ref.includes('linkedin')) return { source: 'LinkedIn', color: 'bg-blue-700/20 text-blue-300' };
+    if (ref.includes('facebook') || ref.includes('fb.')) return { source: 'Facebook', color: 'bg-indigo-500/20 text-indigo-400' };
+    if (ref.includes('twitter') || ref.includes('t.co')) return { source: 'Twitter', color: 'bg-sky-500/20 text-sky-400' };
+    if (ref.includes('bing')) return { source: 'Bing', color: 'bg-cyan-500/20 text-cyan-400' };
+    if (ref.includes('email') || ref.includes('mail')) return { source: 'Email', color: 'bg-amber-500/20 text-amber-400' };
+    // Try to extract domain
+    try {
+      const url = new URL(referrer);
+      return { source: url.hostname.replace('www.', ''), color: 'bg-purple-500/20 text-purple-400' };
+    } catch {
+      return { source: 'Referral', color: 'bg-purple-500/20 text-purple-400' };
+    }
+  };
+
+  const getTimeOfDay = (dateStr: string): string => {
+    const hour = new Date(dateStr).getHours();
+    if (hour >= 5 && hour < 12) return '🌅 Morning';
+    if (hour >= 12 && hour < 17) return '☀️ Afternoon';
+    if (hour >= 17 && hour < 21) return '🌆 Evening';
+    return '🌙 Night';
+  };
+
   const formatPagePath = (path: string) => {
     const pageNames: Record<string, string> = {
       '/ovg': 'OVG Hub',
@@ -289,24 +327,30 @@ export default function OVGAnalyticsPage() {
   const exportCSV = () => {
     if (!analytics?.recentVisitors) return;
     
-    const headers = ['First Visit', 'Last Visit', 'City', 'Region', 'Country', 'Browser', 'Pages Viewed', 'Pages'];
-    const rows = analytics.recentVisitors.map(v => [
-      new Date(v.first_visit).toISOString(),
-      new Date(v.last_visit).toISOString(),
-      v.visitor_city || 'Unknown',
-      v.visitor_region || 'Unknown',
-      v.visitor_country || 'Unknown',
-      formatUserAgent(v.user_agent),
-      v.page_count || 1,
-      (v.pages_visited || []).map(p => formatPagePath(p)).join('; '),
-    ]);
+    const headers = ['First Visit', 'Last Visit', 'City', 'Region', 'Country', 'Device', 'Browser', 'Source', 'Pages Viewed', 'Pages'];
+    const rows = analytics.recentVisitors.map(v => {
+      const device = getDeviceType(v.user_agent);
+      const source = getReferrerSource(v.referrer);
+      return [
+        new Date(v.first_visit).toISOString(),
+        new Date(v.last_visit).toISOString(),
+        v.visitor_city || 'Unknown',
+        v.visitor_region || 'Unknown',
+        v.visitor_country || 'Unknown',
+        device.type,
+        formatUserAgent(v.user_agent),
+        source.source,
+        v.page_count || 1,
+        (v.pages_visited || []).map(p => formatPagePath(p)).join('; '),
+      ];
+    });
     
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ovg-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `ovg-analytics-${excludeInternal ? 'external-only-' : ''}${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
 
@@ -334,6 +378,17 @@ export default function OVGAnalyticsPage() {
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Exclude Internal Filter */}
+            <label className="flex items-center gap-2 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors">
+              <input
+                type="checkbox"
+                checked={excludeInternal}
+                onChange={(e) => setExcludeInternal(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-300">Exclude Team</span>
+            </label>
+            
             <select
               value={daysBack}
               onChange={(e) => setDaysBack(parseInt(e.target.value))}
@@ -360,6 +415,36 @@ export default function OVGAnalyticsPage() {
             </button>
           </div>
         </div>
+
+        {/* Filter Notice */}
+        {excludeInternal && analytics?.excludedLocations && analytics.excludedLocations.length > 0 && (
+          <div className="mb-6 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-amber-500/20 rounded-lg flex items-center justify-center">
+                <Users className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-amber-200 text-sm font-medium">
+                  Internal Team Traffic Excluded
+                </p>
+                <p className="text-amber-400/70 text-xs mt-0.5">
+                  Filtering out visits from: {analytics.excludedLocations.map(loc => 
+                    `${loc.city}${loc.region ? `, ${loc.region}` : ''}`
+                  ).join(' • ')}
+                  {analytics.excludedViews && analytics.excludedViews > 0 && (
+                    <span className="ml-2">({analytics.excludedViews} views excluded)</span>
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => setExcludeInternal(false)}
+                className="text-xs text-amber-400 hover:text-amber-300 underline"
+              >
+                Show all
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -533,6 +618,113 @@ export default function OVGAnalyticsPage() {
           </div>
         </div>
 
+        {/* Traffic Sources */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-400" />
+                Traffic Sources
+              </h2>
+            </div>
+            <div className="p-4">
+              {analytics?.recentVisitors && analytics.recentVisitors.length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(
+                    analytics.recentVisitors.reduce((acc, v) => {
+                      const source = getReferrerSource(v.referrer).source;
+                      acc[source] = (acc[source] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 6)
+                    .map(([source, count], idx) => {
+                      const sourceInfo = getReferrerSource(source === 'Direct' ? undefined : source);
+                      return (
+                        <div key={idx} className="flex items-center justify-between">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${sourceInfo.color}`}>
+                            {source}
+                          </span>
+                          <span className="font-bold text-white">{count}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No source data yet</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Globe className="w-5 h-5 text-purple-400" />
+                Devices
+              </h2>
+            </div>
+            <div className="p-4">
+              {analytics?.recentVisitors && analytics.recentVisitors.length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(
+                    analytics.recentVisitors.reduce((acc, v) => {
+                      const device = getDeviceType(v.user_agent);
+                      acc[device.type] = (acc[device.type] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([deviceType, count], idx) => {
+                      const icon = deviceType === 'Mobile' || deviceType === 'Tablet' ? '📱' : deviceType === 'Desktop' ? '💻' : '❓';
+                      return (
+                        <div key={idx} className="flex items-center justify-between">
+                          <span className="text-gray-300 text-sm">
+                            {icon} {deviceType}
+                          </span>
+                          <span className="font-bold text-white">{count}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No device data yet</p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gray-800/50 rounded-xl border border-gray-700">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-amber-400" />
+                Visit Times
+              </h2>
+            </div>
+            <div className="p-4">
+              {analytics?.recentVisitors && analytics.recentVisitors.length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(
+                    analytics.recentVisitors.reduce((acc, v) => {
+                      const time = getTimeOfDay(v.last_visit);
+                      acc[time] = (acc[time] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([time, count], idx) => (
+                      <div key={idx} className="flex items-center justify-between">
+                        <span className="text-gray-300 text-sm">{time}</span>
+                        <span className="font-bold text-white">{count}</span>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No time data yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Visitor Location Breakdown */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-gray-800/50 rounded-xl border border-gray-700">
@@ -600,6 +792,11 @@ export default function OVGAnalyticsPage() {
             <h2 className="font-semibold text-white flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-400" />
               Recent Visitors
+              {analytics?.recentVisitors && (
+                <span className="text-sm font-normal text-gray-400">
+                  ({analytics.recentVisitors.length} unique visitors)
+                </span>
+              )}
             </h2>
           </div>
           <div className="overflow-x-auto">
@@ -609,46 +806,67 @@ export default function OVGAnalyticsPage() {
                   <tr>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Last Visit</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Location</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden lg:table-cell">Device</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden md:table-cell">Browser</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-gray-400 hidden lg:table-cell">Source</th>
                     <th className="text-left px-4 py-3 text-sm font-medium text-gray-400">Pages Viewed</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700/50">
-                  {analytics.recentVisitors.map((visitor, idx) => (
-                    <tr key={idx} className="hover:bg-gray-700/30">
-                      <td className="px-4 py-3 text-gray-300 text-sm">
-                        {formatDate(visitor.last_visit)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-white">
-                          {[visitor.visitor_city, visitor.visitor_region].filter(Boolean).join(', ') || 'Unknown'}
-                        </span>
-                        {visitor.visitor_country && (
-                          <span className="text-gray-500 text-sm ml-2">({visitor.visitor_country})</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400 text-sm hidden md:table-cell">
-                        {formatUserAgent(visitor.user_agent)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1">
-                          {(visitor.pages_visited || []).map((page, pidx) => (
-                            <span 
-                              key={pidx}
-                              className={`px-2 py-0.5 rounded text-xs font-medium ${getPageColor(page)}`}
-                            >
-                              {formatPagePath(page)}
-                            </span>
-                          ))}
-                          {visitor.page_count > 1 && (
-                            <span className="text-gray-500 text-xs ml-1">
-                              ({visitor.page_count} views)
-                            </span>
+                  {analytics.recentVisitors.map((visitor, idx) => {
+                    const device = getDeviceType(visitor.user_agent);
+                    const source = getReferrerSource(visitor.referrer);
+                    return (
+                      <tr key={idx} className="hover:bg-gray-700/30">
+                        <td className="px-4 py-3">
+                          <div className="text-gray-300 text-sm">
+                            {formatDate(visitor.last_visit)}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {getTimeOfDay(visitor.last_visit)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-white">
+                            {[visitor.visitor_city, visitor.visitor_region].filter(Boolean).join(', ') || 'Unknown'}
+                          </span>
+                          {visitor.visitor_country && (
+                            <span className="text-gray-500 text-sm ml-2">({visitor.visitor_country})</span>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          <span className="text-gray-300 text-sm">
+                            {device.icon} {device.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-400 text-sm hidden md:table-cell">
+                          {formatUserAgent(visitor.user_agent)}
+                        </td>
+                        <td className="px-4 py-3 hidden lg:table-cell">
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${source.color}`}>
+                            {source.source}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(visitor.pages_visited || []).map((page, pidx) => (
+                              <span 
+                                key={pidx}
+                                className={`px-2 py-0.5 rounded text-xs font-medium ${getPageColor(page)}`}
+                              >
+                                {formatPagePath(page)}
+                              </span>
+                            ))}
+                            {visitor.page_count > 1 && (
+                              <span className="text-gray-500 text-xs ml-1">
+                                ({visitor.page_count} views)
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (

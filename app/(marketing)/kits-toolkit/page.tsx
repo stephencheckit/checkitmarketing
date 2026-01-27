@@ -10,6 +10,7 @@ import {
   Building2,
   Shield,
   Activity,
+  Eye,
   Pencil,
   X,
   Save,

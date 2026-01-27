@@ -670,6 +670,7 @@ export default function SocialToolkitPage() {
   const [showUsed, setShowUsed] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [scheduledPosts, setScheduledPosts] = useState<Record<string, string[]>>(() => {
     // postId -> array of ISO date strings when scheduled
     return {};
@@ -1236,115 +1237,164 @@ export default function SocialToolkitPage() {
           </>
         ) : (
           /* Calendar View */
-          <div className="bg-surface border border-border rounded-xl p-6">
-            {/* Calendar Header */}
-            <div className="flex items-center justify-between mb-6">
-              <button
-                onClick={prevMonth}
-                className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <h2 className="text-xl font-semibold text-foreground">
-                {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-              </h2>
-              <button
-                onClick={nextMonth}
-                className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1">
-              {/* Day Headers */}
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center text-xs text-muted py-2 font-medium">
-                  {day}
-                </div>
-              ))}
-
-              {/* Calendar Days */}
-              {(() => {
-                const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
-                const days = [];
-                const today = new Date();
-                const isCurrentMonth = today.getMonth() === currentMonth.getMonth() && today.getFullYear() === currentMonth.getFullYear();
-
-                // Empty cells for days before the month starts
-                for (let i = 0; i < startingDay; i++) {
-                  days.push(<div key={`empty-${i}`} className="min-h-[100px] bg-surface-elevated/30 rounded-lg" />);
-                }
-
-                // Days of the month
-                for (let day = 1; day <= daysInMonth; day++) {
-                  const dateKey = getDateKey(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-                  const scheduledForDay = getPostsForDate(dateKey);
-                  const isToday = isCurrentMonth && today.getDate() === day;
-
-                  days.push(
-                    <div
-                      key={day}
-                      className={`min-h-[100px] bg-surface-elevated rounded-lg p-2 transition-colors ${
-                        isToday ? 'ring-2 ring-accent' : ''
-                      }`}
+          <div className="space-y-4">
+            {/* Instruction Bar */}
+            <div className={`p-4 rounded-xl border transition-all ${
+              selectedPostId 
+                ? 'bg-accent/10 border-accent/30' 
+                : 'bg-surface border-border'
+            }`}>
+              {selectedPostId ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+                    <span className="text-sm font-medium text-foreground">
+                      Selected: <span className="text-accent">{posts.find(p => p.id === selectedPostId)?.title}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted">Click any date to schedule</span>
+                    <button
+                      onClick={() => setSelectedPostId(null)}
+                      className="px-3 py-1 text-sm bg-surface-elevated text-muted hover:text-foreground rounded-lg transition-colors"
                     >
-                      <div className={`text-sm font-medium mb-1 ${isToday ? 'text-accent' : 'text-muted'}`}>
-                        {day}
-                      </div>
-                      <div className="space-y-1">
-                        {scheduledForDay.slice(0, 3).map((post) => {
-                          const persona = personas.find(p => post.personas.includes(p.id));
-                          return (
-                            <div
-                              key={post.id}
-                              className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 ${getPersonaColor(persona?.id || '')}`}
-                              title={`${post.title}\nClick to unschedule`}
-                              onClick={() => schedulePost(post.id, dateKey)}
-                            >
-                              {post.title}
-                            </div>
-                          );
-                        })}
-                        {scheduledForDay.length > 3 && (
-                          <div className="text-[10px] text-muted">+{scheduledForDay.length - 3} more</div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return days;
-              })()}
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 text-sm text-muted">
+                  <Calendar className="w-4 h-4" />
+                  <span>Select a post below, then click a date to schedule it. Click scheduled posts to remove them.</span>
+                </div>
+              )}
             </div>
 
-            {/* Drag/Drop Area - Unscheduled Posts */}
-            <div className="mt-6 pt-6 border-t border-border">
-              <h3 className="text-sm font-medium text-foreground mb-3">
-                Available Posts ({filteredPosts.length})
-                <span className="text-muted font-normal ml-2">Click a post, then click a date to schedule</span>
+            <div className="bg-surface border border-border rounded-xl p-6">
+              {/* Calendar Header */}
+              <div className="flex items-center justify-between mb-6">
+                <button
+                  onClick={prevMonth}
+                  className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+                </h2>
+                <button
+                  onClick={nextMonth}
+                  className="p-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {/* Day Headers */}
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-center text-xs text-muted py-2 font-medium">
+                    {day}
+                  </div>
+                ))}
+
+                {/* Calendar Days */}
+                {(() => {
+                  const { daysInMonth, startingDay } = getDaysInMonth(currentMonth);
+                  const days = [];
+                  const today = new Date();
+                  const isCurrentMonth = today.getMonth() === currentMonth.getMonth() && today.getFullYear() === currentMonth.getFullYear();
+
+                  // Empty cells for days before the month starts
+                  for (let i = 0; i < startingDay; i++) {
+                    days.push(<div key={`empty-${i}`} className="min-h-[100px] bg-surface-elevated/30 rounded-lg" />);
+                  }
+
+                  // Days of the month
+                  for (let day = 1; day <= daysInMonth; day++) {
+                    const dateKey = getDateKey(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                    const scheduledForDay = getPostsForDate(dateKey);
+                    const isToday = isCurrentMonth && today.getDate() === day;
+
+                    days.push(
+                      <div
+                        key={day}
+                        onClick={() => {
+                          if (selectedPostId) {
+                            schedulePost(selectedPostId, dateKey);
+                            setSelectedPostId(null);
+                          }
+                        }}
+                        className={`min-h-[100px] bg-surface-elevated rounded-lg p-2 transition-all ${
+                          isToday ? 'ring-2 ring-accent' : ''
+                        } ${
+                          selectedPostId 
+                            ? 'cursor-pointer hover:bg-accent/20 hover:ring-2 hover:ring-accent/50' 
+                            : ''
+                        }`}
+                      >
+                        <div className={`text-sm font-medium mb-1 ${isToday ? 'text-accent' : 'text-muted'}`}>
+                          {day}
+                        </div>
+                        <div className="space-y-1">
+                          {scheduledForDay.slice(0, 3).map((post) => {
+                            const persona = personas.find(p => post.personas.includes(p.id));
+                            return (
+                              <div
+                                key={post.id}
+                                className={`text-[10px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 flex items-center gap-1 ${getPersonaColor(persona?.id || '')}`}
+                                title={`${post.title}\nClick to remove from this date`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  schedulePost(post.id, dateKey);
+                                }}
+                              >
+                                <X className="w-2.5 h-2.5 opacity-60" />
+                                <span className="truncate">{post.title}</span>
+                              </div>
+                            );
+                          })}
+                          {scheduledForDay.length > 3 && (
+                            <div className="text-[10px] text-muted">+{scheduledForDay.length - 3} more</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return days;
+                })()}
+              </div>
+            </div>
+
+            {/* Posts to Schedule */}
+            <div className="bg-surface border border-border rounded-xl p-6">
+              <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+                <span>Posts to Schedule</span>
+                <span className="text-xs text-muted font-normal">({filteredPosts.length} available)</span>
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[300px] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredPosts.map((post) => {
                   const scheduled = scheduledPosts[post.id]?.length > 0;
+                  const isSelected = selectedPostId === post.id;
                   return (
                     <div
                       key={post.id}
+                      onClick={() => setSelectedPostId(isSelected ? null : post.id)}
                       className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                        scheduled
-                          ? 'bg-green-500/10 border-green-500/30'
-                          : 'bg-surface-elevated border-border hover:border-accent/50'
+                        isSelected
+                          ? 'bg-accent/20 border-accent ring-2 ring-accent'
+                          : scheduled
+                            ? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
+                            : 'bg-surface-elevated border-border hover:border-accent/50'
                       }`}
-                      onClick={() => {
-                        const today = new Date();
-                        const dateKey = getDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-                        schedulePost(post.id, dateKey);
-                      }}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{post.title}</p>
+                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-accent' : 'text-foreground'}`}>
+                            {post.title}
+                          </p>
                           <div className="flex flex-wrap gap-1 mt-1">
                             {post.personas.slice(0, 2).map(personaId => {
                               const persona = personas.find(p => p.id === personaId);
@@ -1359,15 +1409,22 @@ export default function SocialToolkitPage() {
                             )}
                           </div>
                         </div>
-                        {scheduled && (
-                          <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0 ml-2" />
-                        )}
+                        <div className="flex items-center gap-1 shrink-0 ml-2">
+                          {scheduled && (
+                            <CheckCircle2 className="w-4 h-4 text-green-400" />
+                          )}
+                          {isSelected && (
+                            <div className="w-4 h-4 bg-accent rounded-full flex items-center justify-center">
+                              <Check className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {scheduledPosts[post.id]?.length > 0 && (
                         <div className="mt-2 text-[10px] text-muted">
                           Scheduled: {scheduledPosts[post.id].map(d => {
-                            const date = new Date(d);
-                            return `${date.getMonth() + 1}/${date.getDate()}`;
+                            const [year, month, dayNum] = d.split('-');
+                            return `${parseInt(month)}/${parseInt(dayNum)}`;
                           }).join(', ')}
                         </div>
                       )}

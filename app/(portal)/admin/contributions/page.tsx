@@ -105,6 +105,9 @@ export default function AdminContributionsPage() {
         throw new Error(data.error || `Failed to ${status} contribution`);
       }
 
+      // Notify other components (nav inbox count, contribution panels) to refresh
+      window.dispatchEvent(new CustomEvent('contribution-updated'));
+
       // Remove from list or update status
       if (filter === 'pending') {
         setContributions(prev => prev.filter(c => c.id !== id));

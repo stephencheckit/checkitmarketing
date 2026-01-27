@@ -13,7 +13,9 @@ export const metadata: Metadata = {
   title: "Checkit GTM Hub",
   description: "Go-to-market tools and enablement for Checkit",
   icons: {
-    icon: "/checkit-logo-horizontal-standard-rgb-white.svg",
+    icon: "/checkit-favicon.webp",
+    shortcut: "/checkit-favicon.webp",
+    apple: "/checkit-favicon.webp",
   },
 };
 

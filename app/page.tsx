@@ -3,6 +3,7 @@ import Link from 'next/link';
 import HomeNav from '@/components/HomeNav';
 import HomeFooter from '@/components/HomeFooter';
 import DemoRequestButton from '@/components/DemoRequestButton';
+import ScrollToTop from '@/components/ScrollToTop';
 import { 
   ArrowRight,
   Building2,
@@ -378,6 +379,7 @@ const featuredCaseStudies = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       {/* Navigation - Client Component */}
       <HomeNav />
 

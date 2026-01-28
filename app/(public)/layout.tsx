@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export const metadata: Metadata = {
   title: {
@@ -17,6 +18,7 @@ export default function PublicLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       <PublicNav />
       <main>
         {children}

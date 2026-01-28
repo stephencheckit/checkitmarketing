@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import MainNav from '@/components/MainNav';
 import QuickCaptureFAB from '@/components/QuickCaptureFAB';
+import ScrollToTop from '@/components/ScrollToTop';
 
 export default async function MarketingLayout({
   children,
@@ -16,6 +17,7 @@ export default async function MarketingLayout({
 
   return (
     <div className="min-h-screen bg-background">
+      <ScrollToTop />
       <MainNav userName={session.name || 'User'} userRole={session.role} />
       <main>
         {children}

@@ -202,6 +202,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Date | Changes | Deployed By |
 |------|---------|-------------|
+| Jan 28, 2026 | **Persistent Storage for Innovation & Competitor Ideas** - Added database tables `innovation_ideas` and `competitor_responses` to persist AI-generated content. Both include `used_at` tracking. Created `/api/innovation` and `/api/competitor-responses` endpoints. Content page now loads saved ideas on mount, shows "Used" indicators on competitor watch items and innovation ideas, and includes "Mark as Used" buttons. Copying content auto-marks as used. Previously lost ideas on page refresh - now fully persistent. | AI |
 | Jan 28, 2026 | **GTM Tracker Rename + Scroll Fix** - Renamed "GTM Hub" to "GTM Tracker" throughout (footer links, portal metadata). Fixed scroll position issue where pages didn't scroll to top on navigation: created ScrollToTop client component that triggers on route changes, added to all layouts (portal, public, marketing, case-studies, homepage). Added scroll-padding-top CSS for anchor link support with sticky nav. | AI |
 | Jan 27, 2026 | **Social Toolkit Tile Grid Layout** - Changed list view from single column to 2-column tile grid. Compact card design with truncated content (6 lines), smaller typography, hashtags limited to 4 with overflow. Edit mode spans full width. | AI |
 | Jan 27, 2026 | **Social Toolkit Calendar UX Improvement** - Rebuilt calendar interaction: select a post (highlighted with accent ring), then click any calendar date to schedule. Instruction bar shows selected post and context. Calendar days highlight on hover when ready to receive. Scheduled posts show X icon to remove. Cancel button to deselect. Much more intuitive flow. | AI |
@@ -258,10 +259,9 @@ Open [http://localhost:3000](http://localhost:3000)
 | Rank | Problem | Score | Notes |
 |------|---------|-------|-------|
 | 1 | Admin role not enforced | 50 | All users can see admin page currently |
-| 2 | No persistent storage for content ideas | 45 | Ideas lost on refresh |
-| 3 | No password reset flow | 40 | Users can't recover accounts |
-| 4 | Positioning not linked to Battlecard | 35 | Differentiators should sync |
-| 5 | No custom logo asset | 25 | Using icon + text |
+| 2 | No password reset flow | 40 | Users can't recover accounts |
+| 3 | Positioning not linked to Battlecard | 35 | Differentiators should sync |
+| 4 | No custom logo asset | 25 | Using icon + text |
 
 ### High-Value Opportunities (Stack Ranked)
 
@@ -312,6 +312,12 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ### Demo Requests (CRM)
 - id, name, email, company, phone, industry, message, source_page, status, notes, assigned_to, followed_up_at, created_at, updated_at
+
+### Innovation Ideas
+- id, title, angle, competitor_insight, checkit_opportunity, target_audience, content_types (JSONB), key_messages (JSONB), status, used_at, created_at
+
+### Competitor Responses
+- id, competitor_name, source_article_title, source_article_url, source_article_snippet, response_title, response_description, response_key_points (JSONB), response_linkedin_post, response_article, response_word_count, used_at, created_at
 
 ---
 

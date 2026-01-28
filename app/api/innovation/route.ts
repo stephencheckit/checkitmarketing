@@ -7,25 +7,27 @@ import {
   deleteInnovationIdea
 } from '@/lib/db';
 
+interface DBInnovationIdea {
+  id: number;
+  title: string;
+  angle: string | null;
+  competitor_insight: string | null;
+  checkit_opportunity: string | null;
+  target_audience: string | null;
+  content_types: string[] | null;
+  key_messages: string[] | null;
+  used_at: string | null;
+  created_at: string;
+}
+
 // GET - Fetch all innovation ideas
 export async function GET() {
   try {
     await initializeInnovationIdeasTable();
-    const ideas = await getInnovationIdeas('active');
+    const ideas = await getInnovationIdeas('active') as DBInnovationIdea[];
     
     // Transform database format to frontend format
-    const transformed = ideas.map((idea: {
-      id: number;
-      title: string;
-      angle: string | null;
-      competitor_insight: string | null;
-      checkit_opportunity: string | null;
-      target_audience: string | null;
-      content_types: string[] | null;
-      key_messages: string[] | null;
-      used_at: string | null;
-      created_at: string;
-    }) => ({
+    const transformed = ideas.map((idea) => ({
       id: idea.id,
       title: idea.title,
       angle: idea.angle || '',

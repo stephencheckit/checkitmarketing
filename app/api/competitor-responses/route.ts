@@ -7,28 +7,30 @@ import {
   deleteCompetitorResponse
 } from '@/lib/db';
 
+interface DBCompetitorResponse {
+  id: number;
+  competitor_name: string;
+  source_article_title: string;
+  source_article_url: string | null;
+  source_article_snippet: string | null;
+  response_title: string | null;
+  response_description: string | null;
+  response_key_points: string[] | null;
+  response_linkedin_post: string | null;
+  response_article: string | null;
+  response_word_count: number | null;
+  used_at: string | null;
+  created_at: string;
+}
+
 // GET - Fetch all saved competitor responses
 export async function GET() {
   try {
     await initializeCompetitorResponsesTable();
-    const responses = await getCompetitorResponses();
+    const responses = await getCompetitorResponses() as DBCompetitorResponse[];
     
     // Transform database format to frontend format
-    const transformed = responses.map((r: {
-      id: number;
-      competitor_name: string;
-      source_article_title: string;
-      source_article_url: string | null;
-      source_article_snippet: string | null;
-      response_title: string | null;
-      response_description: string | null;
-      response_key_points: string[] | null;
-      response_linkedin_post: string | null;
-      response_article: string | null;
-      response_word_count: number | null;
-      used_at: string | null;
-      created_at: string;
-    }) => ({
+    const transformed = responses.map((r) => ({
       id: r.id,
       competitorName: r.competitor_name,
       sourceArticleTitle: r.source_article_title,

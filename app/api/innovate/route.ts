@@ -96,10 +96,7 @@ Generate 5 innovation ideas.`
     
     // Save ideas to database
     await initializeInnovationIdeasTable();
-    const savedIdeas = await saveInnovationIdeasBatch(ideas);
-    
-    // Transform saved ideas to include database IDs
-    const ideasWithIds = savedIdeas.map((saved: {
+    const savedIdeas = await saveInnovationIdeasBatch(ideas) as Array<{
       id: number;
       title: string;
       angle: string | null;
@@ -109,7 +106,10 @@ Generate 5 innovation ideas.`
       content_types: string[] | null;
       key_messages: string[] | null;
       created_at: string;
-    }) => ({
+    }>;
+    
+    // Transform saved ideas to include database IDs
+    const ideasWithIds = savedIdeas.map((saved) => ({
       id: saved.id,
       title: saved.title,
       angle: saved.angle || '',

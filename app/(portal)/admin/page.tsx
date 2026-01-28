@@ -4,6 +4,7 @@ import { MODULES } from '@/lib/modules';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus } from 'lucide-react';
+import AdminAccessCodes from '@/components/AdminAccessCodes';
 
 export default async function AdminPage() {
   const session = await getSession();
@@ -12,10 +13,10 @@ export default async function AdminPage() {
     redirect('/login');
   }
 
-  // For now, allow all users to see admin (you can add role check later)
-  // if (session.role !== 'admin') {
-  //   redirect('/dashboard');
-  // }
+  // Admin only access
+  if (session.role !== 'admin') {
+    redirect('/dashboard');
+  }
 
   const users = await getAllUsers();
   const progressData = await getAllProgress();
@@ -84,6 +85,9 @@ export default async function AdminPage() {
           <p className="text-sm text-muted">{totalUsers} users • {certificationRate}% certified</p>
         </div>
       </div>
+
+      {/* Access Codes & Invites */}
+      <AdminAccessCodes />
 
       {/* Stats overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

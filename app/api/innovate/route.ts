@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentPositioningData } from '@/lib/db';
+import { getCurrentPositioningData, saveInnovationIdeasBatch, initializeInnovationIdeasTable } from '@/lib/db';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -92,9 +92,37 @@ Generate 5 innovation ideas.`
     }
     
     const parsed = JSON.parse(content);
+    const ideas = parsed.ideas || [];
+    
+    // Save ideas to database
+    await initializeInnovationIdeasTable();
+    const savedIdeas = await saveInnovationIdeasBatch(ideas);
+    
+    // Transform saved ideas to include database IDs
+    const ideasWithIds = savedIdeas.map((saved: {
+      id: number;
+      title: string;
+      angle: string | null;
+      competitor_insight: string | null;
+      checkit_opportunity: string | null;
+      target_audience: string | null;
+      content_types: string[] | null;
+      key_messages: string[] | null;
+      created_at: string;
+    }) => ({
+      id: saved.id,
+      title: saved.title,
+      angle: saved.angle || '',
+      competitorInsight: saved.competitor_insight || '',
+      checkitOpportunity: saved.checkit_opportunity || '',
+      targetAudience: saved.target_audience || '',
+      contentTypes: saved.content_types || [],
+      keyMessages: saved.key_messages || [],
+      createdAt: saved.created_at,
+    }));
     
     return NextResponse.json({
-      ideas: parsed.ideas || [],
+      ideas: ideasWithIds,
       generatedAt: new Date().toISOString(),
       basedOn: competitorContent.reduce((sum, c) => sum + c.articles.length, 0),
     });

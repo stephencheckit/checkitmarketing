@@ -682,6 +682,230 @@ export async function saveContentIdeasBatch(ideas: Array<{
 }
 
 // ============================================
+// INNOVATION IDEAS (Persistent Storage)
+// ============================================
+
+export async function initializeInnovationIdeasTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS innovation_ideas (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(500) NOT NULL,
+      angle TEXT,
+      competitor_insight TEXT,
+      checkit_opportunity TEXT,
+      target_audience VARCHAR(255),
+      content_types JSONB,
+      key_messages JSONB,
+      status VARCHAR(50) DEFAULT 'active',
+      used_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_innovation_ideas_status ON innovation_ideas(status)
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_innovation_ideas_created ON innovation_ideas(created_at DESC)
+  `;
+}
+
+export async function getInnovationIdeas(status?: string) {
+  if (status) {
+    return await sql`
+      SELECT * FROM innovation_ideas 
+      WHERE status = ${status}
+      ORDER BY created_at DESC
+    `;
+  }
+  return await sql`
+    SELECT * FROM innovation_ideas 
+    ORDER BY created_at DESC
+  `;
+}
+
+export async function saveInnovationIdea(idea: {
+  title: string;
+  angle?: string;
+  competitorInsight?: string;
+  checkitOpportunity?: string;
+  targetAudience?: string;
+  contentTypes?: string[];
+  keyMessages?: string[];
+}) {
+  const result = await sql`
+    INSERT INTO innovation_ideas (
+      title, angle, competitor_insight, checkit_opportunity,
+      target_audience, content_types, key_messages
+    )
+    VALUES (
+      ${idea.title},
+      ${idea.angle || null},
+      ${idea.competitorInsight || null},
+      ${idea.checkitOpportunity || null},
+      ${idea.targetAudience || null},
+      ${JSON.stringify(idea.contentTypes || [])},
+      ${JSON.stringify(idea.keyMessages || [])}
+    )
+    RETURNING *
+  `;
+  return result[0];
+}
+
+export async function saveInnovationIdeasBatch(ideas: Array<{
+  title: string;
+  angle?: string;
+  competitorInsight?: string;
+  checkitOpportunity?: string;
+  targetAudience?: string;
+  contentTypes?: string[];
+  keyMessages?: string[];
+}>) {
+  const results = [];
+  for (const idea of ideas) {
+    const saved = await saveInnovationIdea(idea);
+    results.push(saved);
+  }
+  return results;
+}
+
+export async function markInnovationIdeaUsed(id: number) {
+  const result = await sql`
+    UPDATE innovation_ideas SET
+      used_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] || null;
+}
+
+export async function updateInnovationIdeaStatus(id: number, status: string) {
+  const result = await sql`
+    UPDATE innovation_ideas SET
+      status = ${status}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] || null;
+}
+
+export async function deleteInnovationIdea(id: number) {
+  await sql`DELETE FROM innovation_ideas WHERE id = ${id}`;
+}
+
+// ============================================
+// COMPETITOR RESPONSES ("Our Take" Storage)
+// ============================================
+
+export async function initializeCompetitorResponsesTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS competitor_responses (
+      id SERIAL PRIMARY KEY,
+      competitor_name VARCHAR(255) NOT NULL,
+      source_article_title VARCHAR(500) NOT NULL,
+      source_article_url TEXT,
+      source_article_snippet TEXT,
+      response_title VARCHAR(500),
+      response_description TEXT,
+      response_key_points JSONB,
+      response_linkedin_post TEXT,
+      response_article TEXT,
+      response_word_count INTEGER,
+      used_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_competitor_responses_competitor ON competitor_responses(competitor_name)
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_competitor_responses_created ON competitor_responses(created_at DESC)
+  `;
+  
+  // Create unique index on source URL to prevent duplicates
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_competitor_responses_source_url 
+    ON competitor_responses(source_article_url) 
+    WHERE source_article_url IS NOT NULL
+  `;
+}
+
+export async function getCompetitorResponses() {
+  return await sql`
+    SELECT * FROM competitor_responses 
+    ORDER BY created_at DESC
+  `;
+}
+
+export async function getCompetitorResponseBySourceUrl(sourceUrl: string) {
+  const result = await sql`
+    SELECT * FROM competitor_responses 
+    WHERE source_article_url = ${sourceUrl}
+  `;
+  return result[0] || null;
+}
+
+export async function saveCompetitorResponse(response: {
+  competitorName: string;
+  sourceArticleTitle: string;
+  sourceArticleUrl?: string;
+  sourceArticleSnippet?: string;
+  responseTitle?: string;
+  responseDescription?: string;
+  responseKeyPoints?: string[];
+  responseLinkedinPost?: string;
+  responseArticle?: string;
+  responseWordCount?: number;
+}) {
+  const result = await sql`
+    INSERT INTO competitor_responses (
+      competitor_name, source_article_title, source_article_url, source_article_snippet,
+      response_title, response_description, response_key_points,
+      response_linkedin_post, response_article, response_word_count
+    )
+    VALUES (
+      ${response.competitorName},
+      ${response.sourceArticleTitle},
+      ${response.sourceArticleUrl || null},
+      ${response.sourceArticleSnippet || null},
+      ${response.responseTitle || null},
+      ${response.responseDescription || null},
+      ${JSON.stringify(response.responseKeyPoints || [])},
+      ${response.responseLinkedinPost || null},
+      ${response.responseArticle || null},
+      ${response.responseWordCount || null}
+    )
+    ON CONFLICT (source_article_url) 
+    DO UPDATE SET
+      response_title = EXCLUDED.response_title,
+      response_description = EXCLUDED.response_description,
+      response_key_points = EXCLUDED.response_key_points,
+      response_linkedin_post = EXCLUDED.response_linkedin_post,
+      response_article = EXCLUDED.response_article,
+      response_word_count = EXCLUDED.response_word_count
+    RETURNING *
+  `;
+  return result[0];
+}
+
+export async function markCompetitorResponseUsed(id: number) {
+  const result = await sql`
+    UPDATE competitor_responses SET
+      used_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] || null;
+}
+
+export async function deleteCompetitorResponse(id: number) {
+  await sql`DELETE FROM competitor_responses WHERE id = ${id}`;
+}
+
+// ============================================
 // CONTRIBUTIONS & CITATIONS SYSTEM
 // ============================================
 

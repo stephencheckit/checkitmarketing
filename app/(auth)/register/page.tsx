@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 const DEPARTMENTS = [
@@ -13,8 +13,11 @@ const DEPARTMENTS = [
   'Other',
 ];
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const codeFromUrl = searchParams.get('code');
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,6 +27,13 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill access code from URL
+  useEffect(() => {
+    if (codeFromUrl) {
+      setFormData(prev => ({ ...prev, accessCode: codeFromUrl.toUpperCase() }));
+    }
+  }, [codeFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,6 +151,9 @@ export default function RegisterPage() {
           <div>
             <label htmlFor="accessCode" className="block text-sm font-medium mb-2">
               Access Code
+              {codeFromUrl && (
+                <span className="ml-2 text-xs text-success font-normal">Pre-filled from invite link</span>
+              )}
             </label>
             <input
               id="accessCode"
@@ -148,10 +161,15 @@ export default function RegisterPage() {
               required
               value={formData.accessCode}
               onChange={(e) => setFormData({ ...formData, accessCode: e.target.value.toUpperCase() })}
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all uppercase"
+              className={`w-full bg-background border rounded-lg px-4 py-3 text-foreground placeholder:text-muted focus:border-border-accent transition-all uppercase ${
+                codeFromUrl ? 'border-success/50 bg-success/5' : 'border-border'
+              }`}
               placeholder="Enter access code"
+              readOnly={!!codeFromUrl}
             />
-            <p className="text-xs text-muted mt-1.5">Contact your manager for the access code</p>
+            {!codeFromUrl && (
+              <p className="text-xs text-muted mt-1.5">Contact your manager for the access code</p>
+            )}
           </div>
 
           <button
@@ -172,5 +190,17 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

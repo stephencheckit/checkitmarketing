@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { getCurrentPositioningData } from '@/lib/db';
+import { getCurrentPositioningData, saveCompetitorResponse, initializeCompetitorResponsesTable } from '@/lib/db';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -16,7 +16,7 @@ interface GenerateRequest {
 export async function POST(request: NextRequest) {
   try {
     const body: GenerateRequest = await request.json();
-    const { competitorName, competitorArticleTitle, competitorArticleSnippet } = body;
+    const { competitorName, competitorArticleTitle, competitorArticleSnippet, competitorArticleUrl } = body;
 
     if (!competitorArticleTitle) {
       return NextResponse.json(
@@ -120,8 +120,26 @@ Format your response as JSON:
       );
     }
 
+    const wordCount = parsed.article?.split(/\s+/).length || 0;
+    
+    // Save to database
+    await initializeCompetitorResponsesTable();
+    const saved = await saveCompetitorResponse({
+      competitorName,
+      sourceArticleTitle: competitorArticleTitle,
+      sourceArticleUrl: competitorArticleUrl,
+      sourceArticleSnippet: competitorArticleSnippet,
+      responseTitle: parsed.title,
+      responseDescription: parsed.description,
+      responseKeyPoints: parsed.keyPoints || [],
+      responseLinkedinPost: parsed.linkedinPost,
+      responseArticle: parsed.article,
+      responseWordCount: wordCount,
+    });
+
     return NextResponse.json({
       success: true,
+      id: saved.id,
       basedOn: {
         competitor: competitorName,
         originalTitle: competitorArticleTitle,
@@ -132,7 +150,7 @@ Format your response as JSON:
         keyPoints: parsed.keyPoints || [],
         linkedinPost: parsed.linkedinPost,
         article: parsed.article,
-        wordCount: parsed.article?.split(/\s+/).length || 0,
+        wordCount,
       },
       generatedAt: new Date().toISOString(),
     });

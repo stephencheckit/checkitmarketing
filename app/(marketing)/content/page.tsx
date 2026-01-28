@@ -7,6 +7,7 @@ import ContributionModal from '@/components/ContributionModal';
 type TabType = 'ideas' | 'competitor-watch' | 'innovation';
 
 interface InnovationIdea {
+  id?: number;
   title: string;
   angle: string;
   competitorInsight: string;
@@ -14,6 +15,8 @@ interface InnovationIdea {
   targetAudience: string;
   contentTypes: string[];
   keyMessages: string[];
+  usedAt?: string | null;
+  createdAt?: string;
 }
 
 interface ContentIdea {
@@ -111,14 +114,18 @@ export default function ContentPage() {
   const [feedsError, setFeedsError] = useState<string | null>(null);
   const [generatingResponse, setGeneratingResponse] = useState<string | null>(null); // itemId being generated
   const [generatedResponses, setGeneratedResponses] = useState<Map<string, GeneratedResponse>>(new Map());
-  const [responseModal, setResponseModal] = useState<{ itemId: string; response: GeneratedResponse } | null>(null);
+  const [responseModal, setResponseModal] = useState<{ itemId: string; response: GeneratedResponse; sourceUrl?: string } | null>(null);
   
   // Innovation state
   const [innovationIdeas, setInnovationIdeas] = useState<InnovationIdea[]>([]);
   const [loadingInnovation, setLoadingInnovation] = useState(false);
+  const [loadingSavedInnovation, setLoadingSavedInnovation] = useState(true);
   const [innovationError, setInnovationError] = useState<string | null>(null);
   const [expandedInnovation, setExpandedInnovation] = useState<Set<number>>(new Set([0]));
-  const [innovationGenerated, setInnovationGenerated] = useState(false); // Track if ideas were already generated
+  
+  // Saved competitor responses (map by source URL for quick lookup)
+  const [savedResponses, setSavedResponses] = useState<Map<string, { id: number; response: GeneratedResponse; usedAt?: string | null }>>(new Map());
+  const [loadingSavedResponses, setLoadingSavedResponses] = useState(true);
 
   // Load saved ideas on mount
   const loadSavedIdeas = useCallback(async () => {
@@ -168,9 +175,65 @@ export default function ContentPage() {
     }
   }, []);
 
+  // Load saved innovation ideas on mount
+  const loadSavedInnovationIdeas = useCallback(async () => {
+    try {
+      setLoadingSavedInnovation(true);
+      const res = await fetch('/api/innovation');
+      if (!res.ok) throw new Error('Failed to load innovation ideas');
+      const data = await res.json();
+      
+      if (data.ideas && data.ideas.length > 0) {
+        setInnovationIdeas(data.ideas);
+        setExpandedInnovation(new Set([0]));
+      }
+    } catch (err) {
+      console.error('Error loading saved innovation ideas:', err);
+    } finally {
+      setLoadingSavedInnovation(false);
+    }
+  }, []);
+
+  // Load saved competitor responses on mount
+  const loadSavedCompetitorResponses = useCallback(async () => {
+    try {
+      setLoadingSavedResponses(true);
+      const res = await fetch('/api/competitor-responses');
+      if (!res.ok) throw new Error('Failed to load competitor responses');
+      const data = await res.json();
+      
+      // Build map by source URL for quick lookup
+      const responseMap = new Map<string, { id: number; response: GeneratedResponse; usedAt?: string | null }>();
+      for (const r of data.responses) {
+        if (r.sourceArticleUrl) {
+          responseMap.set(r.sourceArticleUrl, {
+            id: r.id,
+            response: r.response,
+            usedAt: r.usedAt,
+          });
+        }
+      }
+      setSavedResponses(responseMap);
+      
+      // Also populate the generatedResponses map for UI compatibility
+      const genMap = new Map<string, GeneratedResponse>();
+      for (const r of data.responses) {
+        const itemId = `${r.competitorName}-${r.sourceArticleTitle}`;
+        genMap.set(itemId, r.response);
+      }
+      setGeneratedResponses(genMap);
+    } catch (err) {
+      console.error('Error loading saved competitor responses:', err);
+    } finally {
+      setLoadingSavedResponses(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadSavedIdeas();
-  }, [loadSavedIdeas]);
+    loadSavedInnovationIdeas();
+    loadSavedCompetitorResponses();
+  }, [loadSavedIdeas, loadSavedInnovationIdeas, loadSavedCompetitorResponses]);
 
   const generateIdeas = async () => {
     setLoading(true);
@@ -353,7 +416,6 @@ export default function ContentPage() {
       const data = await res.json();
       setInnovationIdeas(data.ideas);
       setExpandedInnovation(new Set([0]));
-      setInnovationGenerated(true); // Mark as generated to prevent auto-regeneration
     } catch (err) {
       setInnovationError(err instanceof Error ? err.message : 'Failed to generate innovation ideas');
     } finally {
@@ -361,12 +423,49 @@ export default function ContentPage() {
     }
   }, [competitorFeeds]);
 
-  // Auto-generate innovation when switching to that tab (only once, if we have feeds but never generated)
-  useEffect(() => {
-    if (activeTab === 'innovation' && competitorFeeds && !innovationGenerated && !loadingInnovation) {
-      generateInnovationIdeas();
+  // Mark innovation idea as used
+  const markInnovationUsed = async (id: number) => {
+    try {
+      await fetch('/api/innovation', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, markUsed: true }),
+      });
+      
+      // Update local state
+      setInnovationIdeas(prev => prev.map(idea => 
+        idea.id === id ? { ...idea, usedAt: new Date().toISOString() } : idea
+      ));
+    } catch (err) {
+      console.error('Failed to mark innovation idea as used:', err);
     }
-  }, [activeTab, competitorFeeds, innovationGenerated, loadingInnovation, generateInnovationIdeas]);
+  };
+
+  // Mark competitor response as used
+  const markResponseUsed = async (sourceUrl: string) => {
+    const saved = savedResponses.get(sourceUrl);
+    if (!saved) return;
+    
+    try {
+      await fetch('/api/competitor-responses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: saved.id, markUsed: true }),
+      });
+      
+      // Update local state
+      setSavedResponses(prev => {
+        const updated = new Map(prev);
+        const existing = updated.get(sourceUrl);
+        if (existing) {
+          updated.set(sourceUrl, { ...existing, usedAt: new Date().toISOString() });
+        }
+        return updated;
+      });
+    } catch (err) {
+      console.error('Failed to mark response as used:', err);
+    }
+  };
 
   // Generate Checkit response to competitor content
   const generateResponse = async (competitorName: string, item: RSSFeedItem) => {
@@ -389,8 +488,19 @@ export default function ContentPage() {
       const data = await res.json();
       const response: GeneratedResponse = data.generated;
       
+      // Update local caches
       setGeneratedResponses(prev => new Map(prev).set(itemId, response));
-      setResponseModal({ itemId, response });
+      
+      // Also update savedResponses map
+      if (item.link) {
+        setSavedResponses(prev => {
+          const updated = new Map(prev);
+          updated.set(item.link, { id: data.id, response, usedAt: null });
+          return updated;
+        });
+      }
+      
+      setResponseModal({ itemId, response, sourceUrl: item.link });
     } catch (err) {
       setFeedsError(err instanceof Error ? err.message : 'Failed to generate response');
     } finally {
@@ -938,6 +1048,8 @@ export default function ContentPage() {
                             const itemId = `${feed.competitorName}-${item.title}`;
                             const hasResponse = generatedResponses.has(itemId);
                             const isGenerating = generatingResponse === itemId;
+                            const savedResponse = item.link ? savedResponses.get(item.link) : null;
+                            const isUsed = savedResponse?.usedAt;
                             
                             return (
                               <div key={idx} className="p-4 hover:bg-surface-elevated/50 transition-colors">
@@ -963,13 +1075,19 @@ export default function ContentPage() {
                                       {item.creator && (
                                         <span>by {item.creator}</span>
                                       )}
+                                      {isUsed && (
+                                        <span className="flex items-center gap-1 text-success">
+                                          <Check className="w-3 h-3" />
+                                          Used {new Date(isUsed).toLocaleDateString()}
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                   
                                   <button
                                     onClick={() => {
                                       if (hasResponse) {
-                                        setResponseModal({ itemId, response: generatedResponses.get(itemId)! });
+                                        setResponseModal({ itemId, response: generatedResponses.get(itemId)!, sourceUrl: item.link });
                                       } else {
                                         generateResponse(feed.competitorName, item);
                                       }
@@ -977,7 +1095,9 @@ export default function ContentPage() {
                                     disabled={isGenerating}
                                     className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors whitespace-nowrap ${
                                       hasResponse
-                                        ? 'bg-success text-white hover:bg-success/80'
+                                        ? isUsed 
+                                          ? 'bg-surface-elevated text-muted border border-success/30 hover:bg-surface'
+                                          : 'bg-success text-white hover:bg-success/80'
                                         : 'bg-accent text-white hover:bg-accent-hover'
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                   >
@@ -989,7 +1109,7 @@ export default function ContentPage() {
                                     ) : hasResponse ? (
                                       <>
                                         <Check className="w-4 h-4" />
-                                        View Response
+                                        {isUsed ? 'View (Used)' : 'View Response'}
                                       </>
                                     ) : (
                                       <>
@@ -1037,8 +1157,16 @@ export default function ContentPage() {
         {/* INNOVATION TAB */}
         {activeTab === 'innovation' && (
           <>
-            {/* Loading State */}
-            {loadingInnovation && (
+            {/* Loading Saved Innovation Ideas */}
+            {loadingSavedInnovation && (
+              <div className="text-center py-12">
+                <RefreshCw className="w-8 h-8 animate-spin text-accent mx-auto mb-4" />
+                <p className="text-muted">Loading saved innovation ideas...</p>
+              </div>
+            )}
+
+            {/* Loading State - Generating New */}
+            {loadingInnovation && !loadingSavedInnovation && (
               <div className="text-center py-12">
                 <div className="inline-flex items-center gap-3 px-6 py-3 bg-surface border border-border rounded-lg shadow">
                   <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
@@ -1068,25 +1196,31 @@ export default function ContentPage() {
             )}
 
             {/* Innovation Ideas */}
-            {!loadingInnovation && innovationIdeas.length > 0 && (
+            {!loadingInnovation && !loadingSavedInnovation && innovationIdeas.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm text-muted">
-                    {innovationIdeas.length} innovation opportunities based on competitor activity
+                    {innovationIdeas.length} innovation opportunities
+                    {innovationIdeas.filter(i => i.usedAt).length > 0 && (
+                      <span className="ml-2 text-success">
+                        • {innovationIdeas.filter(i => i.usedAt).length} used
+                      </span>
+                    )}
                   </p>
                   <button
                     onClick={generateInnovationIdeas}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground transition-colors"
+                    disabled={!competitorFeeds}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-surface-elevated text-muted rounded-lg hover:text-foreground transition-colors disabled:opacity-50"
                   >
                     <RefreshCw className="w-4 h-4" />
-                    Regenerate
+                    Generate More
                   </button>
                 </div>
 
                 {innovationIdeas.map((idea, index) => (
                   <div
-                    key={index}
-                    className="bg-surface border border-border rounded-xl overflow-hidden"
+                    key={idea.id || index}
+                    className={`bg-surface border rounded-xl overflow-hidden ${idea.usedAt ? 'border-success/30' : 'border-border'}`}
                   >
                     {/* Header */}
                     <button
@@ -1102,11 +1236,26 @@ export default function ContentPage() {
                       className="w-full px-5 py-4 flex items-center justify-between hover:bg-surface-elevated/50 transition-colors text-left"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-success flex items-center justify-center">
-                          <Zap className="w-5 h-5 text-white" />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          idea.usedAt 
+                            ? 'bg-success/20' 
+                            : 'bg-gradient-to-br from-accent to-success'
+                        }`}>
+                          {idea.usedAt ? (
+                            <Check className="w-5 h-5 text-success" />
+                          ) : (
+                            <Zap className="w-5 h-5 text-white" />
+                          )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-foreground">{idea.title}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground">{idea.title}</h3>
+                            {idea.usedAt && (
+                              <span className="px-2 py-0.5 text-[10px] font-medium bg-success/20 text-success rounded">
+                                USED
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-muted">{idea.angle}</p>
                         </div>
                       </div>
@@ -1181,9 +1330,29 @@ export default function ContentPage() {
                         </div>
 
                         {/* Action Button */}
-                        <div className="mt-4 pt-4 border-t border-border flex justify-end">
+                        <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
+                          {idea.usedAt ? (
+                            <span className="text-xs text-success flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              Used on {new Date(idea.usedAt).toLocaleDateString()}
+                            </span>
+                          ) : idea.id ? (
+                            <button
+                              onClick={() => markInnovationUsed(idea.id!)}
+                              className="flex items-center gap-2 px-3 py-1.5 text-sm text-muted hover:text-success hover:bg-success/10 rounded-lg transition-colors"
+                            >
+                              <Check className="w-4 h-4" />
+                              Mark as Used
+                            </button>
+                          ) : (
+                            <div />
+                          )}
                           <button
                             onClick={() => {
+                              // Mark as used when adding to content ideas
+                              if (idea.id && !idea.usedAt) {
+                                markInnovationUsed(idea.id);
+                              }
                               // Convert to content idea and switch to ideas tab
                               const newIdea: ContentIdea = {
                                 title: idea.title,
@@ -1213,7 +1382,7 @@ export default function ContentPage() {
             )}
 
             {/* Empty State - No competitor data */}
-            {!loadingInnovation && !innovationError && innovationIdeas.length === 0 && !competitorFeeds && (
+            {!loadingInnovation && !loadingSavedInnovation && !innovationError && innovationIdeas.length === 0 && !competitorFeeds && (
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
                   <Zap className="w-8 h-8 text-accent" />
@@ -1235,7 +1404,7 @@ export default function ContentPage() {
             )}
 
             {/* Empty State - Has competitor data but no ideas yet */}
-            {!loadingInnovation && !innovationError && innovationIdeas.length === 0 && competitorFeeds && (
+            {!loadingInnovation && !loadingSavedInnovation && !innovationError && innovationIdeas.length === 0 && competitorFeeds && (
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 mb-4">
                   <Zap className="w-8 h-8 text-accent" />
@@ -1326,6 +1495,11 @@ export default function ContentPage() {
                 <div className="flex items-center gap-2 text-xs text-muted mb-1">
                   <Wand2 className="w-3 h-3" />
                   Checkit&apos;s Response
+                  {responseModal.sourceUrl && savedResponses.get(responseModal.sourceUrl)?.usedAt && (
+                    <span className="ml-2 px-2 py-0.5 bg-success/20 text-success rounded text-[10px] font-medium">
+                      USED
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-xl font-semibold text-foreground">
                   {responseModal.response.title}
@@ -1335,8 +1509,27 @@ export default function ContentPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {responseModal.sourceUrl && !savedResponses.get(responseModal.sourceUrl)?.usedAt && (
+                  <button
+                    onClick={() => {
+                      if (responseModal.sourceUrl) {
+                        markResponseUsed(responseModal.sourceUrl);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-success text-white hover:bg-success/80 transition-colors"
+                  >
+                    <Check className="w-4 h-4" />
+                    Mark as Used
+                  </button>
+                )}
                 <button
-                  onClick={() => copyToClipboard(responseModal.response.article, 'response-article')}
+                  onClick={() => {
+                    copyToClipboard(responseModal.response.article, 'response-article');
+                    // Also mark as used when copying
+                    if (responseModal.sourceUrl && !savedResponses.get(responseModal.sourceUrl)?.usedAt) {
+                      markResponseUsed(responseModal.sourceUrl);
+                    }
+                  }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     copiedId === 'response-article'
                       ? 'bg-success/20 text-success'

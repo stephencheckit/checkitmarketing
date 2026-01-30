@@ -853,30 +853,49 @@ export default function AISearchPage() {
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-surface/50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-green-400">
-                    {summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'}
+                {/* Queries - clickable */}
+                <button
+                  onClick={() => setViewMode('queries')}
+                  className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
+                >
+                  <div className="text-2xl font-bold text-purple-400">
+                    {queries.length}
                   </div>
-                  <div className="text-xs text-muted">Mention Rate</div>
-                </div>
-                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-muted">Queries Tracked →</div>
+                </button>
+                {/* Total Scans - clickable */}
+                <button
+                  onClick={() => setViewMode('results')}
+                  className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
+                >
                   <div className="text-2xl font-bold text-blue-400">
                     {summary?.totalScans || 0}
                   </div>
-                  <div className="text-xs text-muted">Total Scans</div>
-                </div>
-                <div className="bg-surface/50 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold text-yellow-400">
-                    #{scores.findIndex(s => s.brand === 'Checkit') + 1 || '-'}
+                  <div className="text-xs text-muted">Total Scans →</div>
+                </button>
+                {/* Checkit Mentions - clickable */}
+                <button
+                  onClick={() => setViewMode('results')}
+                  className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
+                >
+                  <div className="text-2xl font-bold text-green-400">
+                    {summary?.checkitMentions || 0}
+                    <span className="text-sm text-muted ml-1">
+                      ({summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'})
+                    </span>
                   </div>
-                  <div className="text-xs text-muted">vs Competitors</div>
-                </div>
-                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-xs text-muted">Checkit Mentions →</div>
+                </button>
+                {/* Content Gaps - clickable */}
+                <button
+                  onClick={() => setViewMode('gaps')}
+                  className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
+                >
                   <div className="text-2xl font-bold text-red-400">
                     {contentGaps.filter(g => !getExistingDraft(g.query_text)).length}
                   </div>
-                  <div className="text-xs text-muted">Content Gaps</div>
-                </div>
+                  <div className="text-xs text-muted">Content Gaps →</div>
+                </button>
               </div>
 
               {/* Progress bar */}
@@ -943,14 +962,21 @@ export default function AISearchPage() {
                       Add Default Queries ({defaultQueries.length})
                     </button>
                   )}
-                  <button
-                    onClick={runFullScan}
-                    disabled={scanning || queries.length === 0}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors disabled:opacity-50"
-                  >
-                    {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                    {scanning ? 'Scanning...' : 'Run Full Scan'}
-                  </button>
+                  <div>
+                    <button
+                      onClick={runFullScan}
+                      disabled={scanning || queries.length === 0}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors disabled:opacity-50"
+                    >
+                      {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                      {scanning ? 'Scanning...' : 'Run Full Scan'}
+                    </button>
+                    {summary?.lastScanAt && (
+                      <p className="text-xs text-muted text-center mt-1">
+                        Last scan: {new Date(summary.lastScanAt).toLocaleDateString()} at {new Date(summary.lastScanAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    )}
+                  </div>
                   <button
                     onClick={() => { setViewMode('queries'); setShowAddQuery(true); }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors"

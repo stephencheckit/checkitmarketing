@@ -693,51 +693,6 @@ export default function AISearchPage() {
           </div>
         )}
 
-        {/* Summary Cards */}
-        {!loading && summary && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-surface border border-border rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-purple-500" />
-                <span className="text-sm text-muted">Queries Tracked</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">{queries.length}</div>
-            </div>
-            <div className="bg-surface border border-border rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-purple-500" />
-                <span className="text-sm text-muted">Total Scans</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">{summary.totalScans}</div>
-            </div>
-            <div className={`bg-surface border rounded-xl p-4 ${summary.checkitMentionRate > 0.5 ? 'border-green-500/50' : summary.checkitMentionRate > 0.2 ? 'border-yellow-500/50' : 'border-red-500/50'}`}>
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className={`w-4 h-4 ${summary.checkitMentionRate > 0.5 ? 'text-green-500' : summary.checkitMentionRate > 0.2 ? 'text-yellow-500' : 'text-red-500'}`} />
-                <span className="text-sm text-muted">Checkit Mentions</span>
-              </div>
-              <div className={`text-2xl font-bold ${summary.checkitMentionRate > 0.5 ? 'text-green-400' : summary.checkitMentionRate > 0.2 ? 'text-yellow-400' : 'text-red-400'}`}>
-                {formatRate(summary.checkitMentionRate)}
-              </div>
-            </div>
-            <div className="bg-surface border border-border rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="w-4 h-4 text-purple-500" />
-                <span className="text-sm text-muted">Avg Position</span>
-              </div>
-              <div className="text-2xl font-bold text-foreground">
-                {summary.avgPosition ? `#${summary.avgPosition.toFixed(1)}` : '-'}
-              </div>
-            </div>
-            <div className="bg-surface border border-border rounded-xl p-4">
-              <div className="text-sm text-muted mb-1">Last Scan</div>
-              <div className="text-sm text-foreground">
-                {summary.lastScanAt
-                  ? new Date(summary.lastScanAt).toLocaleDateString()
-                  : 'Never'}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* View Toggle - Logical progression: Overview → Analysis → Action → Config */}
         {!loading && (
@@ -861,39 +816,42 @@ export default function AISearchPage() {
                 )}
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {/* Queries - clickable */}
                 <button
                   onClick={() => setViewMode('queries')}
                   className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
                 >
-                  <div className="text-2xl font-bold text-purple-400">
-                    {queries.length}
-                  </div>
-                  <div className="text-xs text-muted">Queries Tracked →</div>
+                  <div className="text-2xl font-bold text-purple-400">{queries.length}</div>
+                  <div className="text-xs text-muted">Queries →</div>
                 </button>
                 {/* Total Scans - clickable */}
                 <button
                   onClick={() => setViewMode('results')}
                   className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
                 >
-                  <div className="text-2xl font-bold text-blue-400">
-                    {summary?.totalScans || 0}
-                  </div>
-                  <div className="text-xs text-muted">Total Scans →</div>
+                  <div className="text-2xl font-bold text-blue-400">{summary?.totalScans || 0}</div>
+                  <div className="text-xs text-muted">Scans →</div>
                 </button>
-                {/* Checkit Mentions - clickable */}
+                {/* Mention Rate - clickable */}
                 <button
                   onClick={() => setViewMode('results')}
                   className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
                 >
-                  <div className="text-2xl font-bold text-green-400">
-                    {summary?.checkitMentions || 0}
-                    <span className="text-sm text-muted ml-1">
-                      ({summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'})
-                    </span>
+                  <div className={`text-2xl font-bold ${(summary?.checkitMentionRate || 0) > 0.25 ? 'text-green-400' : (summary?.checkitMentionRate || 0) > 0.1 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    {summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'}
                   </div>
-                  <div className="text-xs text-muted">Checkit Mentions →</div>
+                  <div className="text-xs text-muted">Mention Rate →</div>
+                </button>
+                {/* Avg Position */}
+                <button
+                  onClick={() => setViewMode('leaderboard')}
+                  className="bg-surface/50 rounded-lg p-3 text-center hover:bg-surface/80 transition-colors cursor-pointer"
+                >
+                  <div className="text-2xl font-bold text-yellow-400">
+                    {summary?.avgPosition ? `#${summary.avgPosition.toFixed(1)}` : '-'}
+                  </div>
+                  <div className="text-xs text-muted">Avg Rank →</div>
                 </button>
                 {/* Content Gaps - clickable */}
                 <button
@@ -903,9 +861,16 @@ export default function AISearchPage() {
                   <div className="text-2xl font-bold text-red-400">
                     {contentGaps.filter(g => !getExistingDraft(g.query_text)).length}
                   </div>
-                  <div className="text-xs text-muted">Content Gaps →</div>
+                  <div className="text-xs text-muted">Gaps →</div>
                 </button>
               </div>
+              
+              {/* Last scan info */}
+              {summary?.lastScanAt && (
+                <div className="text-xs text-muted text-right mt-2">
+                  Last scan: {new Date(summary.lastScanAt).toLocaleDateString()} at {new Date(summary.lastScanAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
 
               {/* Progress bar */}
               {scores.find(s => s.brand === 'Checkit') && (

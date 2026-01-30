@@ -23,6 +23,7 @@ import {
   generateFullArticle,
   generateQueryRecommendations,
   generateQueriesFromSearchTerms,
+  isNonBrandedQuery,
 } from '@/lib/ai-search';
 
 // Verify cron secret to prevent unauthorized access
@@ -114,7 +115,10 @@ export async function GET(request: NextRequest) {
         );
         
         for (const rec of (recommendations.recommendations || []).slice(0, 3)) {
-          if (!existingQueryTexts.has(rec.query.toLowerCase()) && newQueriesAdded < 5) {
+          // Filter out branded queries (containing "Checkit")
+          if (!existingQueryTexts.has(rec.query.toLowerCase()) && 
+              newQueriesAdded < 5 && 
+              isNonBrandedQuery(rec.query)) {
             await createAISearchQuery(rec.query);
             existingQueryTexts.add(rec.query.toLowerCase());
             newQueriesAdded++;
@@ -130,7 +134,10 @@ export async function GET(request: NextRequest) {
         const fromSearchConsole = await generateQueriesFromSearchTerms(searchTerms);
         
         for (const q of (fromSearchConsole.queries || []).slice(0, 2)) {
-          if (!existingQueryTexts.has(q.query.toLowerCase()) && newQueriesAdded < 5) {
+          // Filter out branded queries (containing "Checkit")
+          if (!existingQueryTexts.has(q.query.toLowerCase()) && 
+              newQueriesAdded < 5 && 
+              isNonBrandedQuery(q.query)) {
             await createAISearchQuery(q.query);
             existingQueryTexts.add(q.query.toLowerCase());
             newQueriesAdded++;

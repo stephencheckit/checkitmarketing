@@ -23,6 +23,7 @@ import {
   BRANDS_TO_TRACK,
   generateQueryRecommendations,
   generateQueriesFromSearchTerms,
+  isNonBrandedQuery,
 } from '@/lib/ai-search';
 import { getSearchConsoleQueries } from '@/lib/db';
 
@@ -203,6 +204,12 @@ export async function POST(request: NextRequest) {
       const { query } = body;
       if (!query) {
         return NextResponse.json({ error: 'Query is required' }, { status: 400 });
+      }
+      // Reject branded queries (containing "Checkit") - they skew results
+      if (!isNonBrandedQuery(query)) {
+        return NextResponse.json({ 
+          error: 'Branded queries (containing "Checkit") are not allowed as they skew results' 
+        }, { status: 400 });
       }
       const result = await createAISearchQuery(query);
       return NextResponse.json({ success: true, query: result });

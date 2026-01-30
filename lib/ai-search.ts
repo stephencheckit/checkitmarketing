@@ -57,6 +57,13 @@ export const QUERY_CATEGORIES = {
   'custom': 'Custom',
 } as const;
 
+// Filter out branded queries (queries containing our brand name skew results)
+export function isNonBrandedQuery(query: string): boolean {
+  const brandTerms = ['checkit', 'check-it', 'check it'];
+  const lowerQuery = query.toLowerCase();
+  return !brandTerms.some(term => lowerQuery.includes(term));
+}
+
 export interface AISearchResult {
   query: string;
   response: string;
@@ -376,7 +383,8 @@ Focus on questions where:
 2. Someone is comparing solutions
 3. Someone has a problem Checkit could solve
 
-Ignore branded searches or navigational queries.`,
+Ignore branded searches or navigational queries.
+IMPORTANT: Do NOT include "Checkit" or any brand name in the generated queries. We want unbranded, generic questions.`,
       },
       {
         role: 'user',
@@ -387,11 +395,11 @@ ${searchTerms.slice(0, 30).map((t, i) => `${i + 1}. ${t}`).join('\n')}
 Return JSON:
 {
   "queries": [
-    { "query": "natural question form", "category": "buyer-intent|comparison|problem-solution|feature", "source": "search-console" }
+    { "query": "natural question form WITHOUT any brand names", "category": "buyer-intent|comparison|problem-solution|feature", "source": "search-console" }
   ]
 }
 
-Only include relevant queries (skip navigational/branded).`,
+Only include relevant queries. Skip any that are navigational, branded, or contain "Checkit".`,
       },
     ],
     temperature: 0.7,
@@ -454,6 +462,8 @@ Recommend 8-10 NEW queries to add for better coverage. Focus on queries where:
 - People are making buying decisions
 - Competitors might be mentioned
 - Checkit's features would be relevant
+
+IMPORTANT: Do NOT include "Checkit" in any query. We want unbranded queries to see organic AI recommendations.
 
 Return JSON:
 {

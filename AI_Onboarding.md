@@ -339,3 +339,52 @@ RESEND_API_KEY=re_...                # Resend API key for demo request email not
 - Quiz content based on actual V6 naming conventions email
 - All 5 modules contain real Checkit V6 terminology and talk tracks
 - Admin dashboard shows certification rates by department
+
+---
+
+## Deploy Log
+
+### 2026-01-30 - AI Search Monitor & Automated Content Pipeline
+**Commit:** `203f19d` - Add AI Search Monitor with automated content pipeline
+
+**Features Added:**
+- **AI Search Monitor** (`/ai-search`) - Track Checkit mentions in AI search results (ChatGPT/GPT-4o-mini)
+- **Automated Content Pipeline** - Daily cron job at 6 AM UTC:
+  - Scans all active queries
+  - Finds content gaps (queries where Checkit isn't mentioned)
+  - Auto-generates SEO/AI-optimized articles (max 10/day)
+  - Auto-publishes to `/resources/`
+- **Trending & Analytics** - Historical tracking, query performance trends, position monitoring
+- **Query Recommendations** - AI-suggested queries to expand coverage
+- **Public Resources Section** (`/resources`) - Published articles visible to search engines and AI crawlers
+- **Reddit Monitor** (`/reddit-monitor`) - Pending Reddit API approval
+- **Google Search Console** (`/search-console`) - Organic search performance tracking
+- **Google Ads Integration** (`/channels`) - Pending Google Ads API approval
+
+**New Files:**
+- `app/(marketing)/ai-search/page.tsx` - AI Search Monitor UI
+- `app/(marketing)/content/ai-drafts/page.tsx` - Content drafts management
+- `app/(public)/resources/` - Public articles pages
+- `app/api/ai-search/monitor/route.ts` - AI search API
+- `app/api/content/generate/route.ts` - Content generation API
+- `app/api/cron/daily-content/route.ts` - Daily automation cron job
+- `lib/ai-search.ts` - OpenAI integration for search monitoring
+- `vercel.json` - Cron schedule configuration
+
+**Vercel Setup Required:**
+- Add `CRON_SECRET` environment variable in Vercel dashboard
+
+**Problem Scores (0-100):**
+| Issue | Score | Notes |
+|-------|-------|-------|
+| Google Ads API pending | 40 | Awaiting approval, feature paused |
+| Reddit API pending | 30 | Awaiting approval, feature paused |
+| No content published yet | 50 | Run pipeline to generate first batch |
+
+**Opportunity Scores (0-100):**
+| Opportunity | Score | Notes |
+|-------------|-------|-------|
+| AI Search visibility | 95 | High impact - direct path to AI recommendations |
+| Automated content at scale | 90 | 10 articles/day = 300/month hands-free |
+| Trend tracking for SEO decisions | 75 | Data-driven content strategy |
+| Query expansion via recommendations | 70 | Discover new keyword opportunities |

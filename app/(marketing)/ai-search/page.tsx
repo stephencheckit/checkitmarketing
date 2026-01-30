@@ -200,8 +200,17 @@ export default function AISearchPage() {
     setTrendsLoading(true);
     try {
       const response = await fetch('/api/ai-search/monitor?type=trends&days=30');
-      if (!response.ok) throw new Error('Failed to fetch trends');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Trends API error:', response.status, errorText);
+        throw new Error('Failed to fetch trends');
+      }
       const data = await response.json();
+      console.log('Trends data received:', { 
+        queryTrendsCount: data.queryTrends?.length, 
+        brandTrendsCount: data.brandTrends?.length,
+        brandTrends: data.brandTrends 
+      });
       setQueryTrends(data.queryTrends || []);
       setBrandTrends(data.brandTrends || []);
     } catch (err) {
@@ -1452,6 +1461,45 @@ export default function AISearchPage() {
         {/* Trends View */}
         {!loading && viewMode === 'trends' && (
           <div className="space-y-6">
+            {/* Summary Stats - Clickable */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <button
+                onClick={() => setViewMode('queries')}
+                className="bg-surface border border-border rounded-xl p-4 text-center hover:bg-surface-elevated transition-colors cursor-pointer"
+              >
+                <div className="text-2xl font-bold text-purple-400">{queries.length}</div>
+                <div className="text-xs text-muted">Queries Tracked →</div>
+              </button>
+              <button
+                onClick={() => setViewMode('results')}
+                className="bg-surface border border-border rounded-xl p-4 text-center hover:bg-surface-elevated transition-colors cursor-pointer"
+              >
+                <div className="text-2xl font-bold text-blue-400">{summary?.totalScans || 0}</div>
+                <div className="text-xs text-muted">Total Scans →</div>
+              </button>
+              <button
+                onClick={() => setViewMode('results')}
+                className="bg-surface border border-border rounded-xl p-4 text-center hover:bg-surface-elevated transition-colors cursor-pointer"
+              >
+                <div className="text-2xl font-bold text-green-400">
+                  {summary?.checkitMentions || 0}
+                  <span className="text-sm text-muted ml-1">
+                    ({summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'})
+                  </span>
+                </div>
+                <div className="text-xs text-muted">Checkit Mentions →</div>
+              </button>
+              <button
+                onClick={() => setViewMode('gaps')}
+                className="bg-surface border border-border rounded-xl p-4 text-center hover:bg-surface-elevated transition-colors cursor-pointer"
+              >
+                <div className="text-2xl font-bold text-red-400">
+                  {contentGaps.filter(g => !getExistingDraft(g.query_text)).length}
+                </div>
+                <div className="text-xs text-muted">Content Gaps →</div>
+              </button>
+            </div>
+
             {/* Overall Brand Trend Chart */}
             <div className="bg-surface border border-border rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">

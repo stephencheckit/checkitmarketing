@@ -460,8 +460,15 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               <button
                 className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-muted hover:text-foreground hover:bg-surface-elevated transition-colors cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
-                  <User className="w-4 h-4" />
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </div>
+                  {isAdmin && pendingReviewCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                      {pendingReviewCount > 9 ? '9+' : pendingReviewCount}
+                    </span>
+                  )}
                 </div>
                 <ChevronDown className={`w-4 h-4 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
               </button>

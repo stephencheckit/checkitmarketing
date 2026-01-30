@@ -344,6 +344,17 @@ RESEND_API_KEY=re_...                # Resend API key for demo request email not
 
 ## Deploy Log
 
+### 2026-01-30 - Nav Cleanup: Microsite & Inbox
+**Commit:** `5e877b3` - Move Microsite to Marketing dropdown, Inbox to profile dropdown
+
+**Changes:**
+- **Microsite** moved from standalone nav item to last position in Marketing dropdown (opens in new tab)
+- **Inbox** moved from standalone nav item to profile dropdown (with badge count)
+- Cleaner nav bar with fewer top-level elements
+- Updated both desktop and mobile navigation
+
+---
+
 ### 2026-01-30 - Navigation Restructure by Audience
 **Commit:** `9873214` - Restructure navigation: 6 dropdowns by audience/function
 

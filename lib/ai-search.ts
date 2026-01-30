@@ -5,6 +5,28 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// OpenRouter client for multi-model access
+const openrouter = process.env.OPENROUTER_API_KEY ? new OpenAI({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': 'https://checkitv6.vercel.app',
+    'X-Title': 'Checkit AI Search Monitor',
+  },
+}) : null;
+
+// Models to query via OpenRouter (when available)
+export const AI_MODELS = {
+  'gpt-4o': { name: 'GPT-4o', provider: 'OpenAI', model: 'openai/gpt-4o' },
+  'gpt-4o-mini': { name: 'GPT-4o Mini', provider: 'OpenAI', model: 'openai/gpt-4o-mini' },
+  'claude-3.5-sonnet': { name: 'Claude 3.5 Sonnet', provider: 'Anthropic', model: 'anthropic/claude-3.5-sonnet' },
+  'claude-3-haiku': { name: 'Claude 3 Haiku', provider: 'Anthropic', model: 'anthropic/claude-3-haiku' },
+  'gemini-pro': { name: 'Gemini Pro', provider: 'Google', model: 'google/gemini-pro-1.5' },
+  'llama-3.1-70b': { name: 'Llama 3.1 70B', provider: 'Meta', model: 'meta-llama/llama-3.1-70b-instruct' },
+} as const;
+
+export type AIModelKey = keyof typeof AI_MODELS;
+
 // Checkit and competitor brands to track
 export const BRANDS_TO_TRACK = [
   'Checkit',
@@ -21,30 +43,35 @@ export const BRANDS_TO_TRACK = [
   'SafetyCulture',
 ];
 
-// Default queries to monitor - organized by category
+// Default queries to monitor - conversational style like AI assistant queries
 export const DEFAULT_QUERIES = [
-  // Buyer Intent - Primary
-  'What is the best temperature monitoring software for restaurants?',
-  'Best food safety compliance software',
-  'Top temperature monitoring systems for commercial kitchens',
-  'HACCP compliance software recommendations',
-  'Best digital food safety management system',
-  // Buyer Intent - Industry Specific
-  'Best IoT temperature monitoring for food service',
-  'Senior living facility compliance management software',
-  'Temperature monitoring solutions for healthcare',
-  'Restaurant compliance software comparison',
-  'Cold chain monitoring software for food retail',
-  // Problem/Solution
-  'How to automate HACCP compliance',
-  'How to reduce food safety violations',
-  'Best way to monitor walk-in cooler temperatures remotely',
-  'How to digitize paper food safety checklists',
-  // Comparison
-  'ComplianceMate vs alternatives',
-  'Therma temperature monitoring review',
-  'Best SmartSense competitors',
-  'Zenput vs other restaurant compliance apps',
+  // Conversational - Buying Decision
+  "I'm looking for a temperature monitoring system for my restaurant. What are the best options?",
+  "Can you recommend software that helps restaurants stay compliant with food safety regulations?",
+  "What's the best way to automate food safety compliance in a commercial kitchen?",
+  "I need to monitor temperatures in my walk-in coolers remotely. What solutions are out there?",
+  
+  // Conversational - Problem Solving
+  "My restaurant keeps failing health inspections. What technology can help us improve?",
+  "How can I replace paper food safety checklists with a digital system?",
+  "We're struggling with HACCP compliance. What software makes this easier?",
+  "What's the best way to get alerts when my refrigerator temperature is too high?",
+  
+  // Industry Specific - Conversational
+  "What temperature monitoring systems work well for senior living facilities?",
+  "I manage a grocery store. What cold chain monitoring solutions should I consider?",
+  "What software do large food service operations use for compliance management?",
+  "How do healthcare facilities monitor medication refrigerator temperatures?",
+  
+  // Comparison/Research
+  "What are the top rated food safety management platforms for restaurants?",
+  "Can you compare different temperature monitoring solutions for commercial kitchens?",
+  "What alternatives are there to traditional data loggers for temperature monitoring?",
+  "Which IoT sensors are best for monitoring food storage temperatures?",
+  
+  // Shorter Natural Questions
+  "Best restaurant compliance software?",
+  "How do I automate temperature logging?",
 ];
 
 // Query categories for organization
@@ -72,10 +99,11 @@ export interface AISearchResult {
   checkitPosition: number | null; // Position in list if mentioned (1 = first)
   competitorsMentioned: string[];
   timestamp: Date;
-  source: 'openai' | 'perplexity';
+  source: string; // e.g., 'openai-gpt4o-mini', 'openrouter-claude-3.5-sonnet', etc.
 }
 
 // Query OpenAI as if asking for recommendations
+// Query using direct OpenAI (fallback when no OpenRouter key)
 export async function queryOpenAI(query: string): Promise<AISearchResult> {
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
@@ -95,14 +123,106 @@ export async function queryOpenAI(query: string): Promise<AISearchResult> {
 
   const response = completion.choices[0]?.message?.content || '';
   
-  return analyzeResponse(query, response, 'openai');
+  return analyzeResponse(query, response, 'openai-gpt4o-mini');
+}
+
+// Query a specific model via OpenRouter
+export async function queryModel(
+  query: string, 
+  modelKey: AIModelKey
+): Promise<AISearchResult & { model: string; provider: string }> {
+  const modelConfig = AI_MODELS[modelKey];
+  
+  if (!openrouter) {
+    // Fallback to OpenAI if no OpenRouter key
+    const result = await queryOpenAI(query);
+    return {
+      ...result,
+      model: 'gpt-4o-mini',
+      provider: 'OpenAI (fallback)',
+      source: 'openai-gpt4o-mini',
+    };
+  }
+
+  const completion = await openrouter.chat.completions.create({
+    model: modelConfig.model,
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a helpful assistant providing recommendations for business software. Give specific product recommendations when asked, mentioning actual company and product names. Be concise but comprehensive.',
+      },
+      {
+        role: 'user',
+        content: query,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 1000,
+  });
+
+  const response = completion.choices[0]?.message?.content || '';
+  const result = analyzeResponse(query, response, `openrouter-${modelKey}` as AISearchResult['source']);
+  
+  return {
+    ...result,
+    model: modelConfig.name,
+    provider: modelConfig.provider,
+  };
+}
+
+// Query multiple models and aggregate results
+export async function queryMultipleModels(
+  query: string,
+  modelKeys: AIModelKey[] = ['gpt-4o-mini', 'claude-3.5-sonnet', 'gemini-pro']
+): Promise<{
+  query: string;
+  results: (AISearchResult & { model: string; provider: string })[];
+  consensus: {
+    checkitMentioned: number;
+    totalModels: number;
+    competitorFrequency: Record<string, number>;
+  };
+}> {
+  const results = await Promise.all(
+    modelKeys.map(key => queryModel(query, key).catch(err => {
+      console.error(`Error querying ${key}:`, err);
+      return null;
+    }))
+  );
+
+  const validResults = results.filter((r): r is NonNullable<typeof r> => r !== null);
+  
+  // Calculate consensus
+  const checkitMentioned = validResults.filter(r => r.checkitMentioned).length;
+  const competitorFrequency: Record<string, number> = {};
+  
+  for (const result of validResults) {
+    for (const comp of result.competitorsMentioned) {
+      competitorFrequency[comp] = (competitorFrequency[comp] || 0) + 1;
+    }
+  }
+
+  return {
+    query,
+    results: validResults,
+    consensus: {
+      checkitMentioned,
+      totalModels: validResults.length,
+      competitorFrequency,
+    },
+  };
+}
+
+// Check if OpenRouter is available
+export function isOpenRouterAvailable(): boolean {
+  return !!openrouter;
 }
 
 // Analyze AI response for brand mentions
 function analyzeResponse(
   query: string,
   response: string,
-  source: 'openai' | 'perplexity'
+  source: string
 ): AISearchResult {
   const responseLower = response.toLowerCase();
   const brandsFound: AISearchResult['brandsFound'] = [];

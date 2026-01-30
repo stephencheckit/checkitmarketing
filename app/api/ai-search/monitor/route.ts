@@ -20,6 +20,9 @@ import {
 } from '@/lib/db';
 import {
   queryOpenAI,
+  queryMultipleModels,
+  isOpenRouterAvailable,
+  AI_MODELS,
   DEFAULT_QUERIES,
   BRANDS_TO_TRACK,
   generateQueryRecommendations,
@@ -107,6 +110,14 @@ export async function GET(request: NextRequest) {
         console.error('Scores error:', err);
         return NextResponse.json({ scores: [] });
       }
+    }
+
+    // Get model availability status
+    if (type === 'models') {
+      return NextResponse.json({
+        openRouterAvailable: isOpenRouterAvailable(),
+        models: AI_MODELS,
+      });
     }
 
     // Get recommendations
@@ -369,6 +380,34 @@ export async function POST(request: NextRequest) {
         deleted: brandedQueries.length,
         queries: brandedQueries.map(q => q.query)
       });
+    }
+
+    // Check if OpenRouter (multi-model) is available
+    if (action === 'check_models') {
+      return NextResponse.json({
+        openRouterAvailable: isOpenRouterAvailable(),
+        models: AI_MODELS,
+        message: isOpenRouterAvailable() 
+          ? 'OpenRouter is configured. Multi-model scanning available.'
+          : 'OpenRouter not configured. Add OPENROUTER_API_KEY to enable multi-model scanning.'
+      });
+    }
+
+    // Scan a single query with multiple models
+    if (action === 'scan_multi_model') {
+      const { queryText, models } = body;
+      if (!queryText) {
+        return NextResponse.json({ error: 'Query text is required' }, { status: 400 });
+      }
+      
+      if (!isOpenRouterAvailable()) {
+        return NextResponse.json({ 
+          error: 'OpenRouter not configured. Add OPENROUTER_API_KEY to .env.local' 
+        }, { status: 400 });
+      }
+
+      const result = await queryMultipleModels(queryText, models);
+      return NextResponse.json(result);
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

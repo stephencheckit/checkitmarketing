@@ -745,53 +745,7 @@ export default function AISearchPage() {
               <BarChart3 className="w-4 h-4 inline mr-2" />
               Overview
             </button>
-            {/* Analysis */}
-            <button
-              onClick={() => setViewMode('trends')}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                viewMode === 'trends'
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-surface-elevated text-muted hover:text-foreground'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4 inline mr-2" />
-              Trends
-            </button>
-            <button
-              onClick={() => setViewMode('results')}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                viewMode === 'results'
-                  ? 'bg-purple-500 text-white'
-                  : 'bg-surface-elevated text-muted hover:text-foreground'
-              }`}
-            >
-              <Search className="w-4 h-4 inline mr-2" />
-              Results ({results.length})
-            </button>
-            {/* Action */}
-            <button
-              onClick={() => setViewMode('gaps')}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                viewMode === 'gaps'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-surface-elevated text-muted hover:text-foreground'
-              }`}
-            >
-              <XCircle className="w-4 h-4 inline mr-2" />
-              Gaps ({contentGaps.filter(g => !getExistingDraft(g.query_text)).length})
-            </button>
-            <button
-              onClick={() => setViewMode('drafts')}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                viewMode === 'drafts'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-surface-elevated text-muted hover:text-foreground'
-              }`}
-            >
-              <FileText className="w-4 h-4 inline mr-2" />
-              Content ({drafts.length})
-            </button>
-            {/* Config */}
+            {/* Queries - what we're monitoring */}
             <button
               onClick={() => setViewMode('queries')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${
@@ -803,6 +757,55 @@ export default function AISearchPage() {
               <Target className="w-4 h-4 inline mr-2" />
               Queries ({queries.length})
             </button>
+            {/* Results - what we found */}
+            <button
+              onClick={() => setViewMode('results')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'results'
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <Search className="w-4 h-4 inline mr-2" />
+              Results ({results.length})
+            </button>
+            {/* Trends - analysis over time */}
+            <button
+              onClick={() => setViewMode('trends')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'trends'
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 inline mr-2" />
+              Trends
+            </button>
+            {/* Gaps - opportunities */}
+            <button
+              onClick={() => setViewMode('gaps')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'gaps'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <XCircle className="w-4 h-4 inline mr-2" />
+              Gaps ({contentGaps.filter(g => !getExistingDraft(g.query_text)).length})
+            </button>
+            {/* Content - generated articles */}
+            <button
+              onClick={() => setViewMode('drafts')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'drafts'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <FileText className="w-4 h-4 inline mr-2" />
+              Content ({drafts.length})
+            </button>
+            {/* Ideas - suggestions */}
             <button
               onClick={() => setViewMode('recommendations')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${
@@ -814,6 +817,7 @@ export default function AISearchPage() {
               <Lightbulb className="w-4 h-4 inline mr-2" />
               Ideas
             </button>
+            {/* Scores - leaderboard */}
             <button
               onClick={() => setViewMode('leaderboard')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${

@@ -11,6 +11,9 @@ import {
   updateDraftContent,
   updateDraftStatus,
   getContentDrafts,
+  initializeCompetitorFeedsTables,
+  getDiscoveredCompetitors,
+  syncDiscoveredCompetitors,
 } from '@/lib/db';
 import {
   queryOpenAI,
@@ -37,6 +40,7 @@ export async function GET(request: NextRequest) {
     // Initialize tables
     await initializeAISearchTables();
     await initializeContentDraftsTables();
+    await initializeCompetitorFeedsTables();
 
     // ============================================
     // STEP 1: Run AI Search Scan
@@ -85,9 +89,23 @@ export async function GET(request: NextRequest) {
     log.push(`Scanned ${scannedCount} queries (${checkitMentions} mentioned Checkit)`);
 
     // ============================================
-    // STEP 2: Find Content Gaps
+    // STEP 2: Sync Discovered Competitors
     // ============================================
-    log.push('Step 2: Finding content gaps...');
+    log.push('Step 2: Syncing discovered competitors...');
+    
+    const discoveredCompetitors = await getDiscoveredCompetitors();
+    const newCompetitors = await syncDiscoveredCompetitors(discoveredCompetitors);
+    
+    if (newCompetitors.length > 0) {
+      log.push(`Added ${newCompetitors.length} new competitors: ${newCompetitors.join(', ')}`);
+    } else {
+      log.push(`No new competitors to add (tracking ${discoveredCompetitors.length} total)`);
+    }
+
+    // ============================================
+    // STEP 3: Find Content Gaps
+    // ============================================
+    log.push('Step 3: Finding content gaps...');
     
     const results = await getLatestAISearchResults(100);
     const existingDrafts = await getContentDrafts();
@@ -111,9 +129,9 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================
-    // STEP 3: Generate & Publish Content (max 10/day)
+    // STEP 4: Generate & Publish Content (max 10/day)
     // ============================================
-    log.push('Step 3: Generating content for gaps (max 10)...');
+    log.push('Step 4: Generating content for gaps (max 10)...');
     
     const toProcess = gaps.slice(0, 10);
     let articlesCreated = 0;

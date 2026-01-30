@@ -4158,3 +4158,67 @@ export async function getContentDraftsSummary() {
     published: Number(stats[0]?.published) || 0,
   };
 }
+
+// ============================================
+// Sync Competitors from AI Search
+// ============================================
+
+// Get all unique competitors discovered in AI search results
+export async function getDiscoveredCompetitors() {
+  const results = await sql`
+    SELECT DISTINCT unnest(competitors_mentioned) as competitor
+    FROM ai_search_results
+    WHERE competitors_mentioned IS NOT NULL
+    ORDER BY competitor
+  `;
+  return results.map(r => r.competitor as string);
+}
+
+// Sync discovered competitors to competitor_feeds table
+export async function syncDiscoveredCompetitors(competitors: string[]) {
+  const added: string[] = [];
+  
+  for (const competitor of competitors) {
+    try {
+      // Create a URL-safe ID from the name
+      const competitorId = competitor.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      
+      // Check if already exists
+      const existing = await sql`
+        SELECT id FROM competitor_feeds WHERE competitor_id = ${competitorId}
+      `;
+      
+      if (existing.length === 0) {
+        await sql`
+          INSERT INTO competitor_feeds (competitor_id, competitor_name, discovery_method)
+          VALUES (${competitorId}, ${competitor}, 'ai-search-discovery')
+        `;
+        added.push(competitor);
+      }
+    } catch (err) {
+      console.error(`Failed to sync competitor ${competitor}:`, err);
+    }
+  }
+  
+  return added;
+}
+
+// Get competitor mention stats from AI search
+export async function getCompetitorMentionStats() {
+  const results = await sql`
+    SELECT 
+      unnest(competitors_mentioned) as competitor,
+      COUNT(*) as mention_count,
+      COUNT(*) FILTER (WHERE NOT checkit_mentioned) as wins_over_checkit
+    FROM ai_search_results
+    WHERE competitors_mentioned IS NOT NULL
+    GROUP BY competitor
+    ORDER BY mention_count DESC
+  `;
+  
+  return results.map(r => ({
+    competitor: r.competitor as string,
+    mentionCount: Number(r.mention_count),
+    winsOverCheckit: Number(r.wins_over_checkit),
+  }));
+}

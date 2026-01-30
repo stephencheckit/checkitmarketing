@@ -668,9 +668,10 @@ export default function AISearchPage() {
           </div>
         )}
 
-        {/* View Toggle */}
+        {/* View Toggle - Logical progression: Overview → Analysis → Action → Config */}
         {!loading && (
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {/* Overview */}
             <button
               onClick={() => setViewMode('dashboard')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${
@@ -680,7 +681,19 @@ export default function AISearchPage() {
               }`}
             >
               <BarChart3 className="w-4 h-4 inline mr-2" />
-              Dashboard
+              Overview
+            </button>
+            {/* Analysis */}
+            <button
+              onClick={() => setViewMode('trends')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'trends'
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4 inline mr-2" />
+              Trends
             </button>
             <button
               onClick={() => setViewMode('results')}
@@ -693,17 +706,7 @@ export default function AISearchPage() {
               <Search className="w-4 h-4 inline mr-2" />
               Results ({results.length})
             </button>
-            <button
-              onClick={() => setViewMode('trends')}
-              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
-                viewMode === 'trends'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-surface-elevated text-muted hover:text-foreground'
-              }`}
-            >
-              <TrendingUp className="w-4 h-4 inline mr-2" />
-              Trends
-            </button>
+            {/* Action */}
             <button
               onClick={() => setViewMode('gaps')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${
@@ -713,7 +716,7 @@ export default function AISearchPage() {
               }`}
             >
               <XCircle className="w-4 h-4 inline mr-2" />
-              Gaps ({contentGaps.length})
+              Gaps ({contentGaps.filter(g => !getExistingDraft(g.query_text)).length})
             </button>
             <button
               onClick={() => setViewMode('drafts')}
@@ -724,8 +727,9 @@ export default function AISearchPage() {
               }`}
             >
               <FileText className="w-4 h-4 inline mr-2" />
-              Drafts ({drafts.length})
+              Content ({drafts.length})
             </button>
+            {/* Config */}
             <button
               onClick={() => setViewMode('queries')}
               className={`px-4 py-2 text-sm rounded-lg transition-colors ${

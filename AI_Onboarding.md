@@ -344,6 +344,34 @@ RESEND_API_KEY=re_...                # Resend API key for demo request email not
 
 ## Deploy Log
 
+### 2026-01-30 - Navigation Restructure by Audience
+**Commit:** `9873214` - Restructure navigation: 6 dropdowns by audience/function
+
+**Changes:**
+- **6 New Dropdown Structure** (was 3 + nested submenu):
+  - **Marketing** (3): Positioning, Content Lab, Budget
+  - **Channels** (2): Search Console, AI Search (Google Ads coming)
+  - **Biz Dev** (3): Outbound, Reddit, Social Toolkit
+  - **Sales** (5): Discovery, Demo Prep, Closing, ROI Tools, Battlecards
+  - **Accounts** (1+): OVG (scalable for future accounts)
+  - **Training** (3): Learn, Quiz, Reference
+- **Page Renames** for clarity:
+  - "Content Hub" → "Content Lab"
+  - "Channel Planner" → "Budget Planner"
+  - "Competitor Battlecards" → "Battlecards"
+  - "Solutioning" → "Demo Prep"
+- **Removed nested submenu** - Accounts now its own top-level dropdown
+- **Nav labels shortened** - "AI Search Monitor" → "AI Search", "Reddit Monitor" → "Reddit"
+
+**Files Modified:**
+- `components/MainNav.tsx` - Full nav restructure (249 insertions, 124 deletions)
+- `app/(marketing)/content/page.tsx` - Title update
+- `app/(marketing)/channels/page.tsx` - Title update
+- `app/(marketing)/competitors/page.tsx` - Title update
+- `app/(portal)/solutioning/page.tsx` - Title + breadcrumb update
+
+---
+
 ### 2026-01-30 (Evening) - AI Search Monitor Enhancements
 **Commits:** Multiple commits improving AI Search Monitor UX and accuracy
 

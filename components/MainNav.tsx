@@ -100,6 +100,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
+    { href: '/industries', label: 'Microsite', icon: Globe, external: true },
   ];
 
   // Channels: Search/visibility platforms
@@ -196,6 +197,21 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {marketingItems.map((item) => {
                       const Icon = item.icon;
+                      if (item.external) {
+                        return (
+                          <a
+                            key={item.href}
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer text-muted hover:text-foreground hover:bg-surface"
+                          >
+                            <Icon className="w-4 h-4" />
+                            {item.label}
+                            <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
+                          </a>
+                        );
+                      }
                       return (
                         <Link
                           key={item.href}
@@ -431,44 +447,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               )}
             </div>
 
-            {/* Public Microsite Link */}
-            <a
-              href="/industries"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface-elevated transition-all cursor-pointer"
-              title="View public microsite (opens in new tab)"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden xl:inline">Microsite</span>
-              <ExternalLink className="w-3 h-3 opacity-50" />
-            </a>
           </nav>
 
           {/* User Menu */}
           <div className="hidden md:flex items-center gap-3">
-            {isAdmin && (
-              <Link
-                href="/admin/contributions"
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer ${
-                  pathname.startsWith('/admin')
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                }`}
-                title="Review Inbox"
-              >
-                <div className="relative">
-                  <MessageSquare className="w-4 h-4" />
-                  {pendingReviewCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-medium rounded-full flex items-center justify-center">
-                      {pendingReviewCount > 9 ? '9+' : pendingReviewCount}
-                    </span>
-                  )}
-                </div>
-                <span className="hidden lg:inline">Inbox</span>
-              </Link>
-            )}
-            
             {/* Profile Dropdown */}
             <div 
               className="relative"
@@ -495,13 +477,33 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     )}
                     
                     {isAdmin && (
-                      <Link
-                        href="/admin"
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-surface transition-colors"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Admin Settings
-                      </Link>
+                      <>
+                        <Link
+                          href="/admin/contributions"
+                          className={`flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                            pathname.startsWith('/admin/contributions')
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <div className="relative">
+                            <MessageSquare className="w-4 h-4" />
+                            {pendingReviewCount > 0 && (
+                              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-medium rounded-full flex items-center justify-center">
+                                {pendingReviewCount > 9 ? '9+' : pendingReviewCount}
+                              </span>
+                            )}
+                          </div>
+                          Inbox
+                        </Link>
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-muted hover:text-foreground hover:bg-surface transition-colors"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Admin Settings
+                        </Link>
+                      </>
                     )}
                     
                     <div className="border-t border-border">
@@ -551,6 +553,21 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Marketing</p>
                 {marketingItems.map((item) => {
                   const Icon = item.icon;
+                  if (item.external) {
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer text-muted hover:text-foreground hover:bg-surface-elevated"
+                      >
+                        <Icon className="w-4 h-4" />
+                        {item.label}
+                        <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
+                      </a>
+                    );
+                  }
                   return (
                     <Link
                       key={item.href}
@@ -682,20 +699,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
-
-              {/* Public Microsite */}
-              <div className="pt-2 mt-2 border-t border-border">
-                <a
-                  href="/industries"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-muted hover:text-foreground transition-colors"
-                >
-                  <Globe className="w-4 h-4" />
-                  Public Microsite
-                  <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
-                </a>
               </div>
 
               {/* Admin Section */}

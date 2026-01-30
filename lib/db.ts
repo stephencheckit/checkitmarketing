@@ -4222,3 +4222,242 @@ export async function getCompetitorMentionStats() {
     winsOverCheckit: Number(r.wins_over_checkit),
   }));
 }
+
+// ============================================
+// AI Search Profile Score
+// ============================================
+
+export interface AISearchProfileScore {
+  brand: string;
+  totalScore: number;
+  components: {
+    mentionRate: { score: number; maxScore: number; value: number; label: string };
+    positionQuality: { score: number; maxScore: number; value: number | null; label: string };
+    queryCoverage: { score: number; maxScore: number; value: number; label: string };
+    consistency: { score: number; maxScore: number; value: number; label: string };
+    winRate: { score: number; maxScore: number; value: number; label: string };
+  };
+  rank: number;
+  totalBrands: number;
+  tier: 'elite' | 'strong' | 'moderate' | 'emerging' | 'minimal';
+}
+
+// Calculate AI Search Profile Score for all brands
+export async function calculateAISearchProfileScores(): Promise<AISearchProfileScore[]> {
+  // Get total queries and results
+  const totalStats = await sql`
+    SELECT 
+      COUNT(DISTINCT query_text) as total_queries,
+      COUNT(*) as total_results
+    FROM ai_search_results
+  `;
+  const totalQueries = Number(totalStats[0]?.total_queries) || 1;
+  const totalResults = Number(totalStats[0]?.total_results) || 1;
+
+  // Get Checkit stats
+  const checkitStats = await sql`
+    SELECT
+      COUNT(*) as mentions,
+      COUNT(DISTINCT query_text) as queries_covered,
+      AVG(checkit_position) FILTER (WHERE checkit_position IS NOT NULL) as avg_position,
+      COUNT(*) FILTER (WHERE checkit_position = 1) as first_positions
+    FROM ai_search_results
+    WHERE checkit_mentioned = true
+  `;
+
+  // Get competitor stats
+  const competitorStats = await sql`
+    SELECT 
+      unnest(competitors_mentioned) as brand,
+      COUNT(*) as mentions,
+      COUNT(DISTINCT query_text) as queries_covered
+    FROM ai_search_results
+    WHERE competitors_mentioned IS NOT NULL AND array_length(competitors_mentioned, 1) > 0
+    GROUP BY brand
+  `;
+
+  // Get consistency data (mentions over time)
+  const consistencyData = await sql`
+    SELECT 
+      DATE(scanned_at) as scan_date,
+      checkit_mentioned,
+      competitors_mentioned
+    FROM ai_search_results
+    ORDER BY scanned_at
+  `;
+
+  // Calculate scores for each brand
+  const scores: AISearchProfileScore[] = [];
+
+  // Checkit score
+  const checkitMentions = Number(checkitStats[0]?.mentions) || 0;
+  const checkitQueriesCovered = Number(checkitStats[0]?.queries_covered) || 0;
+  const checkitAvgPosition = checkitStats[0]?.avg_position ? Number(checkitStats[0]?.avg_position) : null;
+  const checkitFirstPositions = Number(checkitStats[0]?.first_positions) || 0;
+
+  // Calculate Checkit consistency (% of days with mentions)
+  const dateMap = new Map<string, boolean>();
+  for (const row of consistencyData) {
+    const date = (row.scan_date as Date).toISOString().split('T')[0];
+    if (row.checkit_mentioned) dateMap.set(date, true);
+    else if (!dateMap.has(date)) dateMap.set(date, false);
+  }
+  const daysWithMentions = Array.from(dateMap.values()).filter(v => v).length;
+  const totalDays = dateMap.size || 1;
+  const checkitConsistency = daysWithMentions / totalDays;
+
+  // Win rate for Checkit (times mentioned when competitors also mentioned)
+  const winRateStats = await sql`
+    SELECT
+      COUNT(*) as total_competitive,
+      COUNT(*) FILTER (WHERE checkit_mentioned) as checkit_wins
+    FROM ai_search_results
+    WHERE array_length(competitors_mentioned, 1) > 0
+  `;
+  const checkitWinRate = Number(winRateStats[0]?.total_competitive) > 0
+    ? Number(winRateStats[0]?.checkit_wins) / Number(winRateStats[0]?.total_competitive)
+    : 0;
+
+  scores.push(calculateBrandScore('Checkit', {
+    mentionRate: checkitMentions / totalResults,
+    avgPosition: checkitAvgPosition,
+    queryCoverage: checkitQueriesCovered / totalQueries,
+    consistency: checkitConsistency,
+    winRate: checkitWinRate,
+    totalQueries,
+  }));
+
+  // Competitor scores
+  for (const comp of competitorStats) {
+    const brand = comp.brand as string;
+    const mentions = Number(comp.mentions);
+    const queriesCovered = Number(comp.queries_covered);
+
+    // Calculate competitor consistency
+    const compDateMap = new Map<string, boolean>();
+    for (const row of consistencyData) {
+      const date = (row.scan_date as Date).toISOString().split('T')[0];
+      const competitors = row.competitors_mentioned as string[] || [];
+      if (competitors.includes(brand)) compDateMap.set(date, true);
+      else if (!compDateMap.has(date)) compDateMap.set(date, false);
+    }
+    const compDaysWithMentions = Array.from(compDateMap.values()).filter(v => v).length;
+    const compConsistency = compDaysWithMentions / totalDays;
+
+    // Competitor win rate (% of their mentions where Checkit not mentioned)
+    const compWinRateResult = await sql`
+      SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE NOT checkit_mentioned) as wins
+      FROM ai_search_results
+      WHERE ${brand} = ANY(competitors_mentioned)
+    `;
+    const compWinRate = Number(compWinRateResult[0]?.total) > 0
+      ? Number(compWinRateResult[0]?.wins) / Number(compWinRateResult[0]?.total)
+      : 0;
+
+    scores.push(calculateBrandScore(brand, {
+      mentionRate: mentions / totalResults,
+      avgPosition: null, // We don't track position for competitors
+      queryCoverage: queriesCovered / totalQueries,
+      consistency: compConsistency,
+      winRate: compWinRate,
+      totalQueries,
+    }));
+  }
+
+  // Sort by total score and assign ranks
+  scores.sort((a, b) => b.totalScore - a.totalScore);
+  scores.forEach((s, i) => {
+    s.rank = i + 1;
+    s.totalBrands = scores.length;
+  });
+
+  return scores;
+}
+
+function calculateBrandScore(brand: string, data: {
+  mentionRate: number;
+  avgPosition: number | null;
+  queryCoverage: number;
+  consistency: number;
+  winRate: number;
+  totalQueries: number;
+}): AISearchProfileScore {
+  // Mention Rate (0-35 points)
+  // Calibrated: 100% = 35pts, 50% = 17.5pts, 10% = 3.5pts
+  const mentionRateScore = Math.min(35, data.mentionRate * 35);
+
+  // Position Quality (0-25 points)
+  // Calibrated: Position 1 = 25pts, Position 3 = 15pts, Position 5+ = 5pts
+  let positionScore = 0;
+  if (data.avgPosition !== null) {
+    if (data.avgPosition <= 1) positionScore = 25;
+    else if (data.avgPosition <= 2) positionScore = 20;
+    else if (data.avgPosition <= 3) positionScore = 15;
+    else if (data.avgPosition <= 4) positionScore = 10;
+    else positionScore = 5;
+  }
+
+  // Query Coverage (0-20 points)
+  // Calibrated: 100% coverage = 20pts
+  const coverageScore = Math.min(20, data.queryCoverage * 20);
+
+  // Consistency (0-10 points)
+  // Calibrated: 100% consistent = 10pts
+  const consistencyScore = Math.min(10, data.consistency * 10);
+
+  // Win Rate (0-10 points)
+  // Calibrated: 100% win rate = 10pts
+  const winRateScore = Math.min(10, data.winRate * 10);
+
+  const totalScore = Math.round(mentionRateScore + positionScore + coverageScore + consistencyScore + winRateScore);
+
+  // Determine tier
+  let tier: AISearchProfileScore['tier'];
+  if (totalScore >= 80) tier = 'elite';
+  else if (totalScore >= 60) tier = 'strong';
+  else if (totalScore >= 40) tier = 'moderate';
+  else if (totalScore >= 20) tier = 'emerging';
+  else tier = 'minimal';
+
+  return {
+    brand,
+    totalScore,
+    components: {
+      mentionRate: {
+        score: Math.round(mentionRateScore * 10) / 10,
+        maxScore: 35,
+        value: Math.round(data.mentionRate * 1000) / 10,
+        label: 'Mention Rate',
+      },
+      positionQuality: {
+        score: positionScore,
+        maxScore: 25,
+        value: data.avgPosition,
+        label: 'Position Quality',
+      },
+      queryCoverage: {
+        score: Math.round(coverageScore * 10) / 10,
+        maxScore: 20,
+        value: Math.round(data.queryCoverage * 1000) / 10,
+        label: 'Query Coverage',
+      },
+      consistency: {
+        score: Math.round(consistencyScore * 10) / 10,
+        maxScore: 10,
+        value: Math.round(data.consistency * 1000) / 10,
+        label: 'Consistency',
+      },
+      winRate: {
+        score: Math.round(winRateScore * 10) / 10,
+        maxScore: 10,
+        value: Math.round(data.winRate * 1000) / 10,
+        label: 'Win Rate',
+      },
+    },
+    rank: 0,
+    totalBrands: 0,
+    tier,
+  };
+}

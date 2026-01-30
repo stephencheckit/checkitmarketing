@@ -15,6 +15,7 @@ import {
   getBrandTrends,
   hasScannedToday,
   getLastScanDate,
+  calculateAISearchProfileScores,
 } from '@/lib/db';
 import {
   queryOpenAI,
@@ -90,6 +91,17 @@ export async function GET(request: NextRequest) {
           scannedToday: false,
           lastScanDate: null,
         });
+      }
+    }
+
+    // Get AI Search Profile Scores
+    if (type === 'scores') {
+      try {
+        const scores = await calculateAISearchProfileScores();
+        return NextResponse.json({ scores });
+      } catch (err) {
+        console.error('Scores error:', err);
+        return NextResponse.json({ scores: [] });
       }
     }
 

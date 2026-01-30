@@ -97,6 +97,21 @@ interface QueryRecommendation {
   priority: 'high' | 'medium' | 'low';
 }
 
+interface AISearchProfileScore {
+  brand: string;
+  totalScore: number;
+  components: {
+    mentionRate: { score: number; maxScore: number; value: number; label: string };
+    positionQuality: { score: number; maxScore: number; value: number | null; label: string };
+    queryCoverage: { score: number; maxScore: number; value: number; label: string };
+    consistency: { score: number; maxScore: number; value: number; label: string };
+    winRate: { score: number; maxScore: number; value: number; label: string };
+  };
+  rank: number;
+  totalBrands: number;
+  tier: 'elite' | 'strong' | 'moderate' | 'emerging' | 'minimal';
+}
+
 export default function AISearchPage() {
   // State
   const [queries, setQueries] = useState<AIQuery[]>([]);
@@ -117,6 +132,11 @@ export default function AISearchPage() {
   // Recommendations state
   const [recommendations, setRecommendations] = useState<QueryRecommendation[]>([]);
   const [recsLoading, setRecsLoading] = useState(false);
+
+  // Scores/Leaderboard state
+  const [scores, setScores] = useState<AISearchProfileScore[]>([]);
+  const [scoresLoading, setScoresLoading] = useState(false);
+  const [expandedScore, setExpandedScore] = useState<string | null>(null);
 
   // Content drafts state
   interface ContentDraft {
@@ -144,7 +164,7 @@ export default function AISearchPage() {
   const [generatingArticle, setGeneratingArticle] = useState<number | null>(null);
 
   // UI state
-  const [viewMode, setViewMode] = useState<'dashboard' | 'results' | 'trends' | 'gaps' | 'drafts' | 'queries' | 'recommendations'>('dashboard');
+  const [viewMode, setViewMode] = useState<'dashboard' | 'results' | 'trends' | 'gaps' | 'drafts' | 'queries' | 'recommendations' | 'leaderboard'>('dashboard');
   const [expandedResult, setExpandedResult] = useState<number | null>(null);
   const [showAddQuery, setShowAddQuery] = useState(false);
   const [newQuery, setNewQuery] = useState('');
@@ -203,6 +223,21 @@ export default function AISearchPage() {
       console.error('Failed to fetch recommendations:', err);
     } finally {
       setRecsLoading(false);
+    }
+  }, []);
+
+  // Fetch AI Search Profile Scores
+  const fetchScores = useCallback(async () => {
+    setScoresLoading(true);
+    try {
+      const response = await fetch('/api/ai-search/monitor?type=scores');
+      if (!response.ok) throw new Error('Failed to fetch scores');
+      const data = await response.json();
+      setScores(data.scores || []);
+    } catch (err) {
+      console.error('Failed to fetch scores:', err);
+    } finally {
+      setScoresLoading(false);
     }
   }, []);
 
@@ -514,6 +549,13 @@ export default function AISearchPage() {
     fetchDrafts();
   }, [fetchDrafts]);
 
+  // Load scores when switching to leaderboard view
+  useEffect(() => {
+    if (viewMode === 'leaderboard' && scores.length === 0 && !scoresLoading) {
+      fetchScores();
+    }
+  }, [viewMode, scores.length, scoresLoading, fetchScores]);
+
   // Check if a gap already has a draft
   const getExistingDraft = (queryText: string) => {
     return drafts.find(d => d.source_query === queryText);
@@ -550,6 +592,26 @@ export default function AISearchPage() {
       case 'use-case': return 'bg-green-500/20 text-green-400';
       case 'comparison': return 'bg-pink-500/20 text-pink-400';
     }
+  };
+
+  // Tier styling
+  const getTierStyle = (tier: AISearchProfileScore['tier']) => {
+    switch (tier) {
+      case 'elite': return { bg: 'bg-yellow-500/20', text: 'text-yellow-400', label: 'Elite' };
+      case 'strong': return { bg: 'bg-green-500/20', text: 'text-green-400', label: 'Strong' };
+      case 'moderate': return { bg: 'bg-blue-500/20', text: 'text-blue-400', label: 'Moderate' };
+      case 'emerging': return { bg: 'bg-purple-500/20', text: 'text-purple-400', label: 'Emerging' };
+      case 'minimal': return { bg: 'bg-gray-500/20', text: 'text-gray-400', label: 'Minimal' };
+    }
+  };
+
+  // Score color based on value
+  const getScoreColor = (score: number) => {
+    if (score >= 70) return 'text-yellow-400';
+    if (score >= 50) return 'text-green-400';
+    if (score >= 30) return 'text-blue-400';
+    if (score >= 15) return 'text-purple-400';
+    return 'text-gray-400';
   };
 
   return (
@@ -751,6 +813,17 @@ export default function AISearchPage() {
             >
               <Lightbulb className="w-4 h-4 inline mr-2" />
               Ideas
+            </button>
+            <button
+              onClick={() => setViewMode('leaderboard')}
+              className={`px-4 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'leaderboard'
+                  ? 'bg-yellow-500 text-white'
+                  : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <Trophy className="w-4 h-4 inline mr-2" />
+              Scores
             </button>
           </div>
         )}
@@ -1526,6 +1599,175 @@ export default function AISearchPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Leaderboard/Scores View */}
+        {!loading && viewMode === 'leaderboard' && (
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="bg-surface border border-border rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <Trophy className="w-5 h-5 text-yellow-500" />
+                    AI Search Profile Scores
+                  </h3>
+                  <p className="text-sm text-muted mt-1">
+                    How brands rank in AI search visibility (0-100 scale, benchmarked against industry leaders)
+                  </p>
+                </div>
+                <button
+                  onClick={fetchScores}
+                  disabled={scoresLoading}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-sm font-medium hover:bg-yellow-400 disabled:opacity-50"
+                >
+                  {scoresLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                  Refresh
+                </button>
+              </div>
+
+              {/* Scoring Legend */}
+              <div className="flex flex-wrap gap-4 text-xs text-muted mb-4 p-3 bg-surface-elevated rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <span>Elite (80+)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  <span>Strong (60-79)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500" />
+                  <span>Moderate (40-59)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-500" />
+                  <span>Emerging (20-39)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-gray-500" />
+                  <span>Minimal (0-19)</span>
+                </div>
+              </div>
+
+              {scoresLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-yellow-500" />
+                  <span className="ml-3 text-muted">Calculating scores...</span>
+                </div>
+              ) : scores.length === 0 ? (
+                <div className="text-center py-12 text-muted">
+                  <Trophy className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>Run AI scans to generate profile scores.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {scores.map((score) => {
+                    const tierStyle = getTierStyle(score.tier);
+                    const isCheckit = score.brand === 'Checkit';
+                    const isExpanded = expandedScore === score.brand;
+                    
+                    return (
+                      <div
+                        key={score.brand}
+                        className={`border rounded-xl overflow-hidden transition-all ${
+                          isCheckit ? 'border-accent bg-accent/5' : 'border-border bg-surface'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setExpandedScore(isExpanded ? null : score.brand)}
+                          className="w-full p-4 flex items-center gap-4 hover:bg-surface-elevated transition-colors"
+                        >
+                          {/* Rank */}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${
+                            score.rank === 1 ? 'bg-yellow-500 text-black' :
+                            score.rank === 2 ? 'bg-gray-300 text-black' :
+                            score.rank === 3 ? 'bg-orange-400 text-black' :
+                            'bg-surface-elevated text-muted'
+                          }`}>
+                            {score.rank}
+                          </div>
+
+                          {/* Brand & Tier */}
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2">
+                              <span className={`font-semibold ${isCheckit ? 'text-accent' : 'text-foreground'}`}>
+                                {score.brand}
+                              </span>
+                              {isCheckit && <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded">You</span>}
+                              <span className={`text-xs px-2 py-0.5 rounded ${tierStyle.bg} ${tierStyle.text}`}>
+                                {tierStyle.label}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Score */}
+                          <div className="text-right">
+                            <div className={`text-2xl font-bold ${getScoreColor(score.totalScore)}`}>
+                              {score.totalScore}
+                            </div>
+                            <div className="text-xs text-muted">/ 100</div>
+                          </div>
+
+                          {/* Expand icon */}
+                          {isExpanded ? <ChevronUp className="w-5 h-5 text-muted" /> : <ChevronDown className="w-5 h-5 text-muted" />}
+                        </button>
+
+                        {/* Expanded Details */}
+                        {isExpanded && (
+                          <div className="border-t border-border p-4 bg-surface-elevated">
+                            <div className="grid grid-cols-5 gap-4">
+                              {Object.entries(score.components).map(([key, comp]) => (
+                                <div key={key} className="text-center">
+                                  <div className="text-xs text-muted mb-1">{comp.label}</div>
+                                  <div className="text-lg font-semibold text-foreground">
+                                    {comp.score}<span className="text-xs text-muted">/{comp.maxScore}</span>
+                                  </div>
+                                  <div className="text-xs text-muted">
+                                    {comp.value !== null ? `${comp.value}%` : 'N/A'}
+                                  </div>
+                                  {/* Progress bar */}
+                                  <div className="h-1 bg-surface rounded-full mt-2 overflow-hidden">
+                                    <div 
+                                      className="h-full bg-accent transition-all"
+                                      style={{ width: `${(comp.score / comp.maxScore) * 100}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Benchmark Reference */}
+            <div className="bg-surface border border-border rounded-xl p-4">
+              <h4 className="text-sm font-medium text-muted mb-3">Score Benchmarks (for reference)</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="p-3 bg-surface-elevated rounded-lg">
+                  <div className="text-yellow-400 font-bold">95-100</div>
+                  <div className="text-muted">Google, Microsoft (universal recognition)</div>
+                </div>
+                <div className="p-3 bg-surface-elevated rounded-lg">
+                  <div className="text-green-400 font-bold">70-85</div>
+                  <div className="text-muted">Salesforce, HubSpot (category leaders)</div>
+                </div>
+                <div className="p-3 bg-surface-elevated rounded-lg">
+                  <div className="text-blue-400 font-bold">40-60</div>
+                  <div className="text-muted">Established B2B tools</div>
+                </div>
+                <div className="p-3 bg-surface-elevated rounded-lg">
+                  <div className="text-purple-400 font-bold">15-35</div>
+                  <div className="text-muted">Niche/emerging players</div>
+                </div>
+              </div>
             </div>
           </div>
         )}

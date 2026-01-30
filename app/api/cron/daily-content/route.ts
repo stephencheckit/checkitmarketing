@@ -59,6 +59,11 @@ export async function GET(request: NextRequest) {
     for (const query of activeQueries) {
       try {
         const result = await queryOpenAI(query.query);
+        // Convert brandsFound array to brandsData object
+        const brandsData: Record<string, { mentioned: boolean; context: string | null }> = {};
+        for (const brand of result.brandsFound) {
+          brandsData[brand.brand] = { mentioned: brand.mentioned, context: brand.context };
+        }
         await saveAISearchResult({
           queryId: query.id,
           queryText: query.query,
@@ -66,7 +71,7 @@ export async function GET(request: NextRequest) {
           checkitMentioned: result.checkitMentioned,
           checkitPosition: result.checkitPosition,
           competitorsMentioned: result.competitorsMentioned,
-          brandsData: result.brandsData,
+          brandsData,
           source: 'openai-gpt4o-mini',
         });
         scannedCount++;

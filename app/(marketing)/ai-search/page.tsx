@@ -925,30 +925,40 @@ export default function AISearchPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Top Competitors */}
+              {/* Brand Rankings in AI Results */}
               <div className="bg-surface border border-border rounded-xl p-6">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-purple-500" />
-                  Top Competitors in AI Results
+                  Brand Rankings in AI Results
                 </h3>
                 {summary?.topCompetitors && summary.topCompetitors.length > 0 ? (
                   <div className="space-y-3">
-                    {summary.topCompetitors.map((comp, i) => (
-                      <div key={comp.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                            i === 1 ? 'bg-gray-400/20 text-gray-400' :
-                            i === 2 ? 'bg-orange-500/20 text-orange-400' :
-                            'bg-surface-elevated text-muted'
-                          }`}>
-                            {i + 1}
-                          </span>
-                          <span className="text-foreground">{comp.name}</span>
+                    {/* Combine Checkit with competitors and sort by mentions */}
+                    {[
+                      { name: 'Checkit', mentions: summary?.checkitMentions || 0, isOurs: true },
+                      ...summary.topCompetitors.map(c => ({ ...c, isOurs: false }))
+                    ]
+                      .sort((a, b) => b.mentions - a.mentions)
+                      .map((comp, i) => (
+                        <div key={comp.name} className={`flex items-center justify-between ${comp.isOurs ? 'bg-purple-500/10 -mx-2 px-2 py-1 rounded-lg border border-purple-500/30' : ''}`}>
+                          <div className="flex items-center gap-3">
+                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                              comp.isOurs ? 'bg-purple-500/30 text-purple-400' :
+                              i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                              i === 1 ? 'bg-gray-400/20 text-gray-400' :
+                              i === 2 ? 'bg-orange-500/20 text-orange-400' :
+                              'bg-surface-elevated text-muted'
+                            }`}>
+                              {i + 1}
+                            </span>
+                            <span className={comp.isOurs ? 'text-purple-400 font-semibold' : 'text-foreground'}>
+                              {comp.name}
+                              {comp.isOurs && <span className="ml-2 text-xs">(You)</span>}
+                            </span>
+                          </div>
+                          <span className={comp.isOurs ? 'text-purple-400 font-semibold' : 'text-muted'}>{comp.mentions} mentions</span>
                         </div>
-                        <span className="text-muted">{comp.mentions} mentions</span>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : (
                   <p className="text-muted text-center py-8">Run a scan to see competitor data</p>

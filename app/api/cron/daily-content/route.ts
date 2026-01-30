@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
       }
       
       // Source 2: Search Console queries
-      const searchQueries = await getSearchConsoleQueries();
+      const searchQueries = await getSearchConsoleQueries('sc-domain:checkit.net');
       if (searchQueries.length > 0) {
         const searchTerms = searchQueries.map(q => q.query as string).slice(0, 20);
         const fromSearchConsole = await generateQueriesFromSearchTerms(searchTerms);

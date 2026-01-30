@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
     if (type === 'search-console-queries') {
       try {
         // Get top search queries from Search Console
-        const searchQueries = await getSearchConsoleQueries();
+        const searchQueries = await getSearchConsoleQueries('sc-domain:checkit.net');
         const searchTerms = searchQueries.map(q => q.query as string);
         
         if (searchTerms.length === 0) {

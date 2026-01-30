@@ -1538,18 +1538,28 @@ export default function AISearchPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Debug info */}
+                  <div className="text-xs text-muted mb-2">
+                    {brandTrends.length} data points | 
+                    Sample: {brandTrends[0]?.date} = {formatRate(brandTrends[0]?.mentionRate || 0)} ({brandTrends[0]?.checkitMentions}/{brandTrends[0]?.totalQueries})
+                  </div>
                   {/* Simple bar chart */}
-                  <div className="flex items-end gap-1 h-40">
+                  <div className="flex items-end gap-1 h-40 border-b border-border">
                     {brandTrends.map((point, i) => {
-                      const height = point.mentionRate * 100;
+                      // Calculate height - ensure minimum visibility
+                      const rate = point.mentionRate || 0;
+                      const heightPercent = Math.max(rate * 100, 5); // minimum 5% height for visibility
                       return (
-                        <div key={i} className="flex-1 flex flex-col items-center">
+                        <div 
+                          key={i} 
+                          className="flex-1 min-w-[8px] flex flex-col justify-end h-full"
+                        >
                           <div 
-                            className="w-full bg-green-500/30 hover:bg-green-500/50 transition-colors rounded-t relative group"
-                            style={{ height: `${Math.max(height, 4)}%` }}
+                            className="w-full bg-green-500 hover:bg-green-400 transition-colors rounded-t relative group cursor-pointer"
+                            style={{ height: `${heightPercent}%`, minHeight: '8px' }}
                           >
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-elevated px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                              {formatRate(point.mentionRate)} ({point.checkitMentions}/{point.totalQueries})
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-elevated border border-border px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              {formatRate(rate)} ({point.checkitMentions}/{point.totalQueries})
                             </div>
                           </div>
                         </div>

@@ -338,6 +338,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Delete all branded queries (containing "Checkit")
+    if (action === 'delete_branded') {
+      const queries = await getAISearchQueries();
+      const brandedQueries = queries.filter(q => !isNonBrandedQuery(q.query));
+      
+      for (const q of brandedQueries) {
+        await deleteAISearchQuery(q.id);
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        deleted: brandedQueries.length,
+        queries: brandedQueries.map(q => q.query)
+      });
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (error) {
     console.error('AI Search Monitor POST error:', error);

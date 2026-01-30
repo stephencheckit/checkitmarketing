@@ -551,7 +551,7 @@ export default function AISearchPage() {
 
   // Load scores when switching to leaderboard view
   useEffect(() => {
-    if (viewMode === 'leaderboard' && scores.length === 0 && !scoresLoading) {
+    if ((viewMode === 'leaderboard' || viewMode === 'dashboard') && scores.length === 0 && !scoresLoading) {
       fetchScores();
     }
   }, [viewMode, scores.length, scoresLoading, fetchScores]);
@@ -830,68 +830,131 @@ export default function AISearchPage() {
 
         {/* Dashboard View */}
         {!loading && viewMode === 'dashboard' && (
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Top Competitors */}
-            <div className="bg-surface border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-purple-500" />
-                Top Competitors in AI Results
-              </h3>
-              {summary?.topCompetitors && summary.topCompetitors.length > 0 ? (
-                <div className="space-y-3">
-                  {summary.topCompetitors.map((comp, i) => (
-                    <div key={comp.name} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                          i === 1 ? 'bg-gray-400/20 text-gray-400' :
-                          i === 2 ? 'bg-orange-500/20 text-orange-400' :
-                          'bg-surface-elevated text-muted'
-                        }`}>
-                          {i + 1}
-                        </span>
-                        <span className="text-foreground">{comp.name}</span>
-                      </div>
-                      <span className="text-muted">{comp.mentions} mentions</span>
-                    </div>
-                  ))}
+          <div className="space-y-6">
+            {/* Checkit Status Card - Hero */}
+            <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-purple-500" />
+                  Checkit AI Visibility
+                </h3>
+                {scores.find(s => s.brand === 'Checkit') && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-purple-400">
+                      {scores.find(s => s.brand === 'Checkit')?.totalScore || 0}
+                    </span>
+                    <span className="text-sm text-muted">/100</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-400">
+                    {summary?.checkitMentionRate ? `${Math.round(summary.checkitMentionRate * 100)}%` : '0%'}
+                  </div>
+                  <div className="text-xs text-muted">Mention Rate</div>
                 </div>
-              ) : (
-                <p className="text-muted text-center py-8">Run a scan to see competitor data</p>
+                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-blue-400">
+                    {summary?.totalScans || 0}
+                  </div>
+                  <div className="text-xs text-muted">Total Scans</div>
+                </div>
+                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-yellow-400">
+                    #{scores.findIndex(s => s.brand === 'Checkit') + 1 || '-'}
+                  </div>
+                  <div className="text-xs text-muted">vs Competitors</div>
+                </div>
+                <div className="bg-surface/50 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-red-400">
+                    {contentGaps.filter(g => !getExistingDraft(g.query_text)).length}
+                  </div>
+                  <div className="text-xs text-muted">Content Gaps</div>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              {scores.find(s => s.brand === 'Checkit') && (
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs text-muted mb-1">
+                    <span>AI Search Profile Score</span>
+                    <span>{scores.find(s => s.brand === 'Checkit')?.tier}</span>
+                  </div>
+                  <div className="h-2 bg-surface rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all"
+                      style={{ width: `${scores.find(s => s.brand === 'Checkit')?.totalScore || 0}%` }}
+                    />
+                  </div>
+                </div>
               )}
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-surface border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-500" />
-                Quick Actions
-              </h3>
-              <div className="space-y-3">
-                {queries.length === 0 && (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Top Competitors */}
+              <div className="bg-surface border border-border rounded-xl p-6">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-purple-500" />
+                  Top Competitors in AI Results
+                </h3>
+                {summary?.topCompetitors && summary.topCompetitors.length > 0 ? (
+                  <div className="space-y-3">
+                    {summary.topCompetitors.map((comp, i) => (
+                      <div key={comp.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                            i === 1 ? 'bg-gray-400/20 text-gray-400' :
+                            i === 2 ? 'bg-orange-500/20 text-orange-400' :
+                            'bg-surface-elevated text-muted'
+                          }`}>
+                            {i + 1}
+                          </span>
+                          <span className="text-foreground">{comp.name}</span>
+                        </div>
+                        <span className="text-muted">{comp.mentions} mentions</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted text-center py-8">Run a scan to see competitor data</p>
+                )}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-surface border border-border rounded-xl p-6">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  Quick Actions
+                </h3>
+                <div className="space-y-3">
+                  {queries.length === 0 && (
+                    <button
+                      onClick={seedDefaults}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Default Queries ({defaultQueries.length})
+                    </button>
+                  )}
                   <button
-                    onClick={seedDefaults}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-colors"
+                    onClick={runFullScan}
+                    disabled={scanning || queries.length === 0}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors disabled:opacity-50"
+                  >
+                    {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    {scanning ? 'Scanning...' : 'Run Full Scan'}
+                  </button>
+                  <button
+                    onClick={() => { setViewMode('queries'); setShowAddQuery(true); }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    Add Default Queries ({defaultQueries.length})
+                    Add Custom Query
                   </button>
-                )}
-                <button
-                  onClick={runFullScan}
-                  disabled={scanning || queries.length === 0}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors disabled:opacity-50"
-                >
-                  {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-                  {scanning ? 'Scanning...' : 'Run Full Scan'}
-                </button>
-                <button
-                  onClick={() => { setViewMode('queries'); setShowAddQuery(true); }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-surface-elevated border border-border rounded-lg hover:bg-surface text-foreground transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Custom Query
-                </button>
+                </div>
               </div>
             </div>
           </div>

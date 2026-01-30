@@ -4433,12 +4433,21 @@ function calculateBrandScore(brand: string, data: {
   winRate: number;
   totalQueries: number;
 }): AISearchProfileScore {
+  // RECALIBRATED FOR B2B NICHE PRODUCTS
+  // For niche B2B, 40%+ mention rate is excellent, not consumer-brand standards
+  
   // Mention Rate (0-35 points)
-  // Calibrated: 100% = 35pts, 50% = 17.5pts, 10% = 3.5pts
-  const mentionRateScore = Math.min(35, data.mentionRate * 35);
+  // B2B Calibration: 50%+ = 35pts, 30% = 25pts, 15% = 15pts, 5% = 5pts
+  // Using a curved scale that rewards niche performance
+  let mentionRateScore = 0;
+  if (data.mentionRate >= 0.50) mentionRateScore = 35;
+  else if (data.mentionRate >= 0.40) mentionRateScore = 30 + (data.mentionRate - 0.40) * 50;
+  else if (data.mentionRate >= 0.25) mentionRateScore = 22 + (data.mentionRate - 0.25) * 53;
+  else if (data.mentionRate >= 0.10) mentionRateScore = 10 + (data.mentionRate - 0.10) * 80;
+  else mentionRateScore = data.mentionRate * 100;
 
   // Position Quality (0-25 points)
-  // Calibrated: Position 1 = 25pts, Position 3 = 15pts, Position 5+ = 5pts
+  // Keep same - position quality is universal
   let positionScore = 0;
   if (data.avgPosition !== null) {
     if (data.avgPosition <= 1) positionScore = 25;
@@ -4449,16 +4458,26 @@ function calculateBrandScore(brand: string, data: {
   }
 
   // Query Coverage (0-20 points)
-  // Calibrated: 100% coverage = 20pts
-  const coverageScore = Math.min(20, data.queryCoverage * 20);
+  // B2B Calibration: 60%+ coverage = 20pts (you won't appear in every query)
+  let coverageScore = 0;
+  if (data.queryCoverage >= 0.60) coverageScore = 20;
+  else if (data.queryCoverage >= 0.40) coverageScore = 14 + (data.queryCoverage - 0.40) * 30;
+  else if (data.queryCoverage >= 0.20) coverageScore = 8 + (data.queryCoverage - 0.20) * 30;
+  else coverageScore = data.queryCoverage * 40;
 
   // Consistency (0-10 points)
-  // Calibrated: 100% consistent = 10pts
-  const consistencyScore = Math.min(10, data.consistency * 10);
+  // B2B Calibration: 70%+ consistent = 10pts
+  let consistencyScore = 0;
+  if (data.consistency >= 0.70) consistencyScore = 10;
+  else if (data.consistency >= 0.40) consistencyScore = 5 + (data.consistency - 0.40) * 16.67;
+  else consistencyScore = data.consistency * 12.5;
 
   // Win Rate (0-10 points)
-  // Calibrated: 100% win rate = 10pts
-  const winRateScore = Math.min(10, data.winRate * 10);
+  // B2B Calibration: 60%+ win rate = 10pts (being in top 3 most of time)
+  let winRateScore = 0;
+  if (data.winRate >= 0.60) winRateScore = 10;
+  else if (data.winRate >= 0.30) winRateScore = 5 + (data.winRate - 0.30) * 16.67;
+  else winRateScore = data.winRate * 16.67;
 
   const totalScore = Math.round(mentionRateScore + positionScore + coverageScore + consistencyScore + winRateScore);
 

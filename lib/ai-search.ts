@@ -297,7 +297,7 @@ Also provide:
   }
 
   // Try to extract excerpt
-  const excerptMatch = response.match(/Excerpt:\s*(.+?)(?:\n\n|$)/s);
+  const excerptMatch = response.match(/Excerpt:\s*([^\n]+(?:\n[^\n]+)*)(?:\n\n|$)/);
   if (excerptMatch) {
     excerpt = excerptMatch[1].trim();
     content = content.replace(excerptMatch[0], '');

@@ -1774,58 +1774,91 @@ export default function AISearchPage() {
 
         {/* Queries View */}
         {!loading && viewMode === 'queries' && (
-          <div className="bg-surface border border-border rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">Monitored Queries</h3>
-              <div className="flex gap-2">
-                {queries.length === 0 && (
+          <div className="space-y-6">
+            {/* Query Discovery */}
+            <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4">
+              <h3 className="font-medium text-purple-400 mb-3 flex items-center gap-2">
+                <Lightbulb className="w-4 h-4" />
+                How to Find Relevant Queries
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="p-3 bg-surface rounded-lg">
+                  <div className="font-medium text-foreground mb-1">1. Default Templates</div>
+                  <p className="text-muted text-xs mb-2">Industry-standard questions buyers ask AI assistants</p>
                   <button
                     onClick={seedDefaults}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-lg text-sm hover:bg-purple-500/20"
+                    disabled={queries.length > 0}
+                    className="text-xs text-purple-400 hover:text-purple-300 disabled:opacity-50"
                   >
-                    <Sparkles className="w-4 h-4" />
-                    Add Defaults
+                    {queries.length > 0 ? '✓ Already added' : '→ Add defaults'}
                   </button>
-                )}
+                </div>
+                <div className="p-3 bg-surface rounded-lg">
+                  <div className="font-medium text-foreground mb-1">2. AI Recommendations</div>
+                  <p className="text-muted text-xs mb-2">AI suggests queries based on gaps and competitors</p>
+                  <button
+                    onClick={() => setViewMode('recommendations')}
+                    className="text-xs text-purple-400 hover:text-purple-300"
+                  >
+                    → Go to Ideas tab
+                  </button>
+                </div>
+                <div className="p-3 bg-surface rounded-lg">
+                  <div className="font-medium text-foreground mb-1">3. Search Console</div>
+                  <p className="text-muted text-xs mb-2">Convert real search traffic into AI monitoring queries</p>
+                  <button
+                    onClick={() => window.open('/search-console', '_blank')}
+                    className="text-xs text-purple-400 hover:text-purple-300"
+                  >
+                    → View Search Console
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Current Queries */}
+            <div className="bg-surface border border-border rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-foreground">Monitored Queries ({queries.length})</h3>
                 <button
                   onClick={() => setShowAddQuery(true)}
                   className="flex items-center gap-2 px-3 py-1.5 bg-purple-500 text-white rounded-lg text-sm hover:bg-purple-600"
                 >
                   <Plus className="w-4 h-4" />
-                  Add Query
+                  Add Custom Query
                 </button>
               </div>
-            </div>
 
-            {queries.length === 0 ? (
-              <div className="text-center py-8">
-                <Target className="w-12 h-12 text-muted mx-auto mb-4" />
-                <p className="text-muted mb-4">No queries configured yet</p>
-                <button
-                  onClick={seedDefaults}
-                  className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
-                >
-                  Add Default Queries
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {queries.map((q) => (
-                  <div
-                    key={q.id}
-                    className="flex items-center justify-between p-3 bg-surface-elevated rounded-lg"
+              {queries.length === 0 ? (
+                <div className="text-center py-8">
+                  <Target className="w-12 h-12 text-muted mx-auto mb-4" />
+                  <p className="text-muted mb-4">No queries configured yet</p>
+                  <button
+                    onClick={seedDefaults}
+                    className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
                   >
-                    <span className="text-foreground">{q.query}</span>
-                    <button
-                      onClick={() => deleteQuery(q.id)}
-                      className="p-2 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                    Add Default Queries ({DEFAULT_QUERIES?.length || 18})
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {queries.map((q) => (
+                    <div
+                      key={q.id}
+                      className="flex items-center justify-between p-3 bg-surface-elevated rounded-lg"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <span className="text-foreground">{q.query}</span>
+                      <button
+                        onClick={() => deleteQuery(q.id)}
+                        className="p-2 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Add Query Modal */}
             {showAddQuery && (

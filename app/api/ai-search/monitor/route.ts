@@ -22,7 +22,9 @@ import {
   DEFAULT_QUERIES,
   BRANDS_TO_TRACK,
   generateQueryRecommendations,
+  generateQueriesFromSearchTerms,
 } from '@/lib/ai-search';
+import { getSearchConsoleQueries } from '@/lib/db';
 
 // GET - Return cached AI search data
 export async function GET(request: NextRequest) {
@@ -119,6 +121,38 @@ export async function GET(request: NextRequest) {
       const recommendations = await generateQueryRecommendations(existingQueries, contentGaps);
       
       return NextResponse.json(recommendations);
+    }
+
+    // Get query suggestions from Search Console
+    if (type === 'search-console-queries') {
+      try {
+        // Get top search queries from Search Console
+        const searchQueries = await getSearchConsoleQueries();
+        const searchTerms = searchQueries.map(q => q.query as string);
+        
+        if (searchTerms.length === 0) {
+          return NextResponse.json({ 
+            queries: [],
+            message: 'No Search Console data. Sync Search Console first.' 
+          });
+        }
+        
+        // Convert to AI search queries
+        const result = await generateQueriesFromSearchTerms(searchTerms);
+        
+        // Filter out queries we're already tracking
+        const existingQueries = await getAISearchQueries();
+        const existingTexts = new Set(existingQueries.map(q => q.query.toLowerCase()));
+        
+        const newQueries = result.queries.filter(
+          q => !existingTexts.has(q.query.toLowerCase())
+        );
+        
+        return NextResponse.json({ queries: newQueries });
+      } catch (err) {
+        console.error('Search Console queries error:', err);
+        return NextResponse.json({ queries: [], error: 'Failed to generate queries' });
+      }
     }
 
     // Get all data

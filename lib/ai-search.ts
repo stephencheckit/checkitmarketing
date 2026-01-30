@@ -21,19 +21,41 @@ export const BRANDS_TO_TRACK = [
   'SafetyCulture',
 ];
 
-// Default queries to monitor
+// Default queries to monitor - organized by category
 export const DEFAULT_QUERIES = [
+  // Buyer Intent - Primary
   'What is the best temperature monitoring software for restaurants?',
   'Best food safety compliance software',
   'Top temperature monitoring systems for commercial kitchens',
   'HACCP compliance software recommendations',
+  'Best digital food safety management system',
+  // Buyer Intent - Industry Specific
   'Best IoT temperature monitoring for food service',
   'Senior living facility compliance management software',
-  'Automated food safety checklist apps',
-  'Best digital food safety management system',
   'Temperature monitoring solutions for healthcare',
   'Restaurant compliance software comparison',
+  'Cold chain monitoring software for food retail',
+  // Problem/Solution
+  'How to automate HACCP compliance',
+  'How to reduce food safety violations',
+  'Best way to monitor walk-in cooler temperatures remotely',
+  'How to digitize paper food safety checklists',
+  // Comparison
+  'ComplianceMate vs alternatives',
+  'Therma temperature monitoring review',
+  'Best SmartSense competitors',
+  'Zenput vs other restaurant compliance apps',
 ];
+
+// Query categories for organization
+export const QUERY_CATEGORIES = {
+  'buyer-intent': 'Buyer Intent',
+  'industry-specific': 'Industry Specific', 
+  'problem-solution': 'Problem/Solution',
+  'comparison': 'Comparison',
+  'feature': 'Feature Focused',
+  'custom': 'Custom',
+} as const;
 
 export interface AISearchResult {
   query: string;
@@ -328,6 +350,59 @@ Also provide:
     metaDescription,
     excerpt,
   };
+}
+
+// Generate AI search queries from Search Console data
+export async function generateQueriesFromSearchTerms(
+  searchTerms: string[]
+): Promise<{
+  queries: { query: string; category: string; source: string }[];
+}> {
+  if (searchTerms.length === 0) {
+    return { queries: [] };
+  }
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are helping Checkit (a temperature monitoring and compliance platform) discover what questions people ask AI assistants.
+
+Given a list of search terms that bring traffic to Checkit's website, convert them into natural questions that someone might ask an AI assistant like ChatGPT.
+
+Focus on questions where:
+1. Someone is looking for software recommendations
+2. Someone is comparing solutions
+3. Someone has a problem Checkit could solve
+
+Ignore branded searches or navigational queries.`,
+      },
+      {
+        role: 'user',
+        content: `Convert these search terms into AI assistant questions:
+
+${searchTerms.slice(0, 30).map((t, i) => `${i + 1}. ${t}`).join('\n')}
+
+Return JSON:
+{
+  "queries": [
+    { "query": "natural question form", "category": "buyer-intent|comparison|problem-solution|feature", "source": "search-console" }
+  ]
+}
+
+Only include relevant queries (skip navigational/branded).`,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 1500,
+    response_format: { type: 'json_object' },
+  });
+
+  const content = completion.choices[0]?.message?.content || '{}';
+  const parsed = JSON.parse(content);
+
+  return { queries: parsed.queries || [] };
 }
 
 // Generate query recommendations based on existing queries

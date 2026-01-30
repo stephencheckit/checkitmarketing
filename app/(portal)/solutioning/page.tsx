@@ -391,7 +391,7 @@ export default function SolutioningPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <Presentation className="w-7 h-7 text-accent" />
-            Solutioning
+            Demo Prep
           </h1>
           <p className="text-sm text-muted mt-1">
             Post-discovery: demos, stakeholder engagement, and moving deals forward.
@@ -412,7 +412,7 @@ export default function SolutioningPage() {
           Discovery
         </Link>
         <ArrowRight className="w-4 h-4 text-muted" />
-        <span className="px-3 py-1 bg-accent text-white rounded-lg font-medium">Solutioning</span>
+        <span className="px-3 py-1 bg-accent text-white rounded-lg font-medium">Demo Prep</span>
         <ArrowRight className="w-4 h-4 text-muted" />
         <Link href="/closing" className="px-3 py-1 bg-surface-elevated text-muted rounded-lg hover:text-foreground hover:bg-surface transition-colors">
           Closing

@@ -565,7 +565,7 @@ export default function CompetitorHub() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Building2 className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
-              Competitor Battlecards
+              Battlecards
             </h1>
             <p className="text-sm text-muted mt-1">
               Compare and track competitive positioning • {data.competitors.length} competitors • Version {currentVersion} • {lastSaved ? new Date(lastSaved).toLocaleDateString() : 'Not saved'}

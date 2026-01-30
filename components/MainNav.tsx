@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
   ChevronDown,
-  ChevronRight,
   Target, 
   Building2, 
   FileText, 
@@ -23,15 +22,16 @@ import {
   Calculator,
   LayoutDashboard,
   User,
-  Megaphone,
+  DollarSign,
   Crown,
   Globe,
   ExternalLink,
   Send,
-  MapPin,
-  Users,
   Settings,
   Bot,
+  Briefcase,
+  Radio,
+  Swords,
 } from 'lucide-react';
 
 // Reddit icon component
@@ -50,11 +50,12 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [marketingOpen, setMarketingOpen] = useState(false);
+  const [channelsOpen, setChannelsOpen] = useState(false);
+  const [bizDevOpen, setBizDevOpen] = useState(false);
   const [salesOpen, setSalesOpen] = useState(false);
   const [accountsOpen, setAccountsOpen] = useState(false);
   const [trainingOpen, setTrainingOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileAccountsOpen, setMobileAccountsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   
   const isAdmin = userRole === 'admin';
@@ -94,31 +95,42 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     router.push('/login');
   };
 
+  // Marketing: Strategy, content, budget
   const marketingItems = [
     { href: '/positioning', label: 'Positioning', icon: Target },
-    { href: '/competitors', label: 'Competitors', icon: Building2 },
-    { href: '/content', label: 'Content', icon: FileText },
-    { href: '/channels', label: 'Channels', icon: Megaphone },
-    { href: '/search-console', label: 'Search Console', icon: Search },
-    { href: '/ai-search', label: 'AI Search Monitor', icon: Bot },
-    { href: '/reddit-monitor', label: 'Reddit Monitor', icon: RedditIcon },
-    { href: '/outbound', label: 'Outbound', icon: Send },
-    { href: '/social-toolkit', label: "Social Toolkit", icon: Crown },
+    { href: '/content', label: 'Content Lab', icon: FileText },
+    { href: '/channels', label: 'Budget', icon: DollarSign },
   ];
 
+  // Channels: Search/visibility platforms
+  const channelsItems = [
+    { href: '/search-console', label: 'Search Console', icon: Search },
+    { href: '/ai-search', label: 'AI Search', icon: Bot },
+    // Google Ads coming soon
+  ];
+
+  // Biz Dev: Outbound prospecting
+  const bizDevItems = [
+    { href: '/outbound', label: 'Outbound', icon: Send },
+    { href: '/reddit-monitor', label: 'Reddit', icon: RedditIcon },
+    { href: '/social-toolkit', label: 'Social Toolkit', icon: Crown },
+  ];
+
+  // Sales: Deal execution
   const salesItems = [
     { href: '/discovery', label: 'Discovery', icon: Search },
-    { href: '/solutioning', label: 'Solutioning', icon: Presentation },
+    { href: '/solutioning', label: 'Demo Prep', icon: Presentation },
     { href: '/closing', label: 'Closing', icon: Handshake },
-    { href: '/tools', label: 'Tools', icon: Calculator },
+    { href: '/tools', label: 'ROI Tools', icon: Calculator },
+    { href: '/competitors', label: 'Battlecards', icon: Swords },
   ];
 
+  // Accounts: Customer-specific dashboards
   const accountItems = [
     { href: '/ovg-analytics', label: 'OVG', icon: Building2 },
   ];
-  
-  const isAccountsActive = accountItems.some(item => pathname.startsWith(item.href));
 
+  // Training: Enablement
   const trainingItems = [
     { href: '/learn', label: 'Learn', icon: BookOpen },
     { href: '/quiz', label: 'Quiz', icon: ClipboardCheck },
@@ -127,7 +139,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
   const isActive = (href: string) => pathname.startsWith(href);
   const isMarketingActive = marketingItems.some(item => pathname.startsWith(item.href));
-  const isSalesActive = salesItems.some(item => pathname.startsWith(item.href)) || isAccountsActive;
+  const isChannelsActive = channelsItems.some(item => pathname.startsWith(item.href));
+  const isBizDevActive = bizDevItems.some(item => pathname.startsWith(item.href));
+  const isSalesActive = salesItems.some(item => pathname.startsWith(item.href));
+  const isAccountsActive = accountItems.some(item => pathname.startsWith(item.href));
   const isTrainingActive = trainingItems.some(item => pathname.startsWith(item.href));
 
   return (
@@ -148,14 +163,14 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
             {/* Dashboard - standalone */}
             <Link
               href="/dashboard"
-              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                 pathname === '/dashboard'
                   ? 'btn-gradient text-white'
                   : 'text-muted hover:text-foreground hover:bg-surface-elevated'
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span className="hidden lg:inline">Dashboard</span>
+              <span className="hidden xl:inline">Dashboard</span>
             </Link>
 
             {/* Marketing Dropdown */}
@@ -165,7 +180,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               onMouseLeave={() => setMarketingOpen(false)}
             >
               <button
-                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                   isMarketingActive
                     ? 'btn-gradient text-white'
                     : 'text-muted hover:text-foreground hover:bg-surface-elevated'
@@ -173,13 +188,99 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               >
                 <Target className="w-4 h-4" />
                 <span className="hidden lg:inline">Marketing</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${marketingOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${marketingOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {marketingOpen && (
                 <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-48 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {marketingItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Channels Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setChannelsOpen(true)}
+              onMouseLeave={() => setChannelsOpen(false)}
+            >
+              <button
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  isChannelsActive
+                    ? 'btn-gradient text-white'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                <Radio className="w-4 h-4" />
+                <span className="hidden lg:inline">Channels</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${channelsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {channelsOpen && (
+                <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                    {channelsItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Biz Dev Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setBizDevOpen(true)}
+              onMouseLeave={() => setBizDevOpen(false)}
+            >
+              <button
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  isBizDevActive
+                    ? 'btn-gradient text-white'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                <Briefcase className="w-4 h-4" />
+                <span className="hidden lg:inline">Biz Dev</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${bizDevOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {bizDevOpen && (
+                <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                    {bizDevItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <Link
@@ -205,13 +306,10 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
             <div 
               className="relative"
               onMouseEnter={() => setSalesOpen(true)}
-              onMouseLeave={() => {
-                setSalesOpen(false);
-                setAccountsOpen(false);
-              }}
+              onMouseLeave={() => setSalesOpen(false)}
             >
               <button
-                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                   isSalesActive
                     ? 'btn-gradient text-white'
                     : 'text-muted hover:text-foreground hover:bg-surface-elevated'
@@ -219,12 +317,12 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               >
                 <Handshake className="w-4 h-4" />
                 <span className="hidden lg:inline">Sales</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${salesOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${salesOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {salesOpen && (
                 <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-48 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {salesItems.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -242,52 +340,49 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                         </Link>
                       );
                     })}
-                    
-                    {/* Accounts Submenu Trigger */}
-                    <div 
-                      className="relative"
-                      onMouseEnter={() => setAccountsOpen(true)}
-                      onMouseLeave={() => setAccountsOpen(false)}
-                    >
-                      <button
-                        className={`flex w-full items-center justify-between px-4 py-2 text-sm transition-colors cursor-pointer ${
-                          isAccountsActive
-                            ? 'bg-accent/20 text-accent'
-                            : 'text-muted hover:text-foreground hover:bg-surface'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          Accounts
-                        </span>
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                      
-                      {/* Accounts Nested Submenu */}
-                      {accountsOpen && (
-                        <div className="absolute left-full top-0 pl-1">
-                          <div className="w-40 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
-                            {accountItems.map((item) => {
-                              const Icon = item.icon;
-                              return (
-                                <Link
-                                  key={item.href}
-                                  href={item.href}
-                                  className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
-                                    isActive(item.href)
-                                      ? 'bg-accent/20 text-accent'
-                                      : 'text-muted hover:text-foreground hover:bg-surface'
-                                  }`}
-                                >
-                                  <Icon className="w-4 h-4" />
-                                  {item.label}
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Accounts Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setAccountsOpen(true)}
+              onMouseLeave={() => setAccountsOpen(false)}
+            >
+              <button
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  isAccountsActive
+                    ? 'btn-gradient text-white'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span className="hidden lg:inline">Accounts</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${accountsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {accountsOpen && (
+                <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                    {accountItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -300,7 +395,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               onMouseLeave={() => setTrainingOpen(false)}
             >
               <button
-                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                   isTrainingActive
                     ? 'btn-gradient text-white'
                     : 'text-muted hover:text-foreground hover:bg-surface-elevated'
@@ -308,12 +403,12 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               >
                 <GraduationCap className="w-4 h-4" />
                 <span className="hidden lg:inline">Training</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${trainingOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 transition-transform ${trainingOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {trainingOpen && (
                 <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-48 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {trainingItems.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -341,11 +436,11 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               href="/industries"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-4 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface-elevated transition-all cursor-pointer"
+              className="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium text-muted hover:text-foreground hover:bg-surface-elevated transition-all cursor-pointer"
               title="View public microsite (opens in new tab)"
             >
               <Globe className="w-4 h-4" />
-              <span className="hidden lg:inline">Microsite</span>
+              <span className="hidden xl:inline">Microsite</span>
               <ExternalLink className="w-3 h-3 opacity-50" />
             </a>
           </nav>
@@ -474,6 +569,52 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 })}
               </div>
 
+              {/* Channels Section */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Channels</p>
+                {channelsItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                        isActive(item.href)
+                          ? 'bg-accent text-white'
+                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Biz Dev Section */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Biz Dev</p>
+                {bizDevItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                        isActive(item.href)
+                          ? 'bg-accent text-white'
+                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+
               {/* Sales Section */}
               <div className="pt-2 mt-2 border-t border-border">
                 <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Sales</p>
@@ -495,45 +636,29 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-                
-                {/* Accounts Submenu */}
-                <button
-                  onClick={() => setMobileAccountsOpen(!mobileAccountsOpen)}
-                  className={`flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                    isAccountsActive
-                      ? 'bg-accent text-white'
-                      : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    Accounts
-                  </span>
-                  <ChevronDown className={`w-4 h-4 transition-transform ${mobileAccountsOpen ? 'rotate-180' : ''}`} />
-                </button>
-                
-                {mobileAccountsOpen && (
-                  <div className="ml-6 border-l border-border pl-2">
-                    {accountItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMobileOpen(false)}
-                          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                            isActive(item.href)
-                              ? 'bg-accent text-white'
-                              : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+              </div>
+
+              {/* Accounts Section */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Accounts</p>
+                {accountItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                        isActive(item.href)
+                          ? 'bg-accent text-white'
+                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
 
               {/* Training Section */}
@@ -573,7 +698,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 </a>
               </div>
 
-              {/* Account Section */}
+              {/* Admin Section */}
               <div className="pt-2 mt-2 border-t border-border">
                 {isAdmin && (
                   <Link

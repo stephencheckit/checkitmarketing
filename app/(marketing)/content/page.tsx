@@ -548,7 +548,7 @@ export default function ContentPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <FileText className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
-              Content Hub
+              Content Lab
             </h1>
             <p className="text-sm text-muted mt-1">
               {activeTab === 'ideas' 

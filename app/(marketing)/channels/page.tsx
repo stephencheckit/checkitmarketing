@@ -927,7 +927,7 @@ export default function ChannelsPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <Megaphone className="w-7 h-7" style={{ stroke: 'url(#icon-gradient)' }} />
-            Channel Planner
+            Budget Planner
           </h1>
           <p className="text-sm text-muted mt-1">
             Plan your program spend (tools, ads, events) • Headcount is separate

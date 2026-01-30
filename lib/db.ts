@@ -3726,15 +3726,17 @@ export async function getAISearchSummary() {
       AVG(checkit_position) FILTER (WHERE checkit_position IS NOT NULL) as avg_position
     FROM ai_search_results
     WHERE scanned_at > NOW() - INTERVAL '7 days'
+      AND source != 'sample-data'
   `;
 
-  // Get competitor frequency
+  // Get competitor frequency (exclude sample data)
   const competitorStats = await sql`
     SELECT 
       jsonb_array_elements_text(competitors_mentioned) as competitor,
       COUNT(*) as mentions
     FROM ai_search_results
     WHERE scanned_at > NOW() - INTERVAL '7 days'
+      AND source != 'sample-data'
     GROUP BY competitor
     ORDER BY mentions DESC
     LIMIT 10
@@ -4293,17 +4295,18 @@ export async function seedHistoricalAISearchData(queries: { id: number; query: s
 
 // Calculate AI Search Profile Score for all brands
 export async function calculateAISearchProfileScores(): Promise<AISearchProfileScore[]> {
-  // Get total queries and results
+  // Get total queries and results (exclude sample data for accurate scoring)
   const totalStats = await sql`
     SELECT 
       COUNT(DISTINCT query_text) as total_queries,
       COUNT(*) as total_results
     FROM ai_search_results
+    WHERE source != 'sample-data'
   `;
   const totalQueries = Number(totalStats[0]?.total_queries) || 1;
   const totalResults = Number(totalStats[0]?.total_results) || 1;
 
-  // Get Checkit stats
+  // Get Checkit stats (exclude sample data)
   const checkitStats = await sql`
     SELECT
       COUNT(*) as mentions,
@@ -4312,20 +4315,23 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
       COUNT(*) FILTER (WHERE checkit_position = 1) as first_positions
     FROM ai_search_results
     WHERE checkit_mentioned = true
+      AND source != 'sample-data'
   `;
 
-  // Get competitor stats
+  // Get competitor stats (exclude sample data)
   const competitorStats = await sql`
     SELECT 
       jsonb_array_elements_text(competitors_mentioned) as brand,
       COUNT(*) as mentions,
       COUNT(DISTINCT query_text) as queries_covered
     FROM ai_search_results
-    WHERE competitors_mentioned IS NOT NULL AND jsonb_array_length(competitors_mentioned) > 0
+    WHERE competitors_mentioned IS NOT NULL 
+      AND jsonb_array_length(competitors_mentioned) > 0
+      AND source != 'sample-data'
     GROUP BY brand
   `;
 
-  // Get consistency data (mentions over time)
+  // Get consistency data (keep sample data for trends visualization)
   const consistencyData = await sql`
     SELECT 
       DATE(scanned_at) as scan_date,
@@ -4362,6 +4368,7 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
       COUNT(*) FILTER (WHERE checkit_mentioned) as checkit_wins
     FROM ai_search_results
     WHERE jsonb_array_length(competitors_mentioned) > 0
+      AND source != 'sample-data'
   `;
   const checkitWinRate = Number(winRateStats[0]?.total_competitive) > 0
     ? Number(winRateStats[0]?.checkit_wins) / Number(winRateStats[0]?.total_competitive)
@@ -4400,6 +4407,7 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
         COUNT(*) FILTER (WHERE NOT checkit_mentioned) as wins
       FROM ai_search_results
       WHERE competitors_mentioned @> ${JSON.stringify([brand])}::jsonb
+        AND source != 'sample-data'
     `;
     const compWinRate = Number(compWinRateResult[0]?.total) > 0
       ? Number(compWinRateResult[0]?.wins) / Number(compWinRateResult[0]?.total)

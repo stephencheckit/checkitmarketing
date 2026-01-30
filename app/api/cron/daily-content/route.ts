@@ -52,16 +52,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Create scan record
-    const scan = await createAISearchScan(activeQueries.length);
+    const scan = await createAISearchScan();
     let scannedCount = 0;
-    let errorCount = 0;
+    let checkitMentions = 0;
 
     for (const query of activeQueries) {
       try {
-        const result = await queryOpenAI(query.query_text);
+        const result = await queryOpenAI(query.query);
         await saveAISearchResult({
           queryId: query.id,
-          queryText: query.query_text,
+          queryText: query.query,
           response: result.response,
           checkitMentioned: result.checkitMentioned,
           checkitPosition: result.checkitPosition,
@@ -70,14 +70,14 @@ export async function GET(request: NextRequest) {
           source: 'openai-gpt4o-mini',
         });
         scannedCount++;
+        if (result.checkitMentioned) checkitMentions++;
       } catch (err) {
-        errorCount++;
-        log.push(`Error scanning "${query.query_text}": ${err}`);
+        log.push(`Error scanning "${query.query}": ${err}`);
       }
     }
 
-    await updateAISearchScan(scan.id, 'completed', scannedCount, errorCount);
-    log.push(`Scanned ${scannedCount} queries (${errorCount} errors)`);
+    await updateAISearchScan(scan.id, { status: 'completed', totalQueries: scannedCount, checkitMentions });
+    log.push(`Scanned ${scannedCount} queries (${checkitMentions} mentioned Checkit)`);
 
     // ============================================
     // STEP 2: Find Content Gaps

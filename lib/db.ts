@@ -4242,6 +4242,55 @@ export interface AISearchProfileScore {
   tier: 'elite' | 'strong' | 'moderate' | 'emerging' | 'minimal';
 }
 
+// Seed historical AI search data for charts
+export async function seedHistoricalAISearchData(queries: { id: number; query: string }[]): Promise<{ recordsCreated: number; daysSeeded: number }> {
+  const competitors = ['Therma', 'ComplianceMate', 'SmartSense', 'Testo', 'Zenput', 'SafetyCulture'];
+  const daysBack = 14;
+  let recordsCreated = 0;
+
+  // Create historical data for each day
+  for (let dayOffset = daysBack; dayOffset >= 1; dayOffset--) {
+    const date = new Date();
+    date.setDate(date.getDate() - dayOffset);
+    date.setHours(8, 0, 0, 0); // 8 AM each day
+
+    // Simulate improving Checkit mentions over time (start ~15%, end ~35%)
+    const mentionRate = 0.15 + (0.20 * (daysBack - dayOffset) / daysBack);
+
+    // Process subset of queries each day (simulating real usage)
+    const dailyQueries = queries.slice(0, Math.min(10, queries.length));
+    
+    for (const query of dailyQueries) {
+      const checkitMentioned = Math.random() < mentionRate;
+      const numCompetitors = Math.floor(Math.random() * 4) + 1;
+      const shuffled = [...competitors].sort(() => Math.random() - 0.5);
+      const mentionedCompetitors = shuffled.slice(0, numCompetitors);
+      
+      const brandsData: Record<string, { mentioned: boolean; context: string | null }> = {};
+      brandsData['Checkit'] = { mentioned: checkitMentioned, context: checkitMentioned ? 'Sample historical data' : null };
+      for (const comp of mentionedCompetitors) {
+        brandsData[comp] = { mentioned: true, context: 'Sample historical data' };
+      }
+
+      await sql`
+        INSERT INTO ai_search_results (
+          query_id, query_text, response, checkit_mentioned, checkit_position,
+          competitors_mentioned, brands_data, source, scanned_at
+        ) VALUES (
+          ${query.id}, ${query.query}, ${'[Historical sample data]'}, ${checkitMentioned},
+          ${checkitMentioned ? Math.floor(Math.random() * 5) + 1 : null},
+          ${JSON.stringify(mentionedCompetitors)},
+          ${JSON.stringify(brandsData)}, ${'sample-data'},
+          ${date.toISOString()}
+        )
+      `;
+      recordsCreated++;
+    }
+  }
+
+  return { recordsCreated, daysSeeded: daysBack };
+}
+
 // Calculate AI Search Profile Score for all brands
 export async function calculateAISearchProfileScores(): Promise<AISearchProfileScore[]> {
   // Get total queries and results

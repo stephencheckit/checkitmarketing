@@ -16,6 +16,7 @@ import {
   hasScannedToday,
   getLastScanDate,
   calculateAISearchProfileScores,
+  seedHistoricalAISearchData,
 } from '@/lib/db';
 import {
   queryOpenAI,
@@ -336,6 +337,22 @@ export async function POST(request: NextRequest) {
         });
         throw error;
       }
+    }
+
+    // Seed historical sample data for charts
+    if (action === 'seed_history') {
+      const queries = await getAISearchQueries();
+      if (queries.length === 0) {
+        return NextResponse.json({ error: 'No queries to seed data for. Add queries first.' }, { status: 400 });
+      }
+
+      const result = await seedHistoricalAISearchData(queries);
+
+      return NextResponse.json({ 
+        success: true, 
+        ...result,
+        message: `Created ${result.recordsCreated} historical records over ${result.daysSeeded} days`
+      });
     }
 
     // Delete all branded queries (containing "Checkit")

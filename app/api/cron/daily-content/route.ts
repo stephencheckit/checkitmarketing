@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   initializeAISearchTables,
   getAISearchQueries,
+  createAISearchQuery,
   saveAISearchResult,
   createAISearchScan,
   updateAISearchScan,
@@ -14,11 +15,14 @@ import {
   initializeCompetitorFeedsTables,
   getDiscoveredCompetitors,
   syncDiscoveredCompetitors,
+  getSearchConsoleQueries,
 } from '@/lib/db';
 import {
   queryOpenAI,
   generateContentBrief,
   generateFullArticle,
+  generateQueryRecommendations,
+  generateQueriesFromSearchTerms,
 } from '@/lib/ai-search';
 
 // Verify cron secret to prevent unauthorized access
@@ -87,6 +91,58 @@ export async function GET(request: NextRequest) {
 
     await updateAISearchScan(scan.id, { status: 'completed', totalQueries: scannedCount, checkitMentions });
     log.push(`Scanned ${scannedCount} queries (${checkitMentions} mentioned Checkit)`);
+
+    // ============================================
+    // STEP 1.5: Discover & Add New Queries (max 5/day)
+    // ============================================
+    log.push('Step 1.5: Discovering new queries...');
+    
+    let newQueriesAdded = 0;
+    const existingQueryTexts = new Set(activeQueries.map(q => q.query.toLowerCase()));
+    
+    try {
+      // Source 1: AI recommendations based on gaps
+      const recentResults = await getLatestAISearchResults(30);
+      const contentGaps = recentResults
+        .filter(r => !r.checkit_mentioned)
+        .map(r => r.query_text);
+      
+      if (contentGaps.length > 0) {
+        const recommendations = await generateQueryRecommendations(
+          activeQueries.map(q => q.query),
+          contentGaps
+        );
+        
+        for (const rec of (recommendations.recommendations || []).slice(0, 3)) {
+          if (!existingQueryTexts.has(rec.query.toLowerCase()) && newQueriesAdded < 5) {
+            await createAISearchQuery(rec.query);
+            existingQueryTexts.add(rec.query.toLowerCase());
+            newQueriesAdded++;
+            log.push(`+ Added AI recommendation: "${rec.query.substring(0, 50)}..."`);
+          }
+        }
+      }
+      
+      // Source 2: Search Console queries
+      const searchQueries = await getSearchConsoleQueries();
+      if (searchQueries.length > 0) {
+        const searchTerms = searchQueries.map(q => q.query as string).slice(0, 20);
+        const fromSearchConsole = await generateQueriesFromSearchTerms(searchTerms);
+        
+        for (const q of (fromSearchConsole.queries || []).slice(0, 2)) {
+          if (!existingQueryTexts.has(q.query.toLowerCase()) && newQueriesAdded < 5) {
+            await createAISearchQuery(q.query);
+            existingQueryTexts.add(q.query.toLowerCase());
+            newQueriesAdded++;
+            log.push(`+ Added from Search Console: "${q.query.substring(0, 50)}..."`);
+          }
+        }
+      }
+      
+      log.push(`Added ${newQueriesAdded} new queries to monitor`);
+    } catch (err) {
+      log.push(`Query discovery error (non-fatal): ${err}`);
+    }
 
     // ============================================
     // STEP 2: Sync Discovered Competitors

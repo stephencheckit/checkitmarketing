@@ -181,17 +181,22 @@ export async function GET(request: NextRequest) {
 // POST - Manage queries and run scans
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getSession();
-    if (!session.isLoggedIn) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await request.json();
+    const { action, secret } = body;
+
+    // Allow internal operations with secret
+    const isInternalRequest = secret === process.env.CRON_SECRET;
+
+    // Check authentication (skip for internal requests)
+    if (!isInternalRequest) {
+      const session = await getSession();
+      if (!session.isLoggedIn) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     // Initialize tables if needed
     await initializeAISearchTables();
-
-    const body = await request.json();
-    const { action } = body;
 
     // Add a new query to monitor
     if (action === 'add_query') {

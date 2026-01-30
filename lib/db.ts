@@ -4166,9 +4166,9 @@ export async function getContentDraftsSummary() {
 // Get all unique competitors discovered in AI search results
 export async function getDiscoveredCompetitors() {
   const results = await sql`
-    SELECT DISTINCT unnest(competitors_mentioned) as competitor
+    SELECT DISTINCT jsonb_array_elements_text(competitors_mentioned) as competitor
     FROM ai_search_results
-    WHERE competitors_mentioned IS NOT NULL
+    WHERE competitors_mentioned IS NOT NULL AND jsonb_array_length(competitors_mentioned) > 0
     ORDER BY competitor
   `;
   return results.map(r => r.competitor as string);
@@ -4207,11 +4207,11 @@ export async function syncDiscoveredCompetitors(competitors: string[]) {
 export async function getCompetitorMentionStats() {
   const results = await sql`
     SELECT 
-      unnest(competitors_mentioned) as competitor,
+      jsonb_array_elements_text(competitors_mentioned) as competitor,
       COUNT(*) as mention_count,
       COUNT(*) FILTER (WHERE NOT checkit_mentioned) as wins_over_checkit
     FROM ai_search_results
-    WHERE competitors_mentioned IS NOT NULL
+    WHERE competitors_mentioned IS NOT NULL AND jsonb_array_length(competitors_mentioned) > 0
     GROUP BY competitor
     ORDER BY mention_count DESC
   `;
@@ -4268,11 +4268,11 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
   // Get competitor stats
   const competitorStats = await sql`
     SELECT 
-      unnest(competitors_mentioned) as brand,
+      jsonb_array_elements_text(competitors_mentioned) as brand,
       COUNT(*) as mentions,
       COUNT(DISTINCT query_text) as queries_covered
     FROM ai_search_results
-    WHERE competitors_mentioned IS NOT NULL AND array_length(competitors_mentioned, 1) > 0
+    WHERE competitors_mentioned IS NOT NULL AND jsonb_array_length(competitors_mentioned) > 0
     GROUP BY brand
   `;
 
@@ -4308,11 +4308,11 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
 
   // Win rate for Checkit (times mentioned when competitors also mentioned)
   const winRateStats = await sql`
-    SELECT
+    SELECT 
       COUNT(*) as total_competitive,
       COUNT(*) FILTER (WHERE checkit_mentioned) as checkit_wins
     FROM ai_search_results
-    WHERE array_length(competitors_mentioned, 1) > 0
+    WHERE jsonb_array_length(competitors_mentioned) > 0
   `;
   const checkitWinRate = Number(winRateStats[0]?.total_competitive) > 0
     ? Number(winRateStats[0]?.checkit_wins) / Number(winRateStats[0]?.total_competitive)
@@ -4350,7 +4350,7 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
         COUNT(*) as total,
         COUNT(*) FILTER (WHERE NOT checkit_mentioned) as wins
       FROM ai_search_results
-      WHERE ${brand} = ANY(competitors_mentioned)
+      WHERE competitors_mentioned @> ${JSON.stringify([brand])}::jsonb
     `;
     const compWinRate = Number(compWinRateResult[0]?.total) > 0
       ? Number(compWinRateResult[0]?.wins) / Number(compWinRateResult[0]?.total)

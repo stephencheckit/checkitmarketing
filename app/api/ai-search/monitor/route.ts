@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
         .filter(r => !r.checkit_mentioned)
         .map(r => r.query_text);
       
-      const existingQueries = queries.map(q => q.query_text);
+      const existingQueries = queries.map(q => q.query);
       const recommendations = await generateQueryRecommendations(existingQueries, contentGaps);
       
       return NextResponse.json(recommendations);

@@ -2533,3 +2533,1628 @@ export async function getDemoRequestStats() {
     totalCount: totalCount[0]?.count || 0,
   };
 }
+
+// ============================================
+// GOOGLE ADS DATA OPERATIONS
+// ============================================
+
+export async function initializeGoogleAdsTables() {
+  // Campaigns table
+  await sql`
+    CREATE TABLE IF NOT EXISTS google_ads_campaigns (
+      id SERIAL PRIMARY KEY,
+      campaign_id TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      status TEXT,
+      budget_amount DECIMAL(12,2),
+      spend_mtd DECIMAL(12,2),
+      spend_today DECIMAL(12,2),
+      impressions INTEGER DEFAULT 0,
+      clicks INTEGER DEFAULT 0,
+      conversions DECIMAL(10,2) DEFAULT 0,
+      cost_per_conversion DECIMAL(10,2),
+      ctr DECIMAL(6,4),
+      synced_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Ads table (responsive search ads)
+  await sql`
+    CREATE TABLE IF NOT EXISTS google_ads_ads (
+      id SERIAL PRIMARY KEY,
+      ad_id TEXT NOT NULL UNIQUE,
+      campaign_id TEXT NOT NULL,
+      campaign_name TEXT,
+      ad_group_id TEXT,
+      ad_group_name TEXT,
+      headlines JSONB DEFAULT '[]',
+      descriptions JSONB DEFAULT '[]',
+      final_urls JSONB DEFAULT '[]',
+      path1 TEXT,
+      path2 TEXT,
+      ad_strength TEXT,
+      status TEXT,
+      impressions INTEGER DEFAULT 0,
+      clicks INTEGER DEFAULT 0,
+      cost DECIMAL(12,2) DEFAULT 0,
+      synced_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Keywords table
+  await sql`
+    CREATE TABLE IF NOT EXISTS google_ads_keywords (
+      id SERIAL PRIMARY KEY,
+      keyword_id TEXT NOT NULL UNIQUE,
+      campaign_id TEXT NOT NULL,
+      campaign_name TEXT,
+      ad_group_id TEXT,
+      ad_group_name TEXT,
+      keyword_text TEXT NOT NULL,
+      match_type TEXT,
+      quality_score INTEGER,
+      cpc_bid DECIMAL(10,2),
+      impressions INTEGER DEFAULT 0,
+      clicks INTEGER DEFAULT 0,
+      cost DECIMAL(12,2) DEFAULT 0,
+      conversions DECIMAL(10,2) DEFAULT 0,
+      ctr DECIMAL(6,4),
+      status TEXT,
+      synced_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Sync log table
+  await sql`
+    CREATE TABLE IF NOT EXISTS google_ads_sync_log (
+      id SERIAL PRIMARY KEY,
+      sync_type TEXT NOT NULL,
+      status TEXT NOT NULL,
+      campaigns_synced INTEGER DEFAULT 0,
+      ads_synced INTEGER DEFAULT 0,
+      keywords_synced INTEGER DEFAULT 0,
+      error_message TEXT,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ
+    )
+  `;
+
+  // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_google_ads_campaigns_status ON google_ads_campaigns(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_google_ads_ads_campaign ON google_ads_ads(campaign_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_google_ads_keywords_campaign ON google_ads_keywords(campaign_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_google_ads_sync_log_started ON google_ads_sync_log(started_at DESC)`;
+}
+
+// Types
+export interface GoogleAdsCampaign {
+  id: number;
+  campaign_id: string;
+  name: string;
+  status: string | null;
+  budget_amount: number | null;
+  spend_mtd: number | null;
+  spend_today: number | null;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  cost_per_conversion: number | null;
+  ctr: number | null;
+  synced_at: string;
+}
+
+export interface GoogleAdsAd {
+  id: number;
+  ad_id: string;
+  campaign_id: string;
+  campaign_name: string | null;
+  ad_group_id: string | null;
+  ad_group_name: string | null;
+  headlines: string[];
+  descriptions: string[];
+  final_urls: string[];
+  path1: string | null;
+  path2: string | null;
+  ad_strength: string | null;
+  status: string | null;
+  impressions: number;
+  clicks: number;
+  cost: number;
+  synced_at: string;
+}
+
+export interface GoogleAdsKeyword {
+  id: number;
+  keyword_id: string;
+  campaign_id: string;
+  campaign_name: string | null;
+  ad_group_id: string | null;
+  ad_group_name: string | null;
+  keyword_text: string;
+  match_type: string | null;
+  quality_score: number | null;
+  cpc_bid: number | null;
+  impressions: number;
+  clicks: number;
+  cost: number;
+  conversions: number;
+  ctr: number | null;
+  status: string | null;
+  synced_at: string;
+}
+
+export interface GoogleAdsSyncLog {
+  id: number;
+  sync_type: string;
+  status: string;
+  campaigns_synced: number;
+  ads_synced: number;
+  keywords_synced: number;
+  error_message: string | null;
+  started_at: string;
+  completed_at: string | null;
+}
+
+// Campaign operations
+export async function upsertGoogleAdsCampaign(campaign: {
+  campaignId: string;
+  name: string;
+  status?: string;
+  budgetAmount?: number;
+  spendMtd?: number;
+  spendToday?: number;
+  impressions?: number;
+  clicks?: number;
+  conversions?: number;
+  costPerConversion?: number;
+  ctr?: number;
+}) {
+  const result = await sql`
+    INSERT INTO google_ads_campaigns (
+      campaign_id, name, status, budget_amount, spend_mtd, spend_today,
+      impressions, clicks, conversions, cost_per_conversion, ctr, synced_at
+    )
+    VALUES (
+      ${campaign.campaignId}, ${campaign.name}, ${campaign.status || null},
+      ${campaign.budgetAmount || null}, ${campaign.spendMtd || null}, ${campaign.spendToday || null},
+      ${campaign.impressions || 0}, ${campaign.clicks || 0}, ${campaign.conversions || 0},
+      ${campaign.costPerConversion || null}, ${campaign.ctr || null}, NOW()
+    )
+    ON CONFLICT (campaign_id) DO UPDATE SET
+      name = ${campaign.name},
+      status = COALESCE(${campaign.status || null}, google_ads_campaigns.status),
+      budget_amount = COALESCE(${campaign.budgetAmount || null}, google_ads_campaigns.budget_amount),
+      spend_mtd = COALESCE(${campaign.spendMtd || null}, google_ads_campaigns.spend_mtd),
+      spend_today = COALESCE(${campaign.spendToday || null}, google_ads_campaigns.spend_today),
+      impressions = ${campaign.impressions || 0},
+      clicks = ${campaign.clicks || 0},
+      conversions = ${campaign.conversions || 0},
+      cost_per_conversion = COALESCE(${campaign.costPerConversion || null}, google_ads_campaigns.cost_per_conversion),
+      ctr = COALESCE(${campaign.ctr || null}, google_ads_campaigns.ctr),
+      synced_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as GoogleAdsCampaign;
+}
+
+export async function getGoogleAdsCampaigns() {
+  return await sql`
+    SELECT * FROM google_ads_campaigns
+    ORDER BY spend_mtd DESC NULLS LAST, name
+  ` as GoogleAdsCampaign[];
+}
+
+// Ad operations
+export async function upsertGoogleAdsAd(ad: {
+  adId: string;
+  campaignId: string;
+  campaignName?: string;
+  adGroupId?: string;
+  adGroupName?: string;
+  headlines?: string[];
+  descriptions?: string[];
+  finalUrls?: string[];
+  path1?: string;
+  path2?: string;
+  adStrength?: string;
+  status?: string;
+  impressions?: number;
+  clicks?: number;
+  cost?: number;
+}) {
+  const result = await sql`
+    INSERT INTO google_ads_ads (
+      ad_id, campaign_id, campaign_name, ad_group_id, ad_group_name,
+      headlines, descriptions, final_urls, path1, path2, ad_strength, status,
+      impressions, clicks, cost, synced_at
+    )
+    VALUES (
+      ${ad.adId}, ${ad.campaignId}, ${ad.campaignName || null},
+      ${ad.adGroupId || null}, ${ad.adGroupName || null},
+      ${JSON.stringify(ad.headlines || [])}, ${JSON.stringify(ad.descriptions || [])},
+      ${JSON.stringify(ad.finalUrls || [])}, ${ad.path1 || null}, ${ad.path2 || null},
+      ${ad.adStrength || null}, ${ad.status || null},
+      ${ad.impressions || 0}, ${ad.clicks || 0}, ${ad.cost || 0}, NOW()
+    )
+    ON CONFLICT (ad_id) DO UPDATE SET
+      campaign_id = ${ad.campaignId},
+      campaign_name = COALESCE(${ad.campaignName || null}, google_ads_ads.campaign_name),
+      ad_group_id = COALESCE(${ad.adGroupId || null}, google_ads_ads.ad_group_id),
+      ad_group_name = COALESCE(${ad.adGroupName || null}, google_ads_ads.ad_group_name),
+      headlines = ${JSON.stringify(ad.headlines || [])},
+      descriptions = ${JSON.stringify(ad.descriptions || [])},
+      final_urls = ${JSON.stringify(ad.finalUrls || [])},
+      path1 = COALESCE(${ad.path1 || null}, google_ads_ads.path1),
+      path2 = COALESCE(${ad.path2 || null}, google_ads_ads.path2),
+      ad_strength = COALESCE(${ad.adStrength || null}, google_ads_ads.ad_strength),
+      status = COALESCE(${ad.status || null}, google_ads_ads.status),
+      impressions = ${ad.impressions || 0},
+      clicks = ${ad.clicks || 0},
+      cost = ${ad.cost || 0},
+      synced_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as GoogleAdsAd;
+}
+
+export async function getGoogleAdsAds(campaignId?: string) {
+  if (campaignId) {
+    return await sql`
+      SELECT * FROM google_ads_ads
+      WHERE campaign_id = ${campaignId}
+      ORDER BY impressions DESC, ad_group_name
+    ` as GoogleAdsAd[];
+  }
+  return await sql`
+    SELECT * FROM google_ads_ads
+    ORDER BY impressions DESC, campaign_name, ad_group_name
+  ` as GoogleAdsAd[];
+}
+
+// Keyword operations
+export async function upsertGoogleAdsKeyword(keyword: {
+  keywordId: string;
+  campaignId: string;
+  campaignName?: string;
+  adGroupId?: string;
+  adGroupName?: string;
+  keywordText: string;
+  matchType?: string;
+  qualityScore?: number | null;
+  cpcBid?: number;
+  impressions?: number;
+  clicks?: number;
+  cost?: number;
+  conversions?: number;
+  ctr?: number;
+  status?: string;
+}) {
+  const result = await sql`
+    INSERT INTO google_ads_keywords (
+      keyword_id, campaign_id, campaign_name, ad_group_id, ad_group_name,
+      keyword_text, match_type, quality_score, cpc_bid,
+      impressions, clicks, cost, conversions, ctr, status, synced_at
+    )
+    VALUES (
+      ${keyword.keywordId}, ${keyword.campaignId}, ${keyword.campaignName || null},
+      ${keyword.adGroupId || null}, ${keyword.adGroupName || null},
+      ${keyword.keywordText}, ${keyword.matchType || null}, ${keyword.qualityScore || null},
+      ${keyword.cpcBid || null}, ${keyword.impressions || 0}, ${keyword.clicks || 0},
+      ${keyword.cost || 0}, ${keyword.conversions || 0}, ${keyword.ctr || null},
+      ${keyword.status || null}, NOW()
+    )
+    ON CONFLICT (keyword_id) DO UPDATE SET
+      campaign_id = ${keyword.campaignId},
+      campaign_name = COALESCE(${keyword.campaignName || null}, google_ads_keywords.campaign_name),
+      ad_group_id = COALESCE(${keyword.adGroupId || null}, google_ads_keywords.ad_group_id),
+      ad_group_name = COALESCE(${keyword.adGroupName || null}, google_ads_keywords.ad_group_name),
+      keyword_text = ${keyword.keywordText},
+      match_type = COALESCE(${keyword.matchType || null}, google_ads_keywords.match_type),
+      quality_score = COALESCE(${keyword.qualityScore || null}, google_ads_keywords.quality_score),
+      cpc_bid = COALESCE(${keyword.cpcBid || null}, google_ads_keywords.cpc_bid),
+      impressions = ${keyword.impressions || 0},
+      clicks = ${keyword.clicks || 0},
+      cost = ${keyword.cost || 0},
+      conversions = ${keyword.conversions || 0},
+      ctr = COALESCE(${keyword.ctr || null}, google_ads_keywords.ctr),
+      status = COALESCE(${keyword.status || null}, google_ads_keywords.status),
+      synced_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as GoogleAdsKeyword;
+}
+
+export async function getGoogleAdsKeywords(campaignId?: string) {
+  if (campaignId) {
+    return await sql`
+      SELECT * FROM google_ads_keywords
+      WHERE campaign_id = ${campaignId}
+      ORDER BY impressions DESC, keyword_text
+    ` as GoogleAdsKeyword[];
+  }
+  return await sql`
+    SELECT * FROM google_ads_keywords
+    ORDER BY impressions DESC, campaign_name, keyword_text
+  ` as GoogleAdsKeyword[];
+}
+
+// Sync log operations
+export async function createSyncLog(syncType: string) {
+  const result = await sql`
+    INSERT INTO google_ads_sync_log (sync_type, status)
+    VALUES (${syncType}, 'in_progress')
+    RETURNING *
+  `;
+  return result[0] as GoogleAdsSyncLog;
+}
+
+export async function updateSyncLog(id: number, updates: {
+  status: string;
+  campaignsSynced?: number;
+  adsSynced?: number;
+  keywordsSynced?: number;
+  errorMessage?: string;
+}) {
+  const result = await sql`
+    UPDATE google_ads_sync_log SET
+      status = ${updates.status},
+      campaigns_synced = COALESCE(${updates.campaignsSynced || null}, campaigns_synced),
+      ads_synced = COALESCE(${updates.adsSynced || null}, ads_synced),
+      keywords_synced = COALESCE(${updates.keywordsSynced || null}, keywords_synced),
+      error_message = ${updates.errorMessage || null},
+      completed_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as GoogleAdsSyncLog;
+}
+
+export async function getLatestSyncLog() {
+  const result = await sql`
+    SELECT * FROM google_ads_sync_log
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return result[0] as GoogleAdsSyncLog | undefined;
+}
+
+export async function getGoogleAdsSummary() {
+  const campaigns = await sql`
+    SELECT 
+      COUNT(*) as total_campaigns,
+      COUNT(CASE WHEN status = 'ENABLED' THEN 1 END) as active_campaigns,
+      SUM(spend_mtd) as total_spend_mtd,
+      SUM(impressions) as total_impressions,
+      SUM(clicks) as total_clicks,
+      SUM(conversions) as total_conversions
+    FROM google_ads_campaigns
+  `;
+  
+  const lastSync = await getLatestSyncLog();
+  
+  return {
+    totalCampaigns: campaigns[0]?.total_campaigns || 0,
+    activeCampaigns: campaigns[0]?.active_campaigns || 0,
+    totalSpendMtd: campaigns[0]?.total_spend_mtd || 0,
+    totalImpressions: campaigns[0]?.total_impressions || 0,
+    totalClicks: campaigns[0]?.total_clicks || 0,
+    totalConversions: campaigns[0]?.total_conversions || 0,
+    lastSyncedAt: lastSync?.completed_at || lastSync?.started_at || null,
+    lastSyncStatus: lastSync?.status || null,
+  };
+}
+
+// ============================================
+// Reddit Monitor Tables and Operations
+// ============================================
+
+export interface RedditKeyword {
+  id: number;
+  keyword: string;
+  subreddits: string[];
+  is_active: boolean;
+  created_at: Date;
+}
+
+export interface RedditPostRecord {
+  id: number;
+  post_id: string;
+  keyword_id: number;
+  title: string;
+  selftext: string;
+  author: string;
+  subreddit: string;
+  score: number;
+  num_comments: number;
+  permalink: string;
+  created_utc: number;
+  is_lead: boolean;
+  notes: string | null;
+  fetched_at: Date;
+}
+
+export interface RedditSyncLog {
+  id: number;
+  sync_type: string;
+  status: string;
+  posts_fetched: number;
+  started_at: Date;
+  completed_at: Date | null;
+  error_message: string | null;
+}
+
+export async function initializeRedditTables() {
+  // Keywords to monitor
+  await sql`
+    CREATE TABLE IF NOT EXISTS reddit_keywords (
+      id SERIAL PRIMARY KEY,
+      keyword TEXT NOT NULL UNIQUE,
+      subreddits JSONB DEFAULT '[]',
+      is_active BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Cached posts from Reddit
+  await sql`
+    CREATE TABLE IF NOT EXISTS reddit_posts (
+      id SERIAL PRIMARY KEY,
+      post_id TEXT NOT NULL UNIQUE,
+      keyword_id INTEGER REFERENCES reddit_keywords(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      selftext TEXT,
+      author TEXT,
+      subreddit TEXT NOT NULL,
+      score INTEGER DEFAULT 0,
+      num_comments INTEGER DEFAULT 0,
+      permalink TEXT NOT NULL,
+      created_utc BIGINT,
+      is_lead BOOLEAN DEFAULT false,
+      notes TEXT,
+      fetched_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Sync log for Reddit
+  await sql`
+    CREATE TABLE IF NOT EXISTS reddit_sync_log (
+      id SERIAL PRIMARY KEY,
+      sync_type TEXT NOT NULL,
+      status TEXT DEFAULT 'running',
+      posts_fetched INTEGER DEFAULT 0,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ,
+      error_message TEXT
+    )
+  `;
+
+  // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_reddit_posts_keyword ON reddit_posts(keyword_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_reddit_posts_subreddit ON reddit_posts(subreddit)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_reddit_posts_created ON reddit_posts(created_utc DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_reddit_posts_lead ON reddit_posts(is_lead) WHERE is_lead = true`;
+}
+
+// Keyword operations
+export async function createRedditKeyword(keyword: string, subreddits: string[] = []) {
+  const result = await sql`
+    INSERT INTO reddit_keywords (keyword, subreddits)
+    VALUES (${keyword}, ${JSON.stringify(subreddits)})
+    ON CONFLICT (keyword) DO UPDATE SET
+      subreddits = ${JSON.stringify(subreddits)},
+      is_active = true
+    RETURNING *
+  `;
+  return result[0] as RedditKeyword;
+}
+
+export async function getRedditKeywords(activeOnly = true) {
+  if (activeOnly) {
+    return await sql`
+      SELECT * FROM reddit_keywords WHERE is_active = true ORDER BY created_at DESC
+    ` as RedditKeyword[];
+  }
+  return await sql`
+    SELECT * FROM reddit_keywords ORDER BY created_at DESC
+  ` as RedditKeyword[];
+}
+
+export async function deleteRedditKeyword(id: number) {
+  await sql`DELETE FROM reddit_keywords WHERE id = ${id}`;
+}
+
+export async function toggleRedditKeyword(id: number, isActive: boolean) {
+  await sql`UPDATE reddit_keywords SET is_active = ${isActive} WHERE id = ${id}`;
+}
+
+// Post operations
+export async function upsertRedditPost(post: {
+  post_id: string;
+  keyword_id: number;
+  title: string;
+  selftext: string;
+  author: string;
+  subreddit: string;
+  score: number;
+  num_comments: number;
+  permalink: string;
+  created_utc: number;
+}) {
+  const result = await sql`
+    INSERT INTO reddit_posts (
+      post_id, keyword_id, title, selftext, author, subreddit,
+      score, num_comments, permalink, created_utc
+    ) VALUES (
+      ${post.post_id}, ${post.keyword_id}, ${post.title}, ${post.selftext},
+      ${post.author}, ${post.subreddit}, ${post.score}, ${post.num_comments},
+      ${post.permalink}, ${post.created_utc}
+    )
+    ON CONFLICT (post_id) DO UPDATE SET
+      score = ${post.score},
+      num_comments = ${post.num_comments},
+      fetched_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as RedditPostRecord;
+}
+
+export async function getRedditPosts(options: {
+  keywordId?: number;
+  subreddit?: string;
+  leadsOnly?: boolean;
+  limit?: number;
+} = {}) {
+  const { keywordId, subreddit, leadsOnly, limit = 100 } = options;
+  
+  if (keywordId && leadsOnly) {
+    return await sql`
+      SELECT rp.*, rk.keyword 
+      FROM reddit_posts rp
+      JOIN reddit_keywords rk ON rp.keyword_id = rk.id
+      WHERE rp.keyword_id = ${keywordId} AND rp.is_lead = true
+      ORDER BY rp.created_utc DESC
+      LIMIT ${limit}
+    ` as (RedditPostRecord & { keyword: string })[];
+  }
+  
+  if (keywordId) {
+    return await sql`
+      SELECT rp.*, rk.keyword 
+      FROM reddit_posts rp
+      JOIN reddit_keywords rk ON rp.keyword_id = rk.id
+      WHERE rp.keyword_id = ${keywordId}
+      ORDER BY rp.created_utc DESC
+      LIMIT ${limit}
+    ` as (RedditPostRecord & { keyword: string })[];
+  }
+  
+  if (subreddit) {
+    return await sql`
+      SELECT rp.*, rk.keyword 
+      FROM reddit_posts rp
+      JOIN reddit_keywords rk ON rp.keyword_id = rk.id
+      WHERE rp.subreddit = ${subreddit}
+      ORDER BY rp.created_utc DESC
+      LIMIT ${limit}
+    ` as (RedditPostRecord & { keyword: string })[];
+  }
+  
+  if (leadsOnly) {
+    return await sql`
+      SELECT rp.*, rk.keyword 
+      FROM reddit_posts rp
+      JOIN reddit_keywords rk ON rp.keyword_id = rk.id
+      WHERE rp.is_lead = true
+      ORDER BY rp.created_utc DESC
+      LIMIT ${limit}
+    ` as (RedditPostRecord & { keyword: string })[];
+  }
+  
+  return await sql`
+    SELECT rp.*, rk.keyword 
+    FROM reddit_posts rp
+    JOIN reddit_keywords rk ON rp.keyword_id = rk.id
+    ORDER BY rp.created_utc DESC
+    LIMIT ${limit}
+  ` as (RedditPostRecord & { keyword: string })[];
+}
+
+export async function markPostAsLead(postId: number, isLead: boolean, notes?: string) {
+  await sql`
+    UPDATE reddit_posts 
+    SET is_lead = ${isLead}, notes = ${notes || null}
+    WHERE id = ${postId}
+  `;
+}
+
+// Sync log operations
+export async function createRedditSyncLog(syncType: string) {
+  const result = await sql`
+    INSERT INTO reddit_sync_log (sync_type)
+    VALUES (${syncType})
+    RETURNING *
+  `;
+  return result[0] as RedditSyncLog;
+}
+
+export async function updateRedditSyncLog(id: number, updates: {
+  status: string;
+  postsFetched?: number;
+  errorMessage?: string;
+}) {
+  const result = await sql`
+    UPDATE reddit_sync_log SET
+      status = ${updates.status},
+      posts_fetched = COALESCE(${updates.postsFetched || null}, posts_fetched),
+      error_message = ${updates.errorMessage || null},
+      completed_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as RedditSyncLog;
+}
+
+export async function getLatestRedditSyncLog() {
+  const result = await sql`
+    SELECT * FROM reddit_sync_log
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return result[0] as RedditSyncLog | undefined;
+}
+
+export async function getRedditSummary() {
+  const stats = await sql`
+    SELECT 
+      COUNT(DISTINCT rk.id) as total_keywords,
+      COUNT(DISTINCT rk.id) FILTER (WHERE rk.is_active) as active_keywords,
+      COUNT(rp.id) as total_posts,
+      COUNT(rp.id) FILTER (WHERE rp.is_lead) as total_leads,
+      COUNT(DISTINCT rp.subreddit) as subreddits_monitored
+    FROM reddit_keywords rk
+    LEFT JOIN reddit_posts rp ON rp.keyword_id = rk.id
+  `;
+  
+  const lastSync = await getLatestRedditSyncLog();
+  
+  return {
+    totalKeywords: Number(stats[0]?.total_keywords) || 0,
+    activeKeywords: Number(stats[0]?.active_keywords) || 0,
+    totalPosts: Number(stats[0]?.total_posts) || 0,
+    totalLeads: Number(stats[0]?.total_leads) || 0,
+    subredditsMonitored: Number(stats[0]?.subreddits_monitored) || 0,
+    lastSyncedAt: lastSync?.completed_at || lastSync?.started_at || null,
+    lastSyncStatus: lastSync?.status || null,
+  };
+}
+
+// ============================================
+// Google Search Console Tables and Operations
+// ============================================
+
+export interface SearchConsoleQuery {
+  id: number;
+  site_url: string;
+  query: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  date_range_start: string;
+  date_range_end: string;
+  synced_at: Date;
+}
+
+export interface SearchConsolePage {
+  id: number;
+  site_url: string;
+  page_url: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  date_range_start: string;
+  date_range_end: string;
+  synced_at: Date;
+}
+
+export interface SearchConsoleSyncLog {
+  id: number;
+  site_url: string;
+  sync_type: string;
+  status: string;
+  queries_synced: number;
+  pages_synced: number;
+  started_at: Date;
+  completed_at: Date | null;
+  error_message: string | null;
+}
+
+export async function initializeSearchConsoleTables() {
+  // Queries table
+  await sql`
+    CREATE TABLE IF NOT EXISTS search_console_queries (
+      id SERIAL PRIMARY KEY,
+      site_url TEXT NOT NULL,
+      query TEXT NOT NULL,
+      clicks INTEGER DEFAULT 0,
+      impressions INTEGER DEFAULT 0,
+      ctr DECIMAL(6,4) DEFAULT 0,
+      position DECIMAL(6,2) DEFAULT 0,
+      date_range_start DATE NOT NULL,
+      date_range_end DATE NOT NULL,
+      synced_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(site_url, query, date_range_start, date_range_end)
+    )
+  `;
+
+  // Pages table
+  await sql`
+    CREATE TABLE IF NOT EXISTS search_console_pages (
+      id SERIAL PRIMARY KEY,
+      site_url TEXT NOT NULL,
+      page_url TEXT NOT NULL,
+      clicks INTEGER DEFAULT 0,
+      impressions INTEGER DEFAULT 0,
+      ctr DECIMAL(6,4) DEFAULT 0,
+      position DECIMAL(6,2) DEFAULT 0,
+      date_range_start DATE NOT NULL,
+      date_range_end DATE NOT NULL,
+      synced_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(site_url, page_url, date_range_start, date_range_end)
+    )
+  `;
+
+  // Summary/totals table
+  await sql`
+    CREATE TABLE IF NOT EXISTS search_console_totals (
+      id SERIAL PRIMARY KEY,
+      site_url TEXT NOT NULL,
+      clicks INTEGER DEFAULT 0,
+      impressions INTEGER DEFAULT 0,
+      ctr DECIMAL(6,4) DEFAULT 0,
+      position DECIMAL(6,2) DEFAULT 0,
+      date_range_start DATE NOT NULL,
+      date_range_end DATE NOT NULL,
+      synced_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(site_url, date_range_start, date_range_end)
+    )
+  `;
+
+  // Sync log
+  await sql`
+    CREATE TABLE IF NOT EXISTS search_console_sync_log (
+      id SERIAL PRIMARY KEY,
+      site_url TEXT NOT NULL,
+      sync_type TEXT NOT NULL,
+      status TEXT DEFAULT 'running',
+      queries_synced INTEGER DEFAULT 0,
+      pages_synced INTEGER DEFAULT 0,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ,
+      error_message TEXT
+    )
+  `;
+
+  // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_sc_queries_site ON search_console_queries(site_url)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_sc_queries_clicks ON search_console_queries(clicks DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_sc_pages_site ON search_console_pages(site_url)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_sc_pages_clicks ON search_console_pages(clicks DESC)`;
+}
+
+// Upsert query data
+export async function upsertSearchConsoleQuery(data: {
+  siteUrl: string;
+  query: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  dateRangeStart: string;
+  dateRangeEnd: string;
+}) {
+  const result = await sql`
+    INSERT INTO search_console_queries (
+      site_url, query, clicks, impressions, ctr, position,
+      date_range_start, date_range_end
+    ) VALUES (
+      ${data.siteUrl}, ${data.query}, ${data.clicks}, ${data.impressions},
+      ${data.ctr}, ${data.position}, ${data.dateRangeStart}, ${data.dateRangeEnd}
+    )
+    ON CONFLICT (site_url, query, date_range_start, date_range_end) DO UPDATE SET
+      clicks = ${data.clicks},
+      impressions = ${data.impressions},
+      ctr = ${data.ctr},
+      position = ${data.position},
+      synced_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as SearchConsoleQuery;
+}
+
+// Upsert page data
+export async function upsertSearchConsolePage(data: {
+  siteUrl: string;
+  pageUrl: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  dateRangeStart: string;
+  dateRangeEnd: string;
+}) {
+  const result = await sql`
+    INSERT INTO search_console_pages (
+      site_url, page_url, clicks, impressions, ctr, position,
+      date_range_start, date_range_end
+    ) VALUES (
+      ${data.siteUrl}, ${data.pageUrl}, ${data.clicks}, ${data.impressions},
+      ${data.ctr}, ${data.position}, ${data.dateRangeStart}, ${data.dateRangeEnd}
+    )
+    ON CONFLICT (site_url, page_url, date_range_start, date_range_end) DO UPDATE SET
+      clicks = ${data.clicks},
+      impressions = ${data.impressions},
+      ctr = ${data.ctr},
+      position = ${data.position},
+      synced_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as SearchConsolePage;
+}
+
+// Upsert totals
+export async function upsertSearchConsoleTotals(data: {
+  siteUrl: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  dateRangeStart: string;
+  dateRangeEnd: string;
+}) {
+  await sql`
+    INSERT INTO search_console_totals (
+      site_url, clicks, impressions, ctr, position,
+      date_range_start, date_range_end
+    ) VALUES (
+      ${data.siteUrl}, ${data.clicks}, ${data.impressions},
+      ${data.ctr}, ${data.position}, ${data.dateRangeStart}, ${data.dateRangeEnd}
+    )
+    ON CONFLICT (site_url, date_range_start, date_range_end) DO UPDATE SET
+      clicks = ${data.clicks},
+      impressions = ${data.impressions},
+      ctr = ${data.ctr},
+      position = ${data.position},
+      synced_at = NOW()
+  `;
+}
+
+// Get queries
+export async function getSearchConsoleQueries(siteUrl: string, limit = 100) {
+  return await sql`
+    SELECT * FROM search_console_queries
+    WHERE site_url = ${siteUrl}
+    ORDER BY clicks DESC
+    LIMIT ${limit}
+  ` as SearchConsoleQuery[];
+}
+
+// Get pages
+export async function getSearchConsolePages(siteUrl: string, limit = 100) {
+  return await sql`
+    SELECT * FROM search_console_pages
+    WHERE site_url = ${siteUrl}
+    ORDER BY clicks DESC
+    LIMIT ${limit}
+  ` as SearchConsolePage[];
+}
+
+// Get totals
+export async function getSearchConsoleTotals(siteUrl: string) {
+  const result = await sql`
+    SELECT * FROM search_console_totals
+    WHERE site_url = ${siteUrl}
+    ORDER BY synced_at DESC
+    LIMIT 1
+  `;
+  return result[0] || null;
+}
+
+// Sync log operations
+export async function createSearchConsoleSyncLog(siteUrl: string, syncType: string) {
+  const result = await sql`
+    INSERT INTO search_console_sync_log (site_url, sync_type)
+    VALUES (${siteUrl}, ${syncType})
+    RETURNING *
+  `;
+  return result[0] as SearchConsoleSyncLog;
+}
+
+export async function updateSearchConsoleSyncLog(id: number, updates: {
+  status: string;
+  queriesSynced?: number;
+  pagesSynced?: number;
+  errorMessage?: string;
+}) {
+  const result = await sql`
+    UPDATE search_console_sync_log SET
+      status = ${updates.status},
+      queries_synced = COALESCE(${updates.queriesSynced || null}, queries_synced),
+      pages_synced = COALESCE(${updates.pagesSynced || null}, pages_synced),
+      error_message = ${updates.errorMessage || null},
+      completed_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as SearchConsoleSyncLog;
+}
+
+export async function getLatestSearchConsoleSyncLog(siteUrl?: string) {
+  if (siteUrl) {
+    const result = await sql`
+      SELECT * FROM search_console_sync_log
+      WHERE site_url = ${siteUrl}
+      ORDER BY started_at DESC
+      LIMIT 1
+    `;
+    return result[0] as SearchConsoleSyncLog | undefined;
+  }
+  const result = await sql`
+    SELECT * FROM search_console_sync_log
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return result[0] as SearchConsoleSyncLog | undefined;
+}
+
+export async function getSearchConsoleSummary(siteUrl: string) {
+  const totals = await getSearchConsoleTotals(siteUrl);
+  const queries = await sql`
+    SELECT COUNT(*) as count FROM search_console_queries WHERE site_url = ${siteUrl}
+  `;
+  const pages = await sql`
+    SELECT COUNT(*) as count FROM search_console_pages WHERE site_url = ${siteUrl}
+  `;
+  const lastSync = await getLatestSearchConsoleSyncLog(siteUrl);
+
+  return {
+    totalClicks: totals?.clicks || 0,
+    totalImpressions: totals?.impressions || 0,
+    avgCtr: totals?.ctr || 0,
+    avgPosition: totals?.position || 0,
+    queriesTracked: Number(queries[0]?.count) || 0,
+    pagesTracked: Number(pages[0]?.count) || 0,
+    lastSyncedAt: lastSync?.completed_at || lastSync?.started_at || null,
+    lastSyncStatus: lastSync?.status || null,
+  };
+}
+
+// ============================================
+// AI Search Monitor Tables and Operations
+// ============================================
+
+export interface AISearchQuery {
+  id: number;
+  query: string;
+  is_active: boolean;
+  created_at: Date;
+}
+
+export interface AISearchResult {
+  id: number;
+  query_id: number;
+  query_text: string;
+  response: string;
+  checkit_mentioned: boolean;
+  checkit_position: number | null;
+  competitors_mentioned: string[];
+  brands_data: Record<string, unknown>;
+  source: string;
+  scanned_at: Date;
+}
+
+export interface AISearchScan {
+  id: number;
+  status: string;
+  total_queries: number;
+  checkit_mentions: number;
+  started_at: Date;
+  completed_at: Date | null;
+}
+
+export async function initializeAISearchTables() {
+  // Queries to monitor
+  await sql`
+    CREATE TABLE IF NOT EXISTS ai_search_queries (
+      id SERIAL PRIMARY KEY,
+      query TEXT NOT NULL UNIQUE,
+      is_active BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Search results
+  await sql`
+    CREATE TABLE IF NOT EXISTS ai_search_results (
+      id SERIAL PRIMARY KEY,
+      query_id INTEGER REFERENCES ai_search_queries(id) ON DELETE CASCADE,
+      query_text TEXT NOT NULL,
+      response TEXT NOT NULL,
+      checkit_mentioned BOOLEAN DEFAULT false,
+      checkit_position INTEGER,
+      competitors_mentioned JSONB DEFAULT '[]',
+      brands_data JSONB DEFAULT '{}',
+      source TEXT DEFAULT 'openai',
+      scanned_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // Scan log
+  await sql`
+    CREATE TABLE IF NOT EXISTS ai_search_scans (
+      id SERIAL PRIMARY KEY,
+      status TEXT DEFAULT 'running',
+      total_queries INTEGER DEFAULT 0,
+      checkit_mentions INTEGER DEFAULT 0,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ
+    )
+  `;
+
+  // Indexes
+  await sql`CREATE INDEX IF NOT EXISTS idx_ai_results_query ON ai_search_results(query_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ai_results_scanned ON ai_search_results(scanned_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ai_results_checkit ON ai_search_results(checkit_mentioned)`;
+}
+
+// Query management
+export async function createAISearchQuery(query: string) {
+  const result = await sql`
+    INSERT INTO ai_search_queries (query)
+    VALUES (${query})
+    ON CONFLICT (query) DO UPDATE SET is_active = true
+    RETURNING *
+  `;
+  return result[0] as AISearchQuery;
+}
+
+export async function getAISearchQueries(activeOnly = true) {
+  if (activeOnly) {
+    return await sql`
+      SELECT * FROM ai_search_queries WHERE is_active = true ORDER BY created_at
+    ` as AISearchQuery[];
+  }
+  return await sql`
+    SELECT * FROM ai_search_queries ORDER BY created_at
+  ` as AISearchQuery[];
+}
+
+export async function deleteAISearchQuery(id: number) {
+  await sql`DELETE FROM ai_search_queries WHERE id = ${id}`;
+}
+
+// Results management
+export async function saveAISearchResult(data: {
+  queryId: number;
+  queryText: string;
+  response: string;
+  checkitMentioned: boolean;
+  checkitPosition: number | null;
+  competitorsMentioned: string[];
+  brandsData: Record<string, unknown>;
+  source: string;
+}) {
+  const result = await sql`
+    INSERT INTO ai_search_results (
+      query_id, query_text, response, checkit_mentioned, checkit_position,
+      competitors_mentioned, brands_data, source
+    ) VALUES (
+      ${data.queryId}, ${data.queryText}, ${data.response}, ${data.checkitMentioned},
+      ${data.checkitPosition}, ${JSON.stringify(data.competitorsMentioned)},
+      ${JSON.stringify(data.brandsData)}, ${data.source}
+    )
+    RETURNING *
+  `;
+  return result[0] as AISearchResult;
+}
+
+export async function getLatestAISearchResults(limit = 50) {
+  return await sql`
+    SELECT r.*, q.query as original_query
+    FROM ai_search_results r
+    JOIN ai_search_queries q ON r.query_id = q.id
+    ORDER BY r.scanned_at DESC
+    LIMIT ${limit}
+  ` as (AISearchResult & { original_query: string })[];
+}
+
+export async function getAISearchResultsByQuery(queryId: number, limit = 10) {
+  return await sql`
+    SELECT * FROM ai_search_results
+    WHERE query_id = ${queryId}
+    ORDER BY scanned_at DESC
+    LIMIT ${limit}
+  ` as AISearchResult[];
+}
+
+// Scan management
+export async function createAISearchScan() {
+  const result = await sql`
+    INSERT INTO ai_search_scans (status) VALUES ('running')
+    RETURNING *
+  `;
+  return result[0] as AISearchScan;
+}
+
+export async function updateAISearchScan(id: number, updates: {
+  status: string;
+  totalQueries?: number;
+  checkitMentions?: number;
+}) {
+  const result = await sql`
+    UPDATE ai_search_scans SET
+      status = ${updates.status},
+      total_queries = COALESCE(${updates.totalQueries || null}, total_queries),
+      checkit_mentions = COALESCE(${updates.checkitMentions || null}, checkit_mentions),
+      completed_at = CASE WHEN ${updates.status} IN ('completed', 'failed') THEN NOW() ELSE completed_at END
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as AISearchScan;
+}
+
+export async function getLatestAISearchScan() {
+  const result = await sql`
+    SELECT * FROM ai_search_scans
+    ORDER BY started_at DESC
+    LIMIT 1
+  `;
+  return result[0] as AISearchScan | undefined;
+}
+
+// Summary statistics
+export async function getAISearchSummary() {
+  // Get latest results for each query (most recent scan)
+  const latestScan = await getLatestAISearchScan();
+  
+  const stats = await sql`
+    SELECT
+      COUNT(DISTINCT query_id) as total_queries,
+      COUNT(*) as total_scans,
+      COUNT(*) FILTER (WHERE checkit_mentioned) as checkit_mentions,
+      AVG(checkit_position) FILTER (WHERE checkit_position IS NOT NULL) as avg_position
+    FROM ai_search_results
+    WHERE scanned_at > NOW() - INTERVAL '7 days'
+  `;
+
+  // Get competitor frequency
+  const competitorStats = await sql`
+    SELECT 
+      jsonb_array_elements_text(competitors_mentioned) as competitor,
+      COUNT(*) as mentions
+    FROM ai_search_results
+    WHERE scanned_at > NOW() - INTERVAL '7 days'
+    GROUP BY competitor
+    ORDER BY mentions DESC
+    LIMIT 10
+  `;
+
+  return {
+    totalQueries: Number(stats[0]?.total_queries) || 0,
+    totalScans: Number(stats[0]?.total_scans) || 0,
+    checkitMentions: Number(stats[0]?.checkit_mentions) || 0,
+    checkitMentionRate: stats[0]?.total_scans > 0 
+      ? Number(stats[0]?.checkit_mentions) / Number(stats[0]?.total_scans) 
+      : 0,
+    avgPosition: stats[0]?.avg_position ? Number(stats[0]?.avg_position) : null,
+    topCompetitors: competitorStats.map(c => ({
+      name: c.competitor as string,
+      mentions: Number(c.mentions),
+    })),
+    lastScanAt: latestScan?.completed_at || latestScan?.started_at || null,
+    lastScanStatus: latestScan?.status || null,
+  };
+}
+
+// ============================================
+// AI Search Trending & History
+// ============================================
+
+export interface TrendDataPoint {
+  date: string;
+  checkitMentioned: boolean;
+  checkitPosition: number | null;
+  competitorsMentioned: string[];
+}
+
+export interface QueryTrend {
+  queryId: number;
+  queryText: string;
+  dataPoints: TrendDataPoint[];
+  mentionRate: number;
+  avgPosition: number | null;
+  positionTrend: 'improving' | 'declining' | 'stable' | 'new';
+  competitorFrequency: Record<string, number>;
+}
+
+// Get historical results for trending (grouped by day)
+export async function getQueryTrends(days = 30): Promise<QueryTrend[]> {
+  // Calculate the cutoff date
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  
+  // Get all results from the past N days
+  const results = await sql`
+    SELECT 
+      query_id,
+      query_text,
+      DATE(scanned_at) as scan_date,
+      checkit_mentioned,
+      checkit_position,
+      competitors_mentioned,
+      scanned_at
+    FROM ai_search_results
+    WHERE scanned_at > ${cutoffDate.toISOString()}
+    ORDER BY query_text, scan_date DESC
+  `;
+
+  // Group by query
+  const queryMap = new Map<number, {
+    queryId: number;
+    queryText: string;
+    dataPoints: TrendDataPoint[];
+  }>();
+
+  for (const row of results) {
+    const queryId = row.query_id as number;
+    if (!queryMap.has(queryId)) {
+      queryMap.set(queryId, {
+        queryId,
+        queryText: row.query_text as string,
+        dataPoints: [],
+      });
+    }
+    
+    const query = queryMap.get(queryId)!;
+    // Only keep one result per day per query (the most recent)
+    const dateStr = (row.scan_date as Date).toISOString().split('T')[0];
+    if (!query.dataPoints.find(d => d.date === dateStr)) {
+      query.dataPoints.push({
+        date: dateStr,
+        checkitMentioned: row.checkit_mentioned as boolean,
+        checkitPosition: row.checkit_position as number | null,
+        competitorsMentioned: row.competitors_mentioned as string[],
+      });
+    }
+  }
+
+  // Calculate trends for each query
+  const trends: QueryTrend[] = [];
+  
+  for (const query of queryMap.values()) {
+    const dataPoints = query.dataPoints.sort((a, b) => a.date.localeCompare(b.date));
+    
+    // Calculate mention rate
+    const mentionCount = dataPoints.filter(d => d.checkitMentioned).length;
+    const mentionRate = dataPoints.length > 0 ? mentionCount / dataPoints.length : 0;
+    
+    // Calculate average position (when mentioned)
+    const positions = dataPoints
+      .filter(d => d.checkitPosition !== null)
+      .map(d => d.checkitPosition as number);
+    const avgPosition = positions.length > 0 
+      ? positions.reduce((a, b) => a + b, 0) / positions.length 
+      : null;
+    
+    // Calculate position trend (comparing first half to second half)
+    let positionTrend: QueryTrend['positionTrend'] = 'new';
+    if (dataPoints.length >= 4) {
+      const midpoint = Math.floor(dataPoints.length / 2);
+      const firstHalf = dataPoints.slice(0, midpoint);
+      const secondHalf = dataPoints.slice(midpoint);
+      
+      const firstMentions = firstHalf.filter(d => d.checkitMentioned).length / firstHalf.length;
+      const secondMentions = secondHalf.filter(d => d.checkitMentioned).length / secondHalf.length;
+      
+      if (secondMentions > firstMentions + 0.1) {
+        positionTrend = 'improving';
+      } else if (secondMentions < firstMentions - 0.1) {
+        positionTrend = 'declining';
+      } else {
+        positionTrend = 'stable';
+      }
+    } else if (dataPoints.length > 0) {
+      positionTrend = 'new';
+    }
+    
+    // Count competitor frequency
+    const competitorFrequency: Record<string, number> = {};
+    for (const dp of dataPoints) {
+      for (const comp of dp.competitorsMentioned || []) {
+        competitorFrequency[comp] = (competitorFrequency[comp] || 0) + 1;
+      }
+    }
+    
+    trends.push({
+      queryId: query.queryId,
+      queryText: query.queryText,
+      dataPoints,
+      mentionRate,
+      avgPosition,
+      positionTrend,
+      competitorFrequency,
+    });
+  }
+  
+  return trends;
+}
+
+// Get overall brand trends over time
+export async function getBrandTrends(days = 30) {
+  // Calculate the cutoff date
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+  
+  const results = await sql`
+    SELECT 
+      DATE(scanned_at) as scan_date,
+      COUNT(*) as total_queries,
+      COUNT(*) FILTER (WHERE checkit_mentioned) as checkit_mentions,
+      AVG(checkit_position) FILTER (WHERE checkit_position IS NOT NULL) as avg_position
+    FROM ai_search_results
+    WHERE scanned_at > ${cutoffDate.toISOString()}
+    GROUP BY DATE(scanned_at)
+    ORDER BY scan_date ASC
+  `;
+  
+  return results.map(row => ({
+    date: (row.scan_date as Date).toISOString().split('T')[0],
+    totalQueries: Number(row.total_queries),
+    checkitMentions: Number(row.checkit_mentions),
+    mentionRate: Number(row.total_queries) > 0 
+      ? Number(row.checkit_mentions) / Number(row.total_queries) 
+      : 0,
+    avgPosition: row.avg_position ? Number(row.avg_position) : null,
+  }));
+}
+
+// Check if we already ran a scan today
+export async function hasScannedToday(): Promise<boolean> {
+  const result = await sql`
+    SELECT COUNT(*) as count FROM ai_search_scans
+    WHERE DATE(started_at) = CURRENT_DATE
+  `;
+  return Number(result[0]?.count) > 0;
+}
+
+// Get the last scan date
+export async function getLastScanDate(): Promise<string | null> {
+  const result = await sql`
+    SELECT MAX(DATE(started_at)) as last_date FROM ai_search_scans
+  `;
+  return result[0]?.last_date 
+    ? (result[0].last_date as Date).toISOString().split('T')[0]
+    : null;
+}
+
+// ============================================
+// AI Content Drafts Tables and Operations
+// ============================================
+
+export interface ContentDraft {
+  id: number;
+  source_query: string;
+  source_query_id: number | null;
+  title: string;
+  slug: string;
+  target_keywords: string[];
+  outline: string[];
+  key_points: string[];
+  faq_questions: string[];
+  content: string | null;
+  meta_description: string | null;
+  excerpt: string | null;
+  status: 'idea' | 'brief' | 'draft' | 'review' | 'approved' | 'published';
+  published_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+  published_at: Date | null;
+}
+
+export async function initializeContentDraftsTables() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS content_drafts (
+      id SERIAL PRIMARY KEY,
+      source_query TEXT NOT NULL,
+      source_query_id INTEGER,
+      title TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      target_keywords JSONB DEFAULT '[]',
+      outline JSONB DEFAULT '[]',
+      key_points JSONB DEFAULT '[]',
+      faq_questions JSONB DEFAULT '[]',
+      content TEXT,
+      meta_description TEXT,
+      excerpt TEXT,
+      status TEXT DEFAULT 'idea',
+      published_url TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      published_at TIMESTAMPTZ
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_content_drafts_status ON content_drafts(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_content_drafts_created ON content_drafts(created_at DESC)`;
+}
+
+// Create slug from title
+function createSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 100);
+}
+
+// Create content draft (from brief)
+export async function createContentDraft(data: {
+  sourceQuery: string;
+  sourceQueryId?: number;
+  title: string;
+  targetKeywords: string[];
+  outline: string[];
+  keyPoints: string[];
+  faqQuestions: string[];
+}) {
+  const slug = createSlug(data.title) + '-' + Date.now().toString(36);
+  
+  const result = await sql`
+    INSERT INTO content_drafts (
+      source_query, source_query_id, title, slug, target_keywords,
+      outline, key_points, faq_questions, status
+    ) VALUES (
+      ${data.sourceQuery}, ${data.sourceQueryId || null}, ${data.title}, ${slug},
+      ${JSON.stringify(data.targetKeywords)}, ${JSON.stringify(data.outline)},
+      ${JSON.stringify(data.keyPoints)}, ${JSON.stringify(data.faqQuestions)}, 'brief'
+    )
+    RETURNING *
+  `;
+  return result[0] as ContentDraft;
+}
+
+// Update draft with generated content
+export async function updateDraftContent(id: number, data: {
+  content: string;
+  metaDescription: string;
+  excerpt: string;
+}) {
+  const result = await sql`
+    UPDATE content_drafts SET
+      content = ${data.content},
+      meta_description = ${data.metaDescription},
+      excerpt = ${data.excerpt},
+      status = 'draft',
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as ContentDraft;
+}
+
+// Update draft status
+export async function updateDraftStatus(id: number, status: ContentDraft['status'], publishedUrl?: string) {
+  const result = await sql`
+    UPDATE content_drafts SET
+      status = ${status},
+      published_url = COALESCE(${publishedUrl || null}, published_url),
+      published_at = CASE WHEN ${status} = 'published' THEN NOW() ELSE published_at END,
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as ContentDraft;
+}
+
+// Update draft fields
+export async function updateDraft(id: number, data: {
+  title?: string;
+  content?: string;
+  metaDescription?: string;
+  excerpt?: string;
+  targetKeywords?: string[];
+  outline?: string[];
+  keyPoints?: string[];
+  faqQuestions?: string[];
+}) {
+  const result = await sql`
+    UPDATE content_drafts SET
+      title = COALESCE(${data.title || null}, title),
+      content = COALESCE(${data.content || null}, content),
+      meta_description = COALESCE(${data.metaDescription || null}, meta_description),
+      excerpt = COALESCE(${data.excerpt || null}, excerpt),
+      target_keywords = COALESCE(${data.targetKeywords ? JSON.stringify(data.targetKeywords) : null}, target_keywords),
+      outline = COALESCE(${data.outline ? JSON.stringify(data.outline) : null}, outline),
+      key_points = COALESCE(${data.keyPoints ? JSON.stringify(data.keyPoints) : null}, key_points),
+      faq_questions = COALESCE(${data.faqQuestions ? JSON.stringify(data.faqQuestions) : null}, faq_questions),
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as ContentDraft;
+}
+
+// Get all drafts
+export async function getContentDrafts(status?: ContentDraft['status']) {
+  if (status) {
+    return await sql`
+      SELECT * FROM content_drafts WHERE status = ${status} ORDER BY created_at DESC
+    ` as ContentDraft[];
+  }
+  return await sql`
+    SELECT * FROM content_drafts ORDER BY created_at DESC
+  ` as ContentDraft[];
+}
+
+// Get single draft by ID
+export async function getContentDraft(id: number) {
+  const result = await sql`SELECT * FROM content_drafts WHERE id = ${id}`;
+  return result[0] as ContentDraft | undefined;
+}
+
+// Get draft by slug
+export async function getContentDraftBySlug(slug: string) {
+  const result = await sql`SELECT * FROM content_drafts WHERE slug = ${slug}`;
+  return result[0] as ContentDraft | undefined;
+}
+
+// Delete draft
+export async function deleteContentDraft(id: number) {
+  await sql`DELETE FROM content_drafts WHERE id = ${id}`;
+}
+
+// Get published articles (for public site)
+export async function getPublishedArticles(limit = 20) {
+  return await sql`
+    SELECT * FROM content_drafts 
+    WHERE status = 'published' AND content IS NOT NULL
+    ORDER BY published_at DESC
+    LIMIT ${limit}
+  ` as ContentDraft[];
+}
+
+// Get published article by slug (for public site)
+export async function getPublishedArticleBySlug(slug: string) {
+  const result = await sql`
+    SELECT * FROM content_drafts 
+    WHERE slug = ${slug} AND status = 'published'
+  `;
+  return result[0] as ContentDraft | undefined;
+}
+
+// Get content drafts summary
+export async function getContentDraftsSummary() {
+  const stats = await sql`
+    SELECT
+      COUNT(*) as total,
+      COUNT(*) FILTER (WHERE status = 'idea') as ideas,
+      COUNT(*) FILTER (WHERE status = 'brief') as briefs,
+      COUNT(*) FILTER (WHERE status = 'draft') as drafts,
+      COUNT(*) FILTER (WHERE status = 'review') as in_review,
+      COUNT(*) FILTER (WHERE status = 'approved') as approved,
+      COUNT(*) FILTER (WHERE status = 'published') as published
+    FROM content_drafts
+  `;
+
+  return {
+    total: Number(stats[0]?.total) || 0,
+    ideas: Number(stats[0]?.ideas) || 0,
+    briefs: Number(stats[0]?.briefs) || 0,
+    drafts: Number(stats[0]?.drafts) || 0,
+    inReview: Number(stats[0]?.in_review) || 0,
+    approved: Number(stats[0]?.approved) || 0,
+    published: Number(stats[0]?.published) || 0,
+  };
+}

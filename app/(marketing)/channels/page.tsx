@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import { 
   Megaphone,
@@ -46,8 +46,73 @@ import {
   FileSpreadsheet,
   X,
   ArrowRight,
-  Lightbulb
+  Lightbulb,
+  RefreshCw,
+  MousePointerClick,
+  Link2,
+  Hash,
+  Loader2
 } from 'lucide-react';
+
+// Google Ads types
+interface GoogleAdsCampaign {
+  id: number;
+  campaign_id: string;
+  name: string;
+  status: string | null;
+  budget_amount: number | null;
+  spend_mtd: number | null;
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  cost_per_conversion: number | null;
+  ctr: number | null;
+  synced_at: string;
+}
+
+interface GoogleAdsAd {
+  id: number;
+  ad_id: string;
+  campaign_id: string;
+  campaign_name: string | null;
+  ad_group_name: string | null;
+  headlines: string[];
+  descriptions: string[];
+  final_urls: string[];
+  ad_strength: string | null;
+  status: string | null;
+  impressions: number;
+  clicks: number;
+  cost: number;
+}
+
+interface GoogleAdsKeyword {
+  id: number;
+  keyword_id: string;
+  campaign_id: string;
+  campaign_name: string | null;
+  ad_group_name: string | null;
+  keyword_text: string;
+  match_type: string | null;
+  quality_score: number | null;
+  impressions: number;
+  clicks: number;
+  cost: number;
+  conversions: number;
+  ctr: number | null;
+  status: string | null;
+}
+
+interface GoogleAdsSummary {
+  totalCampaigns: number;
+  activeCampaigns: number;
+  totalSpendMtd: number;
+  totalImpressions: number;
+  totalClicks: number;
+  totalConversions: number;
+  lastSyncedAt: string | null;
+  lastSyncStatus: string | null;
+}
 
 interface Channel {
   id: string;
@@ -404,8 +469,75 @@ export default function ChannelsPage() {
   });
   
   // View state
-  const [viewMode, setViewMode] = useState<'planner' | 'all' | 'analyze'>('planner');
+  const [viewMode, setViewMode] = useState<'planner' | 'all' | 'analyze' | 'google-ads'>('planner');
   const [expandedChannel, setExpandedChannel] = useState<string | null>(null);
+  
+  // Google Ads state
+  const [googleAdsData, setGoogleAdsData] = useState<{
+    campaigns: GoogleAdsCampaign[];
+    ads: GoogleAdsAd[];
+    keywords: GoogleAdsKeyword[];
+    summary: GoogleAdsSummary | null;
+  }>({ campaigns: [], ads: [], keywords: [], summary: null });
+  const [googleAdsLoading, setGoogleAdsLoading] = useState(false);
+  const [googleAdsSyncing, setGoogleAdsSyncing] = useState(false);
+  const [googleAdsError, setGoogleAdsError] = useState<string | null>(null);
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
+  const [googleAdsSubView, setGoogleAdsSubView] = useState<'campaigns' | 'ads' | 'keywords'>('campaigns');
+  
+  // Fetch Google Ads data
+  const fetchGoogleAdsData = useCallback(async () => {
+    setGoogleAdsLoading(true);
+    setGoogleAdsError(null);
+    try {
+      const response = await fetch('/api/google-ads/sync?type=all');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch Google Ads data');
+      }
+      const data = await response.json();
+      setGoogleAdsData({
+        campaigns: data.campaigns || [],
+        ads: data.ads || [],
+        keywords: data.keywords || [],
+        summary: data.summary || null,
+      });
+    } catch (error) {
+      setGoogleAdsError(error instanceof Error ? error.message : 'Failed to fetch data');
+    } finally {
+      setGoogleAdsLoading(false);
+    }
+  }, []);
+  
+  // Sync Google Ads data from API
+  const syncGoogleAds = useCallback(async () => {
+    setGoogleAdsSyncing(true);
+    setGoogleAdsError(null);
+    try {
+      const response = await fetch('/api/google-ads/sync', { method: 'POST' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.details || 'Failed to sync Google Ads data');
+      }
+      // Refresh data after sync
+      await fetchGoogleAdsData();
+    } catch (error) {
+      setGoogleAdsError(error instanceof Error ? error.message : 'Failed to sync data');
+    } finally {
+      setGoogleAdsSyncing(false);
+    }
+  }, [fetchGoogleAdsData]);
+  
+  // Load Google Ads data when switching to that tab
+  // TEMPORARILY DISABLED - waiting for Google Ads API approval
+  // useEffect(() => {
+  //   if (viewMode === 'google-ads' && googleAdsData.campaigns.length === 0 && !googleAdsLoading) {
+  //     fetchGoogleAdsData();
+  //   }
+  // }, [viewMode, googleAdsData.campaigns.length, googleAdsLoading, fetchGoogleAdsData]);
+  
+  // Temporary flag - set to true once Google Ads API is approved
+  const googleAdsApiApproved = false;
   
   // File upload state
   const [isDragging, setIsDragging] = useState(false);
@@ -970,6 +1102,15 @@ export default function ChannelsPage() {
             >
               <FileSpreadsheet className="w-4 h-4" />
               Analyze
+            </button>
+            <button
+              onClick={() => setViewMode('google-ads')}
+              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                viewMode === 'google-ads' ? 'bg-accent text-white' : 'bg-surface-elevated text-muted hover:text-foreground'
+              }`}
+            >
+              <Search className="w-4 h-4" />
+              Google Ads
             </button>
           </div>
         </div>
@@ -1545,6 +1686,408 @@ export default function ChannelsPage() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Google Ads View */}
+        {viewMode === 'google-ads' && (
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                  <Search className="w-5 h-5 text-accent" />
+                  Google Ads Dashboard
+                </h2>
+                <p className="text-sm text-muted">
+                  {googleAdsData.summary?.lastSyncedAt 
+                    ? `Last synced: ${new Date(googleAdsData.summary.lastSyncedAt).toLocaleString()}`
+                    : 'Not synced yet'
+                  }
+                </p>
+              </div>
+              {googleAdsApiApproved && (
+                <button
+                  onClick={syncGoogleAds}
+                  disabled={googleAdsSyncing}
+                  className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-hover transition-colors disabled:opacity-50"
+                >
+                  {googleAdsSyncing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-4 h-4" />
+                  )}
+                  {googleAdsSyncing ? 'Syncing...' : 'Sync Now'}
+                </button>
+              )}
+            </div>
+
+            {/* Pending Approval Message */}
+            {!googleAdsApiApproved && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-8 text-center">
+                <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-yellow-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-yellow-400 mb-2">Pending API Approval</h3>
+                <p className="text-sm text-muted max-w-md mx-auto mb-4">
+                  Your Google Ads API access request has been submitted and is awaiting approval from Google. 
+                  This typically takes 1-3 business days.
+                </p>
+                <p className="text-xs text-muted">
+                  Once approved, this dashboard will display your campaigns, ads, keywords, and performance metrics.
+                </p>
+              </div>
+            )}
+
+            {/* Error Alert */}
+            {googleAdsApiApproved && googleAdsError && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                <h3 className="font-medium text-red-400 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  Error
+                </h3>
+                <p className="text-sm text-red-400/80 mt-1">{googleAdsError}</p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {googleAdsApiApproved && googleAdsLoading && (
+              <div className="bg-surface border border-border rounded-xl p-12 text-center">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-accent mb-4" />
+                <p className="text-muted">Loading Google Ads data...</p>
+              </div>
+            )}
+
+            {/* Summary Cards */}
+            {googleAdsApiApproved && !googleAdsLoading && googleAdsData.summary && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-surface border border-border rounded-xl p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    ${(googleAdsData.summary.totalSpendMtd || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-sm text-muted">Spend (MTD)</div>
+                </div>
+                <div className="bg-surface border border-border rounded-xl p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {googleAdsData.summary.activeCampaigns}
+                  </div>
+                  <div className="text-sm text-muted">Active Campaigns</div>
+                </div>
+                <div className="bg-surface border border-border rounded-xl p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {(googleAdsData.summary.totalClicks || 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted">Clicks</div>
+                </div>
+                <div className="bg-surface border border-border rounded-xl p-4">
+                  <div className="text-2xl font-bold text-foreground">
+                    {(googleAdsData.summary.totalConversions || 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                  </div>
+                  <div className="text-sm text-muted">Conversions</div>
+                </div>
+              </div>
+            )}
+
+            {/* Sub-navigation */}
+            {googleAdsApiApproved && !googleAdsLoading && (
+              <div className="flex items-center gap-2 border-b border-border pb-2">
+                <button
+                  onClick={() => setGoogleAdsSubView('campaigns')}
+                  className={`px-4 py-2 text-sm rounded-t-lg transition-colors ${
+                    googleAdsSubView === 'campaigns' 
+                      ? 'bg-surface border border-b-0 border-border text-foreground' 
+                      : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Campaigns ({googleAdsData.campaigns.length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setGoogleAdsSubView('ads')}
+                  className={`px-4 py-2 text-sm rounded-t-lg transition-colors ${
+                    googleAdsSubView === 'ads' 
+                      ? 'bg-surface border border-b-0 border-border text-foreground' 
+                      : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Ads ({googleAdsData.ads.length})
+                  </span>
+                </button>
+                <button
+                  onClick={() => setGoogleAdsSubView('keywords')}
+                  className={`px-4 py-2 text-sm rounded-t-lg transition-colors ${
+                    googleAdsSubView === 'keywords' 
+                      ? 'bg-surface border border-b-0 border-border text-foreground' 
+                      : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Hash className="w-4 h-4" />
+                    Keywords ({googleAdsData.keywords.length})
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Campaigns Table */}
+            {googleAdsApiApproved && !googleAdsLoading && googleAdsSubView === 'campaigns' && (
+              <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                {googleAdsData.campaigns.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Search className="w-12 h-12 mx-auto text-muted/30 mb-4" />
+                    <p className="text-muted">No campaigns found</p>
+                    <p className="text-sm text-muted/70 mt-1">Click &quot;Sync Now&quot; to fetch data from Google Ads</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border bg-surface-elevated">
+                          <th className="px-4 py-3 text-left text-muted font-medium">Campaign</th>
+                          <th className="px-4 py-3 text-left text-muted font-medium">Status</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Budget</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Spend (MTD)</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Impr.</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Clicks</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">CTR</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Conv.</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">CPA</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {googleAdsData.campaigns.map(campaign => (
+                          <tr 
+                            key={campaign.campaign_id}
+                            className="hover:bg-surface-elevated/50 cursor-pointer"
+                            onClick={() => setExpandedCampaign(expandedCampaign === campaign.campaign_id ? null : campaign.campaign_id)}
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <ChevronDown className={`w-4 h-4 text-muted transition-transform ${expandedCampaign === campaign.campaign_id ? 'rotate-180' : ''}`} />
+                                <span className="font-medium text-foreground">{campaign.name}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                campaign.status === 'ENABLED' 
+                                  ? 'bg-green-500/20 text-green-400' 
+                                  : 'bg-gray-500/20 text-gray-400'
+                              }`}>
+                                {campaign.status || 'Unknown'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              ${(campaign.budget_amount || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground font-medium">
+                              ${(campaign.spend_mtd || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-4 py-3 text-right text-muted">
+                              {campaign.impressions.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              {campaign.clicks.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-right text-muted">
+                              {((campaign.ctr || 0) * 100).toFixed(2)}%
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              {campaign.conversions.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </td>
+                            <td className="px-4 py-3 text-right text-muted">
+                              {campaign.conversions > 0 
+                                ? `$${((campaign.spend_mtd || 0) / campaign.conversions).toFixed(2)}`
+                                : '-'
+                              }
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Ads View */}
+            {googleAdsApiApproved && !googleAdsLoading && googleAdsSubView === 'ads' && (
+              <div className="space-y-4">
+                {googleAdsData.ads.length === 0 ? (
+                  <div className="bg-surface border border-border rounded-xl p-8 text-center">
+                    <FileText className="w-12 h-12 mx-auto text-muted/30 mb-4" />
+                    <p className="text-muted">No ads found</p>
+                    <p className="text-sm text-muted/70 mt-1">Click &quot;Sync Now&quot; to fetch data from Google Ads</p>
+                  </div>
+                ) : (
+                  googleAdsData.ads.map(ad => (
+                    <div key={ad.ad_id} className="bg-surface border border-border rounded-xl p-4">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-medium text-foreground">{ad.campaign_name || 'Unknown Campaign'}</h4>
+                          <p className="text-sm text-muted">{ad.ad_group_name || 'Unknown Ad Group'}</p>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="text-right">
+                            <div className="text-foreground font-medium">{ad.clicks.toLocaleString()} clicks</div>
+                            <div className="text-muted">{ad.impressions.toLocaleString()} impr.</div>
+                          </div>
+                          {ad.ad_strength && (
+                            <span className={`px-2 py-0.5 text-xs rounded-full ${
+                              ad.ad_strength === 'EXCELLENT' ? 'bg-green-500/20 text-green-400' :
+                              ad.ad_strength === 'GOOD' ? 'bg-blue-500/20 text-blue-400' :
+                              ad.ad_strength === 'AVERAGE' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {ad.ad_strength}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Headlines */}
+                      {ad.headlines && ad.headlines.length > 0 && (
+                        <div className="mb-3">
+                          <div className="text-xs text-muted mb-1 flex items-center gap-1">
+                            <FileText className="w-3 h-3" />
+                            Headlines
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {ad.headlines.map((headline, idx) => (
+                              <span key={idx} className="px-2 py-1 bg-surface-elevated text-sm text-foreground rounded">
+                                {headline}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Descriptions */}
+                      {ad.descriptions && ad.descriptions.length > 0 && (
+                        <div className="mb-3">
+                          <div className="text-xs text-muted mb-1 flex items-center gap-1">
+                            <MessageSquare className="w-3 h-3" />
+                            Descriptions
+                          </div>
+                          <div className="space-y-1">
+                            {ad.descriptions.map((desc, idx) => (
+                              <p key={idx} className="text-sm text-foreground/80">{desc}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Landing Pages */}
+                      {ad.final_urls && ad.final_urls.length > 0 && (
+                        <div>
+                          <div className="text-xs text-muted mb-1 flex items-center gap-1">
+                            <Link2 className="w-3 h-3" />
+                            Landing Pages
+                          </div>
+                          <div className="space-y-1">
+                            {ad.final_urls.map((url, idx) => (
+                              <a 
+                                key={idx} 
+                                href={url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-sm text-accent hover:underline"
+                              >
+                                {url}
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Keywords View */}
+            {googleAdsApiApproved && !googleAdsLoading && googleAdsSubView === 'keywords' && (
+              <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                {googleAdsData.keywords.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Hash className="w-12 h-12 mx-auto text-muted/30 mb-4" />
+                    <p className="text-muted">No keywords found</p>
+                    <p className="text-sm text-muted/70 mt-1">Click &quot;Sync Now&quot; to fetch data from Google Ads</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border bg-surface-elevated">
+                          <th className="px-4 py-3 text-left text-muted font-medium">Keyword</th>
+                          <th className="px-4 py-3 text-left text-muted font-medium">Match</th>
+                          <th className="px-4 py-3 text-left text-muted font-medium">Campaign</th>
+                          <th className="px-4 py-3 text-center text-muted font-medium">QS</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Impr.</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Clicks</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">CTR</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Cost</th>
+                          <th className="px-4 py-3 text-right text-muted font-medium">Conv.</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {googleAdsData.keywords.map(keyword => (
+                          <tr key={keyword.keyword_id} className="hover:bg-surface-elevated/50">
+                            <td className="px-4 py-3">
+                              <span className="font-medium text-foreground">{keyword.keyword_text}</span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                keyword.match_type === 'EXACT' ? 'bg-purple-500/20 text-purple-400' :
+                                keyword.match_type === 'PHRASE' ? 'bg-blue-500/20 text-blue-400' :
+                                'bg-gray-500/20 text-gray-400'
+                              }`}>
+                                {keyword.match_type || 'Unknown'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-muted truncate max-w-[200px]">
+                              {keyword.campaign_name || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {keyword.quality_score !== null ? (
+                                <span className={`font-medium ${
+                                  keyword.quality_score >= 7 ? 'text-green-400' :
+                                  keyword.quality_score >= 5 ? 'text-yellow-400' :
+                                  'text-red-400'
+                                }`}>
+                                  {keyword.quality_score}/10
+                                </span>
+                              ) : (
+                                <span className="text-muted">-</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right text-muted">
+                              {keyword.impressions.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              {keyword.clicks.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3 text-right text-muted">
+                              {((keyword.ctr || 0) * 100).toFixed(2)}%
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              ${keyword.cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="px-4 py-3 text-right text-foreground">
+                              {keyword.conversions.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>

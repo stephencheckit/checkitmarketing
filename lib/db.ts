@@ -3820,7 +3820,15 @@ export async function getQueryTrends(days = 30): Promise<QueryTrend[]> {
     
     const query = queryMap.get(queryId)!;
     // Only keep one result per day per query (the most recent)
-    const dateStr = (row.scan_date as Date).toISOString().split('T')[0];
+    // Handle date - might be string or Date from Neon
+    let dateStr: string;
+    if (row.scan_date instanceof Date) {
+      dateStr = row.scan_date.toISOString().split('T')[0];
+    } else if (typeof row.scan_date === 'string') {
+      dateStr = row.scan_date.split('T')[0];
+    } else {
+      dateStr = new Date(row.scan_date as string).toISOString().split('T')[0];
+    }
     if (!query.dataPoints.find(d => d.date === dateStr)) {
       query.dataPoints.push({
         date: dateStr,
@@ -3910,15 +3918,27 @@ export async function getBrandTrends(days = 30) {
     ORDER BY scan_date ASC
   `;
   
-  return results.map(row => ({
-    date: (row.scan_date as Date).toISOString().split('T')[0],
-    totalQueries: Number(row.total_queries),
-    checkitMentions: Number(row.checkit_mentions),
-    mentionRate: Number(row.total_queries) > 0 
-      ? Number(row.checkit_mentions) / Number(row.total_queries) 
-      : 0,
-    avgPosition: row.avg_position ? Number(row.avg_position) : null,
-  }));
+  return results.map(row => {
+    // Handle date - might be string or Date from Neon
+    let dateStr: string;
+    if (row.scan_date instanceof Date) {
+      dateStr = row.scan_date.toISOString().split('T')[0];
+    } else if (typeof row.scan_date === 'string') {
+      dateStr = row.scan_date.split('T')[0];
+    } else {
+      dateStr = new Date(row.scan_date as string).toISOString().split('T')[0];
+    }
+    
+    return {
+      date: dateStr,
+      totalQueries: Number(row.total_queries),
+      checkitMentions: Number(row.checkit_mentions),
+      mentionRate: Number(row.total_queries) > 0 
+        ? Number(row.checkit_mentions) / Number(row.total_queries) 
+        : 0,
+      avgPosition: row.avg_position ? Number(row.avg_position) : null,
+    };
+  });
 }
 
 // Check if we already ran a scan today
@@ -4353,7 +4373,15 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
   // Calculate Checkit consistency (% of days with mentions)
   const dateMap = new Map<string, boolean>();
   for (const row of consistencyData) {
-    const date = (row.scan_date as Date).toISOString().split('T')[0];
+    // Handle date - might be string or Date from Neon
+    let date: string;
+    if (row.scan_date instanceof Date) {
+      date = row.scan_date.toISOString().split('T')[0];
+    } else if (typeof row.scan_date === 'string') {
+      date = row.scan_date.split('T')[0];
+    } else {
+      date = new Date(row.scan_date as string).toISOString().split('T')[0];
+    }
     if (row.checkit_mentioned) dateMap.set(date, true);
     else if (!dateMap.has(date)) dateMap.set(date, false);
   }
@@ -4392,7 +4420,15 @@ export async function calculateAISearchProfileScores(): Promise<AISearchProfileS
     // Calculate competitor consistency
     const compDateMap = new Map<string, boolean>();
     for (const row of consistencyData) {
-      const date = (row.scan_date as Date).toISOString().split('T')[0];
+      // Handle date - might be string or Date from Neon
+      let date: string;
+      if (row.scan_date instanceof Date) {
+        date = row.scan_date.toISOString().split('T')[0];
+      } else if (typeof row.scan_date === 'string') {
+        date = row.scan_date.split('T')[0];
+      } else {
+        date = new Date(row.scan_date as string).toISOString().split('T')[0];
+      }
       const competitors = row.competitors_mentioned as string[] || [];
       if (competitors.includes(brand)) compDateMap.set(date, true);
       else if (!compDateMap.has(date)) compDateMap.set(date, false);

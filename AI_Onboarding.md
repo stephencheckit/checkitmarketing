@@ -344,6 +344,34 @@ RESEND_API_KEY=re_...                # Resend API key for demo request email not
 
 ## Deploy Log
 
+### 2026-01-30 (Evening) - AI Search Monitor Enhancements
+**Commits:** Multiple commits improving AI Search Monitor UX and accuracy
+
+**Improvements:**
+- **Query Discovery System** - Multiple sources for finding relevant queries:
+  - 18 default conversational queries (rewritten from keyword-style)
+  - AI recommendations based on content gaps
+  - Search Console traffic conversion
+  - Filter to exclude branded queries (skews results)
+- **Dashboard Improvements**:
+  - Checkit hero card with clickable stats
+  - Stats navigate to relevant tabs (Queries → Results → Gaps)
+  - Last scan time shown near "Run Scan" button
+- **Tab Reordering** - Logical flow: Overview → Queries → Results → Trends → Gaps → Content → Ideas → Scores
+- **Scoring Recalibration** - B2B niche scoring (30% mention rate now scores well, not punishing)
+- **Sample Data Exclusion** - Dashboard/scores exclude seeded sample data, only real scans count
+- **Historical Data Seeder** - 14 days of sample data for chart visualization
+- **Multi-Model Support Ready** - OpenRouter integration prepared (GPT-4o, Claude, Gemini, Llama)
+- **Daily Cron Changed** - Now runs at 8 AM EST (1 PM UTC) instead of 6 AM UTC
+- **Auto Query Discovery** - Daily cron adds up to 5 new queries automatically
+
+**Bug Fixes:**
+- Fixed JSONB array queries (unnest → jsonb_array_elements_text)
+- Fixed getSearchConsoleQueries missing siteUrl parameter
+- Fixed sample data inflating mention rate calculations
+
+---
+
 ### 2026-01-30 - AI Search Monitor & Automated Content Pipeline
 **Commit:** `203f19d` - Add AI Search Monitor with automated content pipeline
 

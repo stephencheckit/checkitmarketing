@@ -344,6 +344,28 @@ RESEND_API_KEY=re_...                # Resend API key for demo request email not
 
 ## Deploy Log
 
+### 2026-01-31 - Fix Daily Content Cron Timeout
+**Commit:** `83e343e` - Reduce daily content articles from 10 to 3 to avoid Vercel timeout
+
+**Problem:**
+- Cron job timed out after 300 seconds (Vercel limit)
+- Pipeline was trying to: scan 26 queries + discover new queries + generate up to 10 articles
+- Each article requires 2 OpenAI calls (brief + full article generation)
+- Total potential: 51 OpenAI calls in one run
+
+**Evidence:**
+- Jan 31 run created only 2 articles before timeout
+- Article ID 13: Successfully published "How to Digitize Paper Food Safety Checklists"
+- Article ID 14: Stuck in "brief" status with no content (failed during article generation)
+- 7 content gaps remain unprocessed
+
+**Fix:**
+- Reduced articles per run from 10 to 3
+- Pipeline now stays under 5 minute limit
+- Still produces 21 articles/week (3/day × 7 days)
+
+---
+
 ### 2026-01-30 - Nav Cleanup: Microsite & Inbox
 **Commits:** `5e877b3`, `82fbde2`
 

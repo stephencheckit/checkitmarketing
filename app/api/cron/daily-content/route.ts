@@ -192,11 +192,12 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================
-    // STEP 4: Generate & Publish Content (max 10/day)
+    // STEP 4: Generate & Publish Content (max 3/day)
+    // Reduced from 10 to avoid Vercel 300s timeout
     // ============================================
-    log.push('Step 4: Generating content for gaps (max 10)...');
+    log.push('Step 4: Generating content for gaps (max 3)...');
     
-    const toProcess = gaps.slice(0, 10);
+    const toProcess = gaps.slice(0, 3);
     let articlesCreated = 0;
 
     for (const gap of toProcess) {

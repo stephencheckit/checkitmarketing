@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { FileText, ArrowRight, Calendar, Clock } from 'lucide-react';
 import { getPublishedArticles } from '@/lib/db';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic'; // Always fetch fresh content from DB
 
 export default async function ResourcesPage() {
   const articles = await getPublishedArticles(50);

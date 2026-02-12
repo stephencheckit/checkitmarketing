@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, Calendar, Tag, ArrowRight } from 'lucide-react';
 import { getPublishedArticleBySlug, getPublishedArticles } from '@/lib/db';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = 'force-dynamic'; // Always fetch fresh content from DB
 
 interface PageProps {
   params: Promise<{ slug: string }>;

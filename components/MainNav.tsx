@@ -32,6 +32,7 @@ import {
   Briefcase,
   Radio,
   Swords,
+  MousePointerClick,
 } from 'lucide-react';
 
 // Reddit icon component
@@ -100,6 +101,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
+    { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },
     { href: '/industries', label: 'Microsite', icon: Globe, external: true },
   ];
 

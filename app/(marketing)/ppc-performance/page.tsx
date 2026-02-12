@@ -26,6 +26,10 @@ import {
   Eye,
   EyeOff,
   MousePointerClick,
+  FileText,
+  Globe,
+  ArrowUpRight,
+  Circle,
 } from 'lucide-react';
 
 interface PpcLead {
@@ -60,6 +64,54 @@ interface PpcStats {
   byWeek: Array<{ week: string; source: string; count: string }>;
   topCompanies: Array<{ company: string; source: string; lead_count: string; first_lead: string; latest_lead: string }>;
 }
+
+interface PageStats {
+  source: string;
+  listing: string;
+  category_name: string;
+  page_url: string;
+  total_leads: string;
+  new_leads: string;
+  contacted_leads: string;
+  qualified_leads: string;
+  converted_leads: string;
+  first_lead: string;
+  last_lead: string;
+}
+
+// Static registry of all landing pages (so pages with 0 leads still show)
+const ALL_LANDING_PAGES: Array<{
+  source: string;
+  listing: string;
+  category: string;
+  path: string;
+}> = [
+  // Capterra pages
+  { source: 'capterra', listing: 'iot', category: 'IoT Software', path: '/capterra/iot' },
+  { source: 'capterra', listing: 'iot-analytics', category: 'IoT Analytics Software', path: '/capterra/iot-analytics' },
+  { source: 'capterra', listing: 'asset-tracking', category: 'Asset Tracking Software', path: '/capterra/asset-tracking' },
+  { source: 'capterra', listing: 'audit', category: 'Audit Software', path: '/capterra/audit' },
+  { source: 'capterra', listing: 'business-performance-management', category: 'Business Performance Management', path: '/capterra/business-performance-management' },
+  { source: 'capterra', listing: 'calibration-management', category: 'Calibration Management', path: '/capterra/calibration-management' },
+  { source: 'capterra', listing: 'compliance', category: 'Compliance Software', path: '/capterra/compliance' },
+  { source: 'capterra', listing: 'eam', category: 'Enterprise Asset Management', path: '/capterra/eam' },
+  { source: 'capterra', listing: 'ehs-management', category: 'EHS Management', path: '/capterra/ehs-management' },
+  { source: 'capterra', listing: 'environmental', category: 'Environmental Software', path: '/capterra/environmental' },
+  { source: 'capterra', listing: 'fixed-asset-management', category: 'Fixed Asset Management', path: '/capterra/fixed-asset-management' },
+  { source: 'capterra', listing: 'food-service-management', category: 'Food Service Management', path: '/capterra/food-service-management' },
+  { source: 'capterra', listing: 'forms-automation', category: 'Forms Automation', path: '/capterra/forms-automation' },
+  { source: 'capterra', listing: 'grc', category: 'Governance, Risk & Compliance', path: '/capterra/grc' },
+  { source: 'capterra', listing: 'inspection', category: 'Inspection Software', path: '/capterra/inspection' },
+  { source: 'capterra', listing: 'nursing-home', category: 'Nursing Home Software', path: '/capterra/nursing-home' },
+  { source: 'capterra', listing: 'quality-management', category: 'Quality Management', path: '/capterra/quality-management' },
+  { source: 'capterra', listing: 'risk-management', category: 'Risk Management', path: '/capterra/risk-management' },
+  { source: 'capterra', listing: 'training', category: 'Training Software', path: '/capterra/training' },
+  { source: 'capterra', listing: 'workforce-management', category: 'Workforce Management', path: '/capterra/workforce-management' },
+  // Google Ads pages
+  { source: 'google', listing: 'temperature-monitoring', category: 'Temperature Monitoring', path: '/google/temperature-monitoring' },
+  // LinkedIn pages
+  { source: 'linkedin', listing: 'nhs-pharmacy', category: 'NHS Pharmacy', path: '/linkedin/nhs-pharmacy' },
+];
 
 const sourceConfig: Record<string, { label: string; color: string; bgColor: string; icon: React.ComponentType<{ className?: string }> }> = {
   capterra: { label: 'Capterra', color: 'text-blue-400', bgColor: 'bg-blue-500/20', icon: Star },
@@ -105,30 +157,35 @@ function timeAgo(dateStr: string) {
 export default function PpcPerformancePage() {
   const [stats, setStats] = useState<PpcStats | null>(null);
   const [leads, setLeads] = useState<PpcLead[]>([]);
+  const [pageStats, setPageStats] = useState<PageStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'overview' | 'leads' | 'sources'>('overview');
+  const [viewMode, setViewMode] = useState<'overview' | 'leads' | 'sources' | 'pages'>('overview');
   const [daysBack, setDaysBack] = useState(90);
   const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [expandedLead, setExpandedLead] = useState<number | null>(null);
   const [updatingLead, setUpdatingLead] = useState<number | null>(null);
+  const [pagesSortBy, setPagesSortBy] = useState<'leads' | 'recent' | 'name'>('leads');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [statsRes, leadsRes] = await Promise.all([
+      const [statsRes, leadsRes, pagesRes] = await Promise.all([
         fetch(`/api/ppc-leads?view=stats&days=${daysBack}`),
         fetch(`/api/ppc-leads?view=leads&days=${daysBack}${sourceFilter ? `&source=${sourceFilter}` : ''}`),
+        fetch('/api/ppc-leads?view=pages'),
       ]);
 
       if (!statsRes.ok || !leadsRes.ok) throw new Error('Failed to fetch data');
 
       const statsData = await statsRes.json();
       const leadsData = await leadsRes.json();
+      const pagesData = pagesRes.ok ? await pagesRes.json() : { pages: [] };
 
       setStats(statsData);
       setLeads(leadsData.leads || []);
+      setPageStats(pagesData.pages || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -314,6 +371,15 @@ export default function PpcPerformancePage() {
             >
               <TrendingUp className="w-3.5 h-3.5" />
               By Source
+            </button>
+            <button
+              onClick={() => setViewMode('pages')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                viewMode === 'pages' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Landing Pages
             </button>
           </div>
         </div>
@@ -741,6 +807,257 @@ export default function PpcPerformancePage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Landing Pages View */}
+        {!loading && viewMode === 'pages' && (
+          <div className="space-y-4">
+            {/* Sort Controls */}
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted">
+                {ALL_LANDING_PAGES.length} landing pages across {Object.keys(sourceConfig).length} sources
+              </div>
+              <div className="flex items-center gap-1 bg-surface border border-border rounded-lg p-1">
+                <button
+                  onClick={() => setPagesSortBy('leads')}
+                  className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    pagesSortBy === 'leads' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  By Leads
+                </button>
+                <button
+                  onClick={() => setPagesSortBy('recent')}
+                  className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    pagesSortBy === 'recent' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  Most Recent
+                </button>
+                <button
+                  onClick={() => setPagesSortBy('name')}
+                  className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                    pagesSortBy === 'name' ? 'bg-accent text-white' : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  A → Z
+                </button>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-surface border border-border rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-surface-elevated">
+                      <th className="text-left px-4 py-3 font-medium text-muted">Page</th>
+                      <th className="text-left px-4 py-3 font-medium text-muted">Source</th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">Total Leads</th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">
+                        <span className="hidden md:inline">New</span>
+                        <span className="md:hidden">N</span>
+                      </th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">
+                        <span className="hidden md:inline">Contacted</span>
+                        <span className="md:hidden">C</span>
+                      </th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">
+                        <span className="hidden md:inline">Qualified</span>
+                        <span className="md:hidden">Q</span>
+                      </th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">
+                        <span className="hidden md:inline">Converted</span>
+                        <span className="md:hidden">W</span>
+                      </th>
+                      <th className="text-left px-4 py-3 font-medium text-muted">Last Lead</th>
+                      <th className="text-center px-4 py-3 font-medium text-muted">Link</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      // Merge static page list with actual lead data
+                      const merged = ALL_LANDING_PAGES
+                        .filter(p => !sourceFilter || p.source === sourceFilter)
+                        .map(page => {
+                          // Match by source + listing
+                          const data = pageStats.find(
+                            ps => ps.source === page.source && ps.listing === page.listing
+                          );
+                          return {
+                            ...page,
+                            totalLeads: parseInt(data?.total_leads || '0'),
+                            newLeads: parseInt(data?.new_leads || '0'),
+                            contactedLeads: parseInt(data?.contacted_leads || '0'),
+                            qualifiedLeads: parseInt(data?.qualified_leads || '0'),
+                            convertedLeads: parseInt(data?.converted_leads || '0'),
+                            lastLead: data?.last_lead || null,
+                            firstLead: data?.first_lead || null,
+                          };
+                        });
+
+                      // Sort
+                      if (pagesSortBy === 'leads') {
+                        merged.sort((a, b) => b.totalLeads - a.totalLeads);
+                      } else if (pagesSortBy === 'recent') {
+                        merged.sort((a, b) => {
+                          if (!a.lastLead && !b.lastLead) return 0;
+                          if (!a.lastLead) return 1;
+                          if (!b.lastLead) return -1;
+                          return new Date(b.lastLead).getTime() - new Date(a.lastLead).getTime();
+                        });
+                      } else {
+                        merged.sort((a, b) => a.category.localeCompare(b.category));
+                      }
+
+                      return merged.map((page, idx) => {
+                        const info = getSourceInfo(page.source);
+                        const Icon = info.icon;
+                        const hasLeads = page.totalLeads > 0;
+
+                        return (
+                          <tr
+                            key={`${page.source}-${page.listing}`}
+                            className={`border-b border-border/50 transition-colors hover:bg-surface-elevated/50 ${
+                              !hasLeads ? 'opacity-60' : ''
+                            }`}
+                          >
+                            {/* Page Name */}
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-foreground">{page.category}</span>
+                              </div>
+                              <div className="text-xs text-muted mt-0.5">{page.path}</div>
+                            </td>
+
+                            {/* Source */}
+                            <td className="px-4 py-3">
+                              <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs ${info.bgColor} ${info.color}`}>
+                                <Icon className="w-3 h-3" />
+                                {info.label}
+                              </div>
+                            </td>
+
+                            {/* Total Leads */}
+                            <td className="px-4 py-3 text-center">
+                              <span className={`text-lg font-bold ${hasLeads ? 'text-foreground' : 'text-muted/40'}`}>
+                                {page.totalLeads}
+                              </span>
+                            </td>
+
+                            {/* New */}
+                            <td className="px-4 py-3 text-center">
+                              {page.newLeads > 0 ? (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 text-xs font-medium">
+                                  {page.newLeads}
+                                </span>
+                              ) : (
+                                <span className="text-muted/30">—</span>
+                              )}
+                            </td>
+
+                            {/* Contacted */}
+                            <td className="px-4 py-3 text-center">
+                              {page.contactedLeads > 0 ? (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-medium">
+                                  {page.contactedLeads}
+                                </span>
+                              ) : (
+                                <span className="text-muted/30">—</span>
+                              )}
+                            </td>
+
+                            {/* Qualified */}
+                            <td className="px-4 py-3 text-center">
+                              {page.qualifiedLeads > 0 ? (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                                  {page.qualifiedLeads}
+                                </span>
+                              ) : (
+                                <span className="text-muted/30">—</span>
+                              )}
+                            </td>
+
+                            {/* Converted */}
+                            <td className="px-4 py-3 text-center">
+                              {page.convertedLeads > 0 ? (
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium">
+                                  {page.convertedLeads}
+                                </span>
+                              ) : (
+                                <span className="text-muted/30">—</span>
+                              )}
+                            </td>
+
+                            {/* Last Lead */}
+                            <td className="px-4 py-3">
+                              {page.lastLead ? (
+                                <div>
+                                  <div className="text-foreground text-xs">{formatDateShort(page.lastLead)}</div>
+                                  <div className="text-muted text-xs">{timeAgo(page.lastLead)}</div>
+                                </div>
+                              ) : (
+                                <span className="text-muted/30 text-xs">No leads yet</span>
+                              )}
+                            </td>
+
+                            {/* Link */}
+                            <td className="px-4 py-3 text-center">
+                              <a
+                                href={`https://checkitv6.com${page.path}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-surface-elevated hover:bg-accent/20 text-muted hover:text-accent transition-colors"
+                                title={`Open ${page.category} landing page`}
+                              >
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                              </a>
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Summary Footer */}
+              <div className="px-4 py-3 bg-surface-elevated border-t border-border flex flex-wrap items-center gap-4 text-xs text-muted">
+                {(() => {
+                  const filtered = ALL_LANDING_PAGES.filter(p => !sourceFilter || p.source === sourceFilter);
+                  const withLeads = filtered.filter(p => 
+                    pageStats.some(ps => ps.source === p.source && ps.listing === p.listing)
+                  ).length;
+                  const totalPageLeads = pageStats
+                    .filter(ps => !sourceFilter || ps.source === sourceFilter)
+                    .reduce((sum, ps) => sum + parseInt(ps.total_leads || '0'), 0);
+                  return (
+                    <>
+                      <span>{filtered.length} pages total</span>
+                      <span className="text-muted/30">|</span>
+                      <span>{withLeads} with leads</span>
+                      <span className="text-muted/30">|</span>
+                      <span>{filtered.length - withLeads} awaiting first lead</span>
+                      <span className="text-muted/30">|</span>
+                      <span className="text-foreground font-medium">{totalPageLeads} total leads</span>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* No GA Warning */}
+            <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-yellow-400">No page view analytics</p>
+                <p className="text-xs text-muted mt-1">
+                  Google Analytics is not installed. Lead counts are tracked but page views, bounce rate, and traffic volume are not available.
+                  Add a GA4 Measurement ID to enable full funnel tracking.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>

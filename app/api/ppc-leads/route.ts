@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPpcLeads, getPpcLeadStats, updatePpcLeadStatus, initializePpcLeadsTable } from '@/lib/db';
+import { getPpcLeads, getPpcLeadStats, getPpcPageStats, updatePpcLeadStatus, initializePpcLeadsTable } from '@/lib/db';
 
 let initialized = false;
 
@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
     if (view === 'stats') {
       const stats = await getPpcLeadStats(daysBack);
       return NextResponse.json(stats);
+    }
+
+    if (view === 'pages') {
+      const pages = await getPpcPageStats();
+      return NextResponse.json({ pages });
     }
 
     // view === 'leads'

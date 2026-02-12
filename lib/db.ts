@@ -4792,6 +4792,28 @@ export async function getPpcLeadStats(daysBack: number = 90) {
   };
 }
 
+// Get per-page PPC lead stats (for landing pages table)
+export async function getPpcPageStats() {
+  const result = await sql`
+    SELECT 
+      source,
+      listing,
+      category_name,
+      page_url,
+      COUNT(*) as total_leads,
+      COUNT(*) FILTER (WHERE status = 'new') as new_leads,
+      COUNT(*) FILTER (WHERE status = 'contacted') as contacted_leads,
+      COUNT(*) FILTER (WHERE status = 'qualified') as qualified_leads,
+      COUNT(*) FILTER (WHERE status = 'converted') as converted_leads,
+      MIN(created_at) as first_lead,
+      MAX(created_at) as last_lead
+    FROM ppc_leads
+    GROUP BY source, listing, category_name, page_url
+    ORDER BY total_leads DESC
+  `;
+  return result;
+}
+
 // Update PPC lead status
 export async function updatePpcLeadStatus(id: number, status: string, notes?: string) {
   const result = await sql`

@@ -26,8 +26,8 @@ interface HubSpotContactData {
 
 /**
  * Create or update a contact in HubSpot CRM.
- * Tries to create first. If the email already exists (409),
- * searches for the existing contact and updates it.
+ * Searches for existing contact first, then creates or updates accordingly.
+ * Also creates a timeline Note so the submission is visible on the contact record.
  */
 export async function syncContactToHubSpot(data: HubSpotContactData): Promise<{ success: boolean; contactId?: string; error?: string }> {
   const token = getToken();
@@ -36,84 +36,132 @@ export async function syncContactToHubSpot(data: HubSpotContactData): Promise<{ 
     return { success: false, error: 'No token configured' };
   }
 
-  const properties: Record<string, string> = {
-    firstname: data.firstName,
-    lastname: data.lastName,
-    email: data.email,
-    company: data.company,
-    lifecyclestage: 'lead',
-    hs_lead_status: 'NEW',
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
   };
 
-  if (data.phone) properties.phone = data.phone;
-  if (data.jobTitle) properties.jobtitle = data.jobTitle;
-
-  // UTM fields (standard HubSpot marketing properties)
-  if (data.utmSource) properties.utm_source = data.utmSource;
-  if (data.utmMedium) properties.utm_medium = data.utmMedium;
-  if (data.utmCampaign) properties.utm_campaign = data.utmCampaign;
-  if (data.utmContent) properties.utm_content = data.utmContent;
-  if (data.utmTerm) properties.utm_term = data.utmTerm;
-
-  // Attribution in the message/notes field
-  const attribution = [
-    `PPC Lead — ${data.source} / ${data.listing}`,
+  // Attribution note body
+  const sourceLabel = data.source === 'linkedin' ? 'LinkedIn' : data.source === 'capterra' ? 'Capterra' : data.source === 'google' ? 'Google Ads' : data.source;
+  const noteBody = [
+    `PPC Lead Submission — ${sourceLabel}`,
     `Category: ${data.categoryName}`,
+    `Listing: ${data.listing}`,
     `Page: ${data.pageUrl}`,
     data.utmCampaign ? `Campaign: ${data.utmCampaign}` : '',
+    data.utmSource ? `UTM Source: ${data.utmSource}` : '',
+    data.utmMedium ? `UTM Medium: ${data.utmMedium}` : '',
+    `Submitted: ${new Date().toISOString()}`,
   ].filter(Boolean).join('\n');
-  properties.message = attribution;
 
   try {
-    // Try to create the contact
-    const createRes = await fetch(`${HUBSPOT_API}/crm/v3/objects/contacts`, {
+    // Step 1: Check if contact already exists
+    const existingId = await findContactByEmail(token, data.email);
+
+    let contactId: string;
+
+    if (existingId) {
+      // Step 2a: Update existing contact (skip lifecyclestage — HubSpot won't allow backwards moves)
+      const updateProps: Record<string, string> = {
+        hs_lead_status: 'NEW',
+        message: noteBody,
+      };
+      // Only update name/company if contact doesn't already have them
+      if (data.phone) updateProps.phone = data.phone;
+      if (data.jobTitle) updateProps.jobtitle = data.jobTitle;
+      if (data.company) updateProps.company = data.company;
+
+      const updateRes = await fetch(`${HUBSPOT_API}/crm/v3/objects/contacts/${existingId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ properties: updateProps }),
+      });
+
+      if (!updateRes.ok) {
+        const errText = await updateRes.text();
+        console.error(`HubSpot: Failed to update contact ${existingId}:`, errText);
+        return { success: false, error: `Update failed: ${updateRes.status}` };
+      }
+
+      console.log(`HubSpot: Updated existing contact ${existingId} for ${data.email}`);
+      contactId = existingId;
+    } else {
+      // Step 2b: Create new contact
+      const createProps: Record<string, string> = {
+        firstname: data.firstName,
+        lastname: data.lastName,
+        email: data.email,
+        company: data.company,
+        lifecyclestage: 'lead',
+        hs_lead_status: 'NEW',
+        message: noteBody,
+      };
+
+      if (data.phone) createProps.phone = data.phone;
+      if (data.jobTitle) createProps.jobtitle = data.jobTitle;
+      if (data.utmSource) createProps.utm_source = data.utmSource;
+      if (data.utmMedium) createProps.utm_medium = data.utmMedium;
+      if (data.utmCampaign) createProps.utm_campaign = data.utmCampaign;
+      if (data.utmContent) createProps.utm_content = data.utmContent;
+      if (data.utmTerm) createProps.utm_term = data.utmTerm;
+
+      const createRes = await fetch(`${HUBSPOT_API}/crm/v3/objects/contacts`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ properties: createProps }),
+      });
+
+      if (!createRes.ok) {
+        const errText = await createRes.text();
+        console.error(`HubSpot: Failed to create contact:`, errText);
+        return { success: false, error: `Create failed: ${createRes.status}` };
+      }
+
+      const created = await createRes.json();
+      console.log(`HubSpot: Created contact ${created.id} for ${data.email}`);
+      contactId = created.id;
+    }
+
+    // Step 3: Create a Note so the submission shows up in the contact timeline
+    await createNote(token, contactId, noteBody);
+
+    return { success: true, contactId };
+  } catch (err) {
+    console.error('HubSpot sync error:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+}
+
+/** Create a Note on a contact so the PPC submission appears in their timeline */
+async function createNote(token: string, contactId: string, body: string): Promise<void> {
+  try {
+    // Create the note
+    const noteRes = await fetch(`${HUBSPOT_API}/crm/v3/objects/notes`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ properties }),
+      body: JSON.stringify({
+        properties: {
+          hs_timestamp: new Date().toISOString(),
+          hs_note_body: body,
+        },
+        associations: [{
+          to: { id: contactId },
+          types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }],
+        }],
+      }),
     });
 
-    if (createRes.ok) {
-      const created = await createRes.json();
-      console.log(`HubSpot: Created contact ${created.id} for ${data.email}`);
-      return { success: true, contactId: created.id };
+    if (noteRes.ok) {
+      console.log(`HubSpot: Created note on contact ${contactId}`);
+    } else {
+      const errText = await noteRes.text();
+      console.error(`HubSpot: Failed to create note on ${contactId}:`, errText);
     }
-
-    // If contact already exists (409 Conflict), update instead
-    if (createRes.status === 409) {
-      const existingId = await findContactByEmail(token, data.email);
-      if (existingId) {
-        // Don't overwrite lifecyclestage on existing contacts (HubSpot restriction)
-        delete properties.lifecyclestage;
-
-        const updateRes = await fetch(`${HUBSPOT_API}/crm/v3/objects/contacts/${existingId}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ properties }),
-        });
-
-        if (updateRes.ok) {
-          console.log(`HubSpot: Updated existing contact ${existingId} for ${data.email}`);
-          return { success: true, contactId: existingId };
-        }
-
-        const updateErr = await updateRes.text();
-        console.error(`HubSpot: Failed to update contact ${existingId}:`, updateErr);
-        return { success: false, error: `Update failed: ${updateRes.status}` };
-      }
-    }
-
-    const errBody = await createRes.text();
-    console.error(`HubSpot: Failed to create contact:`, errBody);
-    return { success: false, error: `Create failed: ${createRes.status}` };
   } catch (err) {
-    console.error('HubSpot sync error:', err);
-    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    console.error('HubSpot: Note creation error:', err);
   }
 }
 

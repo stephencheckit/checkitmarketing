@@ -329,6 +329,7 @@ SESSION_SECRET=...                   # 32+ char secret for sessions
 OPENAI_API_KEY=...                   # For content ideation
 ACCESS_CODES=CHECKIT2026             # Comma-separated access codes for registration
 RESEND_API_KEY=re_...                # Resend API key for demo request email notifications
+HUBSPOT_ACCESS_TOKEN=pat-...         # HubSpot private app token for CRM contact sync
 ```
 
 ---

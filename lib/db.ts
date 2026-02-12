@@ -4573,3 +4573,232 @@ function calculateBrandScore(brand: string, data: {
     tier,
   };
 }
+
+// ============================================
+// PPC LEADS
+// ============================================
+
+export async function initializePpcLeadsTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS ppc_leads (
+      id SERIAL PRIMARY KEY,
+      first_name VARCHAR(255) NOT NULL,
+      last_name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      company VARCHAR(255) NOT NULL,
+      phone VARCHAR(50),
+      job_title VARCHAR(255),
+      source VARCHAR(100) NOT NULL DEFAULT 'capterra',
+      listing VARCHAR(255),
+      category_name VARCHAR(255),
+      page_url TEXT,
+      referrer TEXT,
+      utm_source VARCHAR(255),
+      utm_medium VARCHAR(255),
+      utm_campaign VARCHAR(255),
+      utm_content VARCHAR(255),
+      utm_term VARCHAR(255),
+      status VARCHAR(50) DEFAULT 'new',
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_ppc_leads_source ON ppc_leads(source)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ppc_leads_listing ON ppc_leads(listing)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_ppc_leads_created ON ppc_leads(created_at)`;
+}
+
+export interface PpcLead {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  company: string;
+  phone: string | null;
+  job_title: string | null;
+  source: string;
+  listing: string | null;
+  category_name: string | null;
+  page_url: string | null;
+  referrer: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export async function createPpcLead(data: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  company: string;
+  phone?: string;
+  jobTitle?: string;
+  source: string;
+  listing: string;
+  categoryName: string;
+  pageUrl: string;
+  referrer: string;
+  utmSource: string;
+  utmMedium: string;
+  utmCampaign: string;
+  utmContent: string;
+  utmTerm: string;
+}): Promise<PpcLead> {
+  const result = await sql`
+    INSERT INTO ppc_leads (
+      first_name, last_name, email, company, phone, job_title,
+      source, listing, category_name, page_url, referrer,
+      utm_source, utm_medium, utm_campaign, utm_content, utm_term
+    )
+    VALUES (
+      ${data.firstName}, ${data.lastName}, ${data.email}, ${data.company},
+      ${data.phone || null}, ${data.jobTitle || null},
+      ${data.source}, ${data.listing}, ${data.categoryName},
+      ${data.pageUrl}, ${data.referrer},
+      ${data.utmSource || null}, ${data.utmMedium || null},
+      ${data.utmCampaign || null}, ${data.utmContent || null}, ${data.utmTerm || null}
+    )
+    RETURNING *
+  `;
+  return result[0] as PpcLead;
+}
+
+// Get all PPC leads with optional filtering
+export async function getPpcLeads(options?: {
+  source?: string;
+  status?: string;
+  daysBack?: number;
+  limit?: number;
+}): Promise<PpcLead[]> {
+  const daysBack = options?.daysBack || 90;
+  const limit = options?.limit || 200;
+  
+  if (options?.source && options?.status) {
+    return await sql`
+      SELECT * FROM ppc_leads
+      WHERE source = ${options.source}
+        AND status = ${options.status}
+        AND created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    ` as PpcLead[];
+  }
+  
+  if (options?.source) {
+    return await sql`
+      SELECT * FROM ppc_leads
+      WHERE source = ${options.source}
+        AND created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    ` as PpcLead[];
+  }
+  
+  if (options?.status) {
+    return await sql`
+      SELECT * FROM ppc_leads
+      WHERE status = ${options.status}
+        AND created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    ` as PpcLead[];
+  }
+  
+  return await sql`
+    SELECT * FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    ORDER BY created_at DESC
+    LIMIT ${limit}
+  ` as PpcLead[];
+}
+
+// Get PPC lead performance stats
+export async function getPpcLeadStats(daysBack: number = 90) {
+  // Total leads by source
+  const bySource = await sql`
+    SELECT source, COUNT(*) as count
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY source
+    ORDER BY count DESC
+  `;
+
+  // Leads by status
+  const byStatus = await sql`
+    SELECT status, COUNT(*) as count
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY status
+    ORDER BY count DESC
+  `;
+
+  // Leads by day (for trend chart)
+  const byDay = await sql`
+    SELECT DATE(created_at) as date, source, COUNT(*) as count
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY DATE(created_at), source
+    ORDER BY date ASC
+  `;
+
+  // Leads by listing/category
+  const byListing = await sql`
+    SELECT source, listing, category_name, COUNT(*) as count
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY source, listing, category_name
+    ORDER BY count DESC
+  `;
+
+  // Leads by week for weekly trend
+  const byWeek = await sql`
+    SELECT DATE_TRUNC('week', created_at) as week, source, COUNT(*) as count
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY DATE_TRUNC('week', created_at), source
+    ORDER BY week ASC
+  `;
+
+  // Top companies
+  const topCompanies = await sql`
+    SELECT company, source, COUNT(*) as lead_count, MIN(created_at) as first_lead, MAX(created_at) as latest_lead
+    FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY company, source
+    ORDER BY lead_count DESC
+    LIMIT 20
+  `;
+
+  // Total count
+  const totalResult = await sql`
+    SELECT COUNT(*) as count FROM ppc_leads
+    WHERE created_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+  `;
+
+  return {
+    total: parseInt(totalResult[0]?.count || '0'),
+    bySource,
+    byStatus,
+    byDay,
+    byListing,
+    byWeek,
+    topCompanies,
+  };
+}
+
+// Update PPC lead status
+export async function updatePpcLeadStatus(id: number, status: string, notes?: string) {
+  const result = await sql`
+    UPDATE ppc_leads
+    SET status = ${status}, notes = COALESCE(${notes || null}, notes)
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as PpcLead | null;
+}

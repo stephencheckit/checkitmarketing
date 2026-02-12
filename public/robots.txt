@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Block PPC landing pages from all crawlers
+Disallow: /capterra/
+Disallow: /linkedin/

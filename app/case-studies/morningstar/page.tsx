@@ -514,7 +514,7 @@ export default function MorningstarCaseStudy() {
           <Quote className="w-16 h-16 text-white/10 mx-auto mb-6" />
           <blockquote className="text-center">
             <p className="text-2xl lg:text-3xl text-white leading-relaxed font-light mb-12">
-              &ldquo;Morningstar exemplifies what&apos;s possible when senior living operators commit to 
+              &ldquo;Morningstar exemplifies what&apos;s possible when senior living operators commit to{' '}
               <strong className="font-bold">digitizing compliance</strong>. Their leadership recognized 
               that resident wellness starts with <strong className="font-bold">excellence at the technology level</strong>—and 
               that paper-based processes simply can&apos;t deliver the consistency and visibility required 

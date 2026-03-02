@@ -1047,17 +1047,38 @@ export default function PpcPerformancePage() {
               </div>
             </div>
 
-            {/* No GA Warning */}
-            <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-yellow-400">No page view analytics</p>
-                <p className="text-xs text-muted mt-1">
-                  Google Analytics is not installed. Lead counts are tracked but page views, bounce rate, and traffic volume are not available.
-                  Add a GA4 Measurement ID to enable full funnel tracking.
-                </p>
+            {/* GA4 Status */}
+            {process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ? (
+              <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-400">GA4 tracking active</p>
+                  <p className="text-xs text-muted mt-1">
+                    Page views, traffic sources, and conversion events are being tracked via Google Analytics.
+                    View detailed traffic analytics in your{' '}
+                    <a
+                      href="https://analytics.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline inline-flex items-center gap-1"
+                    >
+                      GA4 dashboard <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-400">GA4 not configured</p>
+                  <p className="text-xs text-muted mt-1">
+                    Set <code className="px-1.5 py-0.5 bg-surface-elevated rounded text-xs">NEXT_PUBLIC_GA4_MEASUREMENT_ID</code> in
+                    your Vercel environment variables to enable page view and traffic analytics.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

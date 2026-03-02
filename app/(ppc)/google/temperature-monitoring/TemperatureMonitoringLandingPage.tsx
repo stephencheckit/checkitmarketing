@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { trackPpcConversion } from '@/lib/analytics';
 import {
   CheckCircle2,
   Shield,
@@ -33,14 +34,6 @@ interface UtmParams {
   utm_content?: string;
   utm_term?: string;
   gclid?: string;
-}
-
-// ─── Google Ads Conversion Tracking (global type augmentation) ────
-declare global {
-  interface Window {
-    gtag?: (...args: unknown[]) => void;
-    dataLayer?: unknown[];
-  }
 }
 
 // ─── Component ──────────────────────────────────────────────────────
@@ -115,15 +108,13 @@ export default function TemperatureMonitoringLandingPage() {
 
       setSubmitted(true);
 
-      // === FIRE GOOGLE ADS CONVERSION TRACKING ===
-      // Uncomment and set your conversion label when ready:
-      // if (typeof window.gtag === 'function') {
-      //   window.gtag('event', 'conversion', {
-      //     send_to: 'AW-XXXXXXXXX/XXXXXXXXXXXX',
-      //     value: 1.0,
-      //     currency: 'USD',
-      //   });
-      // }
+      // GA4 conversion
+      trackPpcConversion({
+        source: 'google',
+        listing: 'temperature-monitoring',
+        categoryName: 'Temperature Monitoring',
+        company: formData.company,
+      });
     } catch (err) {
       setError(
         err instanceof Error

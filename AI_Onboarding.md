@@ -346,6 +346,15 @@ HUBSPOT_ACCESS_TOKEN=pat-...         # HubSpot private app token for CRM contact
 
 ## Deploy Log
 
+### 2026-02-13 - Fix Morningstar Case Study Typo
+**Commit:** `e70dc32` - Fix missing space in Kit Kyte quote ("todigitizing" → "to digitizing")
+
+**Change:** Added explicit JSX space (`{' '}`) between "to" and the `<strong>digitizing</strong>` tag in Kit Kyte's quote on the Morningstar case study page. JSX whitespace handling was swallowing the space across the line break.
+
+**File:** `app/case-studies/morningstar/page.tsx`
+
+---
+
 ### 2026-01-31 - Fix Daily Content Cron Timeout
 **Commit:** `83e343e` - Reduce daily content articles from 10 to 3 to avoid Vercel timeout
 

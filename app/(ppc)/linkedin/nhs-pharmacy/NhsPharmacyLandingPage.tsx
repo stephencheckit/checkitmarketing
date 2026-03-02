@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { trackPpcConversion } from '@/lib/analytics';
 import {
   CheckCircle2,
   Shield,
@@ -108,11 +109,13 @@ export default function NhsPharmacyLandingPage() {
 
       setSubmitted(true);
 
-      // === FIRE LINKEDIN CONVERSION TRACKING ===
-      // Uncomment and set your conversion_id when ready:
-      // if (typeof window.lintrk === 'function') {
-      //   window.lintrk('track', { conversion_id: XXXXXXX });
-      // }
+      // GA4 conversion
+      trackPpcConversion({
+        source: 'linkedin',
+        listing: 'nhs-pharmacy',
+        categoryName: 'NHS Pharmacy',
+        company: formData.company,
+      });
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to submit. Please try again.'

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { CapterraCategory } from '@/lib/ppc-config';
+import { trackPpcConversion } from '@/lib/analytics';
 import {
   CheckCircle2, Shield, Lock, Loader2,
   Wifi, Smartphone, BarChart3, Bell,
@@ -90,10 +91,13 @@ export default function CapterraLandingPage({ category }: { category: CapterraCa
         });
       }
 
-      // Other pixels (uncomment when ready):
-      // window.gtag?.('event', 'conversion', { send_to: 'AW-XXX/YYY' });
-      // window.lintrk?.('track', { conversion_id: XXXXXXX });
-      // window.fbq?.('track', 'Lead');
+      // GA4 conversion
+      trackPpcConversion({
+        source: 'capterra',
+        listing: category.slug,
+        categoryName: category.category,
+        company: formData.company,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit. Please try again.');
     } finally {

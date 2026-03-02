@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { League_Spartan } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const leagueSpartan = League_Spartan({
   variable: "--font-league-spartan",
@@ -81,6 +82,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <GoogleAnalytics />
         {/* Organization Schema for AI Search */}
         <script
           type="application/ld+json"

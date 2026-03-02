@@ -190,6 +190,8 @@ export default function NurturePage() {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [editingName, setEditingName] = useState(false);
+  const [sendingTest, setSendingTest] = useState<number | null>(null);
+  const [testSentStep, setTestSentStep] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -273,12 +275,46 @@ export default function NurturePage() {
       setShowTextInput(false);
       setExpandedPreviewStep(null);
       setEditingName(false);
+      setSendingTest(null);
+      setTestSentStep(null);
       loadData();
       setTimeout(() => { setFormSuccess(''); setShowForm(false); }, 4000);
     } catch {
       setFormError('Failed to start engagement');
     } finally {
       setEnrolling(false);
+    }
+  };
+
+  const handleTestSend = async (stepNumber: number) => {
+    setSendingTest(stepNumber);
+    setTestSentStep(null);
+    try {
+      const res = await fetch('/api/nurture/test-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          stepNumber,
+          testEmail: form.contactEmail || 'stephen.newman@checkit.net',
+          contactName: form.contactName,
+          contactEmail: form.contactEmail,
+          companyName: form.companyName,
+          vertical: form.vertical,
+          accountContext: form.accountContext,
+          lossReason: form.lossReason,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFormError(data.error || 'Failed to send test');
+      } else {
+        setTestSentStep(stepNumber);
+        setTimeout(() => setTestSentStep(null), 5000);
+      }
+    } catch {
+      setFormError('Failed to send test email');
+    } finally {
+      setSendingTest(null);
     }
   };
 
@@ -590,6 +626,29 @@ export default function NurturePage() {
                                       Bracketed sections will be personalized using your account context and relevant content for {form.contactName || 'this contact'}&apos;s vertical.
                                     </p>
                                   </div>
+                                )}
+                              </div>
+                              <div className="px-4 py-2.5 border-t border-border bg-surface flex items-center justify-between">
+                                <p className="text-xs text-muted">See the actual personalized email in your inbox</p>
+                                {testSentStep === step.step_number ? (
+                                  <span className="flex items-center gap-1.5 text-xs text-green-400">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    Sent — check your inbox
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); handleTestSend(step.step_number); }}
+                                    disabled={sendingTest !== null}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg cursor-pointer disabled:opacity-50 transition-colors"
+                                  >
+                                    {sendingTest === step.step_number ? (
+                                      <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                      <Mail className="w-3 h-3" />
+                                    )}
+                                    Send test to me
+                                  </button>
                                 )}
                               </div>
                             </div>

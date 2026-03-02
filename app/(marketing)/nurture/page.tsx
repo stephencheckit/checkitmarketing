@@ -73,6 +73,7 @@ interface SendDetail {
   id: number;
   step_id: number;
   subject_sent: string | null;
+  body_sent: string | null;
   sent_at: string;
   events: Array<{
     event_type: string;
@@ -251,6 +252,7 @@ export default function NurturePage() {
     setFormError('');
     setFormSuccess('');
     setEnrolling(true);
+    let newId: number | null = null;
     try {
       const payload: Record<string, string> = { ...form };
       if (scheduleMode === 'later' && scheduledDate) {
@@ -267,7 +269,7 @@ export default function NurturePage() {
         setEnrolling(false);
         return;
       }
-      // Clean exit: close form, reset state, highlight the new row
+      newId = data.enrollment?.id || null;
       setShowForm(false);
       setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', accountContext: '' });
       setEnrollStep(1);
@@ -279,15 +281,15 @@ export default function NurturePage() {
       setEditingName(false);
       setSendingTest(null);
       setTestSentStep(null);
-      setEnrolling(false);
       await loadData();
-      if (data.enrollment?.id) {
-        setHighlightedEnrollmentId(data.enrollment.id);
-        setTimeout(() => setHighlightedEnrollmentId(null), 5000);
-      }
     } catch {
       setFormError('Failed to start engagement');
+    } finally {
       setEnrolling(false);
+      if (newId) {
+        setHighlightedEnrollmentId(newId);
+        setTimeout(() => setHighlightedEnrollmentId(null), 5000);
+      }
     }
   };
 
@@ -390,6 +392,20 @@ export default function NurturePage() {
 
   const isPaused = settings?.global_pause === 'true';
 
+  if (enrolling) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-6">
+            <Loader2 className="w-6 h-6 animate-spin text-accent" />
+          </div>
+          <p className="text-lg font-medium text-foreground">Adding to engagement track</p>
+          <p className="text-sm text-muted mt-2">Setting up the email sequence...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
@@ -447,14 +463,6 @@ export default function NurturePage() {
       {/* Enrollment Form — Two Steps */}
       {showForm && (
         <div className="bg-surface-elevated border border-border rounded-xl p-6 mb-8">
-          {enrolling ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-accent mb-4" />
-              <p className="text-sm font-medium text-foreground">Adding to engagement track...</p>
-              <p className="text-xs text-muted mt-1">Setting up the email sequence</p>
-            </div>
-          ) : (
-          <>
           {/* Step indicator */}
           <div className="flex items-center gap-3 mb-6">
             <div className={`flex items-center gap-2 text-sm font-medium ${enrollStep === 1 ? 'text-accent' : 'text-muted'}`}>
@@ -676,8 +684,6 @@ export default function NurturePage() {
                 </button>
               </div>
             </div>
-          )}
-          </>
           )}
         </div>
       )}
@@ -1290,20 +1296,45 @@ function EnrollmentRow({
 function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
   const { enrollment, sends, steps } = detail;
   const enrolledDate = new Date(enrollment.enrolled_at);
+  const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [previewCache, setPreviewCache] = useState<Record<number, { subject: string; body: string }>>({});
+  const [generatingStep, setGeneratingStep] = useState<number | null>(null);
+
+  const loadEmailPreview = async (stepNumber: number) => {
+    setSelectedStep(stepNumber);
+    const matchingSend = sends.find((s) => {
+      const step = steps.find((st) => st.id === s.step_id);
+      return step?.step_number === stepNumber;
+    });
+    if (matchingSend?.subject_sent) return;
+    if (previewCache[stepNumber]) return;
+
+    setGeneratingStep(stepNumber);
+    try {
+      const res = await fetch('/api/nurture/generate-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrollmentId: enrollment.id, stepNumber }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPreviewCache((prev) => ({ ...prev, [stepNumber]: { subject: data.subject, body: data.body } }));
+      }
+    } catch {
+      // silently fail — user can retry by clicking again
+    } finally {
+      setGeneratingStep(null);
+    }
+  };
+
+  const selectedStepData = steps.find((s) => s.step_number === selectedStep);
+  const selectedSend = selectedStepData ? sends.find((s) => s.step_id === selectedStepData.id) : null;
+  const selectedPreview = selectedStep ? previewCache[selectedStep] : null;
 
   return (
-    <div className="space-y-5">
-      {/* Account Context */}
-      {enrollment.account_context && (
-        <div>
-          <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-1">Account Context</h4>
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap bg-surface border border-border rounded-lg p-3">
-            {enrollment.account_context}
-          </p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+    <div className="space-y-4">
+      {/* Meta row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
         <div>
           <span className="text-muted">Loss Reason:</span>
           <span className="ml-1 text-foreground capitalize">{enrollment.loss_reason?.replace('_', ' ') || '—'}</span>
@@ -1320,15 +1351,22 @@ function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
           <span className="text-muted">Vertical:</span>
           <span className="ml-1 text-foreground capitalize">{enrollment.vertical?.replace('-', ' ') || '—'}</span>
         </div>
+        {enrollment.account_context && (
+          <div className="col-span-2 md:col-span-5">
+            <span className="text-muted">Context:</span>
+            <span className="ml-1 text-foreground">{enrollment.account_context.length > 120 ? enrollment.account_context.slice(0, 120) + '...' : enrollment.account_context}</span>
+          </div>
+        )}
       </div>
 
-      {/* Full timeline */}
-      <div>
-        <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">Engagement Timeline</h4>
-        <div className="space-y-0">
+      {/* Split: timeline left, preview right */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* Left: email timeline */}
+        <div className="md:col-span-2 space-y-0">
+          <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">Emails</h4>
           {(steps || []).map((step, i) => {
             const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
-            const scheduledDate = addDays(enrolledDate, step.delay_days);
+            const stepScheduledDate = addDays(enrolledDate, step.delay_days);
             const matchingSend = sends.find((s) => s.step_id === step.id);
             const isLast = i === (steps || []).length - 1;
 
@@ -1339,13 +1377,15 @@ function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
             const opened = matchingSend?.events.some((e) => e.event_type === 'opened');
             const clicked = matchingSend?.events.filter((e) => e.event_type === 'clicked') || [];
             const bounced = matchingSend?.events.some((e) => e.event_type === 'bounced');
+            const isSelected = selectedStep === step.step_number;
 
             return (
-              <div key={step.step_number} className="flex gap-3">
-                {/* Timeline node */}
+              <div key={step.step_number} className="flex gap-2.5">
                 <div className="flex flex-col items-center">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                    isSent
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                    isSelected
+                      ? 'bg-accent text-white'
+                      : isSent
                       ? bounced
                         ? 'bg-red-500/20 border border-red-500/40'
                         : 'bg-green-500/20 border border-green-500/40'
@@ -1353,76 +1393,116 @@ function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
                       ? 'bg-accent/20 border border-accent/40'
                       : 'bg-surface border border-border'
                   }`}>
-                    {isSent ? (
+                    {isSelected ? (
+                      <span className="text-[10px] font-bold text-white">{step.step_number}</span>
+                    ) : isSent ? (
                       bounced
-                        ? <AlertTriangle className="w-3 h-3 text-red-400" />
-                        : <CheckCircle2 className="w-3 h-3 text-green-400" />
+                        ? <AlertTriangle className="w-2.5 h-2.5 text-red-400" />
+                        : <CheckCircle2 className="w-2.5 h-2.5 text-green-400" />
                     ) : isCurrent ? (
-                      <Clock className="w-3 h-3 text-accent" />
+                      <Clock className="w-2.5 h-2.5 text-accent" />
                     ) : (
-                      <Circle className="w-3 h-3 text-muted/30" />
+                      <Circle className="w-2.5 h-2.5 text-muted/30" />
                     )}
                   </div>
-                  {!isLast && <div className="w-px flex-1 bg-border min-h-[16px]" />}
+                  {!isLast && <div className="w-px flex-1 bg-border min-h-[12px]" />}
                 </div>
 
-                {/* Content */}
-                <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-3'}`}>
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <span className={`text-sm font-medium ${isFuture ? 'text-muted' : 'text-foreground'}`}>{theme.theme}</span>
-                    <span className="text-xs text-muted">Day {step.delay_days}</span>
-                    {isCurrent && <span className="text-xs text-accent font-medium">Next up</span>}
-                  </div>
-
-                  {isSent && matchingSend ? (
-                    <div className="mt-1">
-                      <div className="text-xs text-muted">
-                        Sent {formatDate(matchingSend.sent_at)}
-                        {matchingSend.subject_sent && <span className="ml-1">— {matchingSend.subject_sent}</span>}
-                      </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        {opened && (
-                          <span className="flex items-center gap-1 text-xs text-green-400">
-                            <Eye className="w-3 h-3" /> Opened
-                          </span>
-                        )}
-                        {clicked.length > 0 && (
-                          <span className="flex items-center gap-1 text-xs text-blue-400">
-                            <MousePointerClick className="w-3 h-3" /> {clicked.length} click{clicked.length > 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {bounced && (
-                          <span className="flex items-center gap-1 text-xs text-red-400">
-                            <AlertTriangle className="w-3 h-3" /> Bounced
-                          </span>
-                        )}
-                      </div>
-                      {clicked.length > 0 && (
-                        <div className="mt-1 space-y-0.5">
-                          {clicked.map((c, ci) => (
-                            <div key={ci} className="flex items-center gap-1 text-xs text-muted">
-                              <LinkIcon className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{c.clicked_url}</span>
-                            </div>
-                          ))}
+                <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-2'}`}>
+                  <button
+                    type="button"
+                    onClick={() => loadEmailPreview(step.step_number)}
+                    className={`w-full text-left px-2.5 py-1.5 -ml-0.5 rounded-lg transition-all cursor-pointer ${
+                      isSelected ? 'bg-accent/10 border border-accent/20' : 'hover:bg-surface-elevated'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium ${isSelected ? 'text-accent' : isFuture ? 'text-muted' : 'text-foreground'}`}>{theme.theme}</span>
+                      {isCurrent && <span className="text-[10px] text-accent font-medium">Next</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[10px] text-muted">
+                        {isSent && matchingSend
+                          ? `Sent ${formatDate(matchingSend.sent_at)}`
+                          : isCurrent && enrollment.next_send_at
+                          ? formatDate(enrollment.next_send_at)
+                          : stepScheduledDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                        }
+                      </span>
+                      {isSent && (
+                        <div className="flex items-center gap-1.5">
+                          {opened && <Eye className="w-2.5 h-2.5 text-green-400" />}
+                          {clicked.length > 0 && <MousePointerClick className="w-2.5 h-2.5 text-blue-400" />}
+                          {bounced && <AlertTriangle className="w-2.5 h-2.5 text-red-400" />}
                         </div>
                       )}
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <Calendar className="w-3 h-3 text-muted/50" />
-                      <span className={`text-xs ${isCurrent ? 'text-accent' : 'text-muted/50'}`}>
-                        {isCurrent && enrollment.next_send_at
-                          ? formatDate(enrollment.next_send_at)
-                          : scheduledDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                        }
-                      </span>
-                    </div>
-                  )}
+                  </button>
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Right: email preview */}
+        <div className="md:col-span-3">
+          {selectedStep && selectedStepData ? (
+            <div className="bg-surface-elevated border border-border rounded-lg overflow-hidden">
+              {/* If sent, show actual sent content */}
+              {selectedSend?.subject_sent ? (
+                <>
+                  <div className="px-4 py-2.5 border-b border-border bg-surface">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-green-400 font-medium">Sent</span>
+                      <span className="text-xs text-muted">{formatDate(selectedSend.sent_at)}</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-2.5 border-b border-border/50">
+                    <div className="text-xs text-muted mb-0.5">Subject</div>
+                    <div className="text-sm font-medium text-foreground">{selectedSend.subject_sent}</div>
+                  </div>
+                  <div className="px-4 py-4 max-h-[350px] overflow-y-auto">
+                    <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
+                      {selectedSend.body_sent || 'Email body not stored.'}
+                    </div>
+                  </div>
+                </>
+              ) : generatingStep === selectedStep ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="w-5 h-5 animate-spin text-accent mb-3" />
+                  <p className="text-sm text-muted">Generating personalized preview...</p>
+                </div>
+              ) : selectedPreview ? (
+                <>
+                  <div className="px-4 py-2.5 border-b border-border bg-surface">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-accent font-medium">Preview</span>
+                      <span className="text-xs text-muted">This is what will be sent</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-2.5 border-b border-border/50">
+                    <div className="text-xs text-muted mb-0.5">Subject</div>
+                    <div className="text-sm font-medium text-foreground">{selectedPreview.subject}</div>
+                  </div>
+                  <div className="px-4 py-4 max-h-[350px] overflow-y-auto">
+                    <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{selectedPreview.body}</div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="w-5 h-5 animate-spin text-accent mb-3" />
+                  <p className="text-sm text-muted">Generating personalized preview...</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-surface border border-border rounded-lg p-8 text-center flex items-center justify-center h-full min-h-[200px]">
+              <div>
+                <Mail className="w-6 h-6 text-muted/30 mx-auto mb-2" />
+                <p className="text-xs text-muted">Click an email to see the actual content</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

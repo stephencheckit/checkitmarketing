@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { inngest } from '@/lib/inngest';
+import { sql } from '@/lib/db';
 import {
   initializeNurtureTables,
   enrollContact,
@@ -7,6 +8,7 @@ import {
   isEmailSuppressed,
   getNurtureTracks,
   getNurtureSetting,
+  getTrackSteps,
 } from '@/lib/nurture-db';
 import { seedDefaultTrack, seedDefaultContent } from '@/lib/nurture-seed';
 
@@ -82,6 +84,21 @@ export async function POST(request: NextRequest) {
       lossReason,
       enrolledByEmail,
     });
+
+    // Set next_send_at immediately so the UI shows the schedule right away
+    const steps = await getTrackSteps(resolvedTrackId);
+    const firstStep = steps.find((s) => s.step_number === 1);
+    if (firstStep) {
+      const nextSendAt = new Date();
+      nextSendAt.setDate(nextSendAt.getDate() + firstStep.delay_days);
+      await sql`
+        UPDATE nurture_enrollments
+        SET current_step = 1, next_send_at = ${nextSendAt.toISOString()}
+        WHERE id = ${enrollment.id}
+      `;
+      enrollment.current_step = 1;
+      enrollment.next_send_at = nextSendAt.toISOString();
+    }
 
     await inngest.send({
       name: 'nurture/contact.enrolled',

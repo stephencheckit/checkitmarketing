@@ -13,6 +13,7 @@ interface UseVoiceRecordingReturn {
   recordingTime: number;
   micPermission: 'granted' | 'denied' | 'prompt';
   error: string | null;
+  audioStream: MediaStream | null;
   startRecording: () => Promise<void>;
   stopRecording: () => void;
   clearError: () => void;
@@ -176,6 +177,7 @@ export function useVoiceRecording(options: UseVoiceRecordingOptions = {}): UseVo
     recordingTime,
     micPermission,
     error,
+    audioStream: streamRef.current,
     startRecording,
     stopRecording,
     clearError

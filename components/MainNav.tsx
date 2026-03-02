@@ -116,7 +116,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   // Biz Dev: Outbound prospecting
   const bizDevItems = [
     { href: '/outbound', label: 'Outbound', icon: Send },
-    { href: '/nurture', label: 'Nurture', icon: Mail },
+    { href: '/nurture', label: 'Re-engage', icon: Mail },
     { href: '/reddit-monitor', label: 'Reddit', icon: RedditIcon },
     { href: '/social-toolkit', label: 'Social Toolkit', icon: Crown },
   ];

@@ -4,6 +4,7 @@ import {
   getEnrollmentDetail,
   updateEnrollmentStatus,
   addToSuppression,
+  getTrackSteps,
 } from '@/lib/nurture-db';
 
 let initialized = false;
@@ -26,7 +27,8 @@ export async function GET(
     if (!detail) {
       return NextResponse.json({ error: 'Enrollment not found' }, { status: 404 });
     }
-    return NextResponse.json(detail);
+    const steps = await getTrackSteps(detail.enrollment.track_id);
+    return NextResponse.json({ ...detail, steps });
   } catch (error) {
     console.error('Error fetching enrollment:', error);
     return NextResponse.json({ error: 'Failed to fetch enrollment' }, { status: 500 });

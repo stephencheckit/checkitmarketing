@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Mail,
   Users,
-  TrendingUp,
   MousePointerClick,
   Send,
   Pause,
@@ -22,8 +21,15 @@ import {
   Power,
   Plus,
   X,
+  ArrowRight,
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Circle,
 } from 'lucide-react';
 import VoiceTextarea from '@/components/VoiceTextarea';
+
+// --- Types ---
 
 interface NurtureStats {
   activeEnrollments: number;
@@ -51,8 +57,16 @@ interface Enrollment {
   completed_at: string | null;
 }
 
+interface StepPreview {
+  step_number: number;
+  delay_days: number;
+  subject_template: string;
+  content_tags: string[];
+}
+
 interface SendDetail {
   id: number;
+  step_id: number;
   subject_sent: string | null;
   sent_at: string;
   events: Array<{
@@ -62,9 +76,18 @@ interface SendDetail {
   }>;
 }
 
+interface TrackStep {
+  id: number;
+  step_number: number;
+  delay_days: number;
+  subject_template: string;
+  content_tags: string[];
+}
+
 interface EnrollmentDetail {
   enrollment: Enrollment;
   sends: SendDetail[];
+  steps: TrackStep[];
 }
 
 interface Settings {
@@ -72,6 +95,8 @@ interface Settings {
   daily_send_cap: string;
   recap_recipients: string;
 }
+
+// --- Constants ---
 
 const VERTICALS = [
   { value: '', label: 'Select vertical...' },
@@ -93,6 +118,15 @@ const LOSS_REASONS = [
   { value: 'other', label: 'Other' },
 ];
 
+const STEP_THEMES: Record<number, { theme: string; description: string }> = {
+  1: { theme: 'Check-in', description: 'Brief personal check-in referencing what they were evaluating' },
+  2: { theme: 'Value Story', description: 'Relevant case study based on their vertical' },
+  3: { theme: 'Product Update', description: 'What\'s new since they last looked — temperature automation, asset intelligence' },
+  4: { theme: 'Industry Insight', description: 'Relevant trend or challenge in their vertical' },
+  5: { theme: 'Social Proof', description: 'Customer results and ROI data' },
+  6: { theme: 'Open Door', description: 'Soft close with a clear call to action' },
+};
+
 const STATUS_COLORS: Record<string, string> = {
   active: 'text-green-400 bg-green-400/10 border-green-400/20',
   paused: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20',
@@ -101,6 +135,18 @@ const STATUS_COLORS: Record<string, string> = {
   unsubscribed: 'text-orange-400 bg-orange-400/10 border-orange-400/20',
   bounced: 'text-red-400 bg-red-400/10 border-red-400/20',
 };
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function addDays(date: Date, days: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+// --- Main Component ---
 
 export default function NurturePage() {
   const [stats, setStats] = useState<NurtureStats | null>(null);
@@ -117,7 +163,11 @@ export default function NurturePage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [updatingSettings, setUpdatingSettings] = useState(false);
 
-  // Enrollment form
+  // Two-step enrollment
+  const [enrollStep, setEnrollStep] = useState<1 | 2>(1);
+  const [previewSteps, setPreviewSteps] = useState<StepPreview[]>([]);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
   const [form, setForm] = useState({
     contactName: '',
     contactEmail: '',
@@ -157,12 +207,34 @@ export default function NurturePage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const handleEnroll = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNext = async () => {
+    if (!form.contactName || !form.contactEmail) {
+      setFormError('Contact name and email are required');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.contactEmail)) {
+      setFormError('Invalid email format');
+      return;
+    }
+    setFormError('');
+    setLoadingPreview(true);
+    try {
+      const res = await fetch('/api/nurture/preview');
+      const data = await res.json();
+      setPreviewSteps(data.steps || []);
+      setEnrollStep(2);
+    } catch {
+      setFormError('Failed to load engagement pathway');
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const handleConfirmEnroll = async () => {
     setFormError('');
     setFormSuccess('');
     setEnrolling(true);
-
     try {
       const res = await fetch('/api/nurture/enroll', {
         method: 'POST',
@@ -171,15 +243,19 @@ export default function NurturePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setFormError(data.error || 'Failed to enroll');
+        setFormError(data.error || 'Failed to start engagement');
         return;
       }
-      setFormSuccess(`${form.contactName} enrolled successfully. First email scheduled.`);
+      setFormSuccess(`${form.contactName} added to engagement track. First email goes out ${
+        data.enrollment?.next_send_at ? formatDate(data.enrollment.next_send_at) : 'in 3 days'
+      }.`);
       setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', accountContext: '' });
+      setEnrollStep(1);
+      setPreviewSteps([]);
       loadData();
-      setTimeout(() => setFormSuccess(''), 5000);
+      setTimeout(() => { setFormSuccess(''); setShowForm(false); }, 4000);
     } catch {
-      setFormError('Failed to enroll contact');
+      setFormError('Failed to start engagement');
     } finally {
       setEnrolling(false);
     }
@@ -257,8 +333,8 @@ export default function NurturePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Nurture Engine</h1>
-          <p className="text-muted text-sm mt-1">Closed-lost account re-engagement</p>
+          <h1 className="text-2xl font-bold text-foreground">Re-engagement</h1>
+          <p className="text-muted text-sm mt-1">Closed-lost account outreach</p>
         </div>
         <div className="flex items-center gap-3">
           {isPaused && (
@@ -286,11 +362,11 @@ export default function NurturePage() {
             {isPaused ? 'Resume Sends' : 'Kill Switch'}
           </button>
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => { setShowForm(!showForm); setEnrollStep(1); setFormError(''); setFormSuccess(''); }}
             className="flex items-center gap-2 px-4 py-2 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer"
           >
             {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showForm ? 'Close' : 'Enroll Contact'}
+            {showForm ? 'Close' : 'Add Contact'}
           </button>
         </div>
       </div>
@@ -299,116 +375,226 @@ export default function NurturePage() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <StatCard label="Active" value={stats.activeEnrollments} icon={Users} />
-          <StatCard label="Total Enrolled" value={stats.totalEnrollments} icon={Mail} />
+          <StatCard label="Total" value={stats.totalEnrollments} icon={Mail} />
           <StatCard label="Sent (7d)" value={stats.emailsSent7d} icon={Send} />
           <StatCard label="Open Rate" value={`${stats.openRate}%`} icon={Eye} />
           <StatCard label="Click Rate" value={`${stats.clickRate}%`} icon={MousePointerClick} />
         </div>
       )}
 
-      {/* Enrollment Form */}
+      {/* Enrollment Form — Two Steps */}
       {showForm && (
         <div className="bg-surface-elevated border border-border rounded-xl p-6 mb-8">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Enroll Closed-Lost Contact</h2>
-          <form onSubmit={handleEnroll} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Step indicator */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className={`flex items-center gap-2 text-sm font-medium ${enrollStep === 1 ? 'text-accent' : 'text-muted'}`}>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${enrollStep === 1 ? 'bg-accent text-white' : 'bg-surface border border-border'}`}>1</span>
+              Contact Info
+            </div>
+            <ArrowRight className="w-4 h-4 text-muted/40" />
+            <div className={`flex items-center gap-2 text-sm font-medium ${enrollStep === 2 ? 'text-accent' : 'text-muted'}`}>
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${enrollStep === 2 ? 'bg-accent text-white' : 'bg-surface border border-border'}`}>2</span>
+              Review Pathway
+            </div>
+          </div>
+
+          {enrollStep === 1 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted mb-1">Contact Name *</label>
+                  <input
+                    type="text"
+                    value={form.contactName}
+                    onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+                    placeholder="Jane Smith"
+                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={form.contactEmail}
+                    onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+                    placeholder="jane@company.com"
+                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted mb-1">Company</label>
+                  <input
+                    type="text"
+                    value={form.companyName}
+                    onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+                    placeholder="Acme Corp"
+                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted mb-1">Vertical</label>
+                  <select
+                    value={form.vertical}
+                    onChange={(e) => setForm({ ...form, vertical: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                  >
+                    {VERTICALS.map((v) => (
+                      <option key={v.value} value={v.value}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted mb-1">Loss Reason</label>
+                  <select
+                    value={form.lossReason}
+                    onChange={(e) => setForm({ ...form, lossReason: e.target.value })}
+                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                  >
+                    {LOSS_REASONS.map((r) => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-muted mb-1">Contact Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.contactName}
-                  onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                  placeholder="Jane Smith"
-                  className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                <label className="block text-sm font-medium text-muted mb-1">
+                  Account Context
+                </label>
+                <VoiceTextarea
+                  value={form.accountContext}
+                  onChange={(val) => setForm({ ...form, accountContext: val })}
+                  placeholder="What were they evaluating? Who were the key stakeholders? What caused the loss?"
+                  rows={4}
+                  autoExpand
+                  minHeight={100}
+                  prominentMic
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted mb-1">Email *</label>
-                <input
-                  type="email"
-                  required
-                  value={form.contactEmail}
-                  onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
-                  placeholder="jane@company.com"
-                  className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted mb-1">Company</label>
-                <input
-                  type="text"
-                  value={form.companyName}
-                  onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-                  placeholder="Acme Corp"
-                  className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-muted mb-1">Vertical</label>
-                <select
-                  value={form.vertical}
-                  onChange={(e) => setForm({ ...form, vertical: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+
+              {formError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {formError}
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={loadingPreview}
+                  className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
                 >
-                  {VERTICALS.map((v) => (
-                    <option key={v.value} value={v.value}>{v.label}</option>
-                  ))}
-                </select>
+                  {loadingPreview ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  Next — Preview Pathway
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
+            </div>
+          )}
+
+          {enrollStep === 2 && (
+            <div className="space-y-5">
+              {/* Contact summary */}
+              <div className="bg-surface border border-border rounded-lg p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted text-xs">Contact</span>
+                    <div className="font-medium text-foreground">{form.contactName}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Email</span>
+                    <div className="font-medium text-foreground">{form.contactEmail}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Company</span>
+                    <div className="font-medium text-foreground">{form.companyName || '—'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Vertical</span>
+                    <div className="font-medium text-foreground capitalize">{form.vertical?.replace('-', ' ') || '—'}</div>
+                  </div>
+                </div>
+                {form.accountContext && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <span className="text-muted text-xs">Account Context</span>
+                    <p className="text-sm text-foreground/80 mt-1 whitespace-pre-wrap">{form.accountContext}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Engagement pathway timeline */}
               <div>
-                <label className="block text-sm font-medium text-muted mb-1">Loss Reason</label>
-                <select
-                  value={form.lossReason}
-                  onChange={(e) => setForm({ ...form, lossReason: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+                <h3 className="text-sm font-semibold text-foreground mb-3">Engagement Pathway — 6 emails over 90 days</h3>
+                <p className="text-xs text-muted mb-4">Each email is personalized using the account context you provided. Content is selected based on the contact&apos;s vertical.</p>
+                <div className="space-y-0">
+                  {previewSteps.map((step, i) => {
+                    const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
+                    const sendDate = addDays(new Date(), step.delay_days);
+                    const isLast = i === previewSteps.length - 1;
+
+                    return (
+                      <div key={step.step_number} className="flex gap-3">
+                        {/* Timeline line */}
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-bold text-accent">{step.step_number}</span>
+                          </div>
+                          {!isLast && <div className="w-px flex-1 bg-border min-h-[24px]" />}
+                        </div>
+                        {/* Content */}
+                        <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-4'}`}>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-sm font-medium text-foreground">{theme.theme}</span>
+                            <span className="text-xs text-muted">Day {step.delay_days}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Calendar className="w-3 h-3 text-muted" />
+                            <span className="text-xs text-muted">{sendDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                          </div>
+                          <p className="text-xs text-muted/70 mt-1">{theme.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {formError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {formError}
+                </div>
+              )}
+              {formSuccess && (
+                <div className="flex items-center gap-2 text-green-400 text-sm bg-green-400/10 border border-green-400/20 rounded-lg px-3 py-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  {formSuccess}
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setEnrollStep(1)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-muted hover:text-foreground bg-surface border border-border rounded-lg cursor-pointer"
                 >
-                  {LOSS_REASONS.map((r) => (
-                    <option key={r.value} value={r.value}>{r.label}</option>
-                  ))}
-                </select>
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmEnroll}
+                  disabled={enrolling}
+                  className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
+                >
+                  {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Start Engagement
+                </button>
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-muted mb-1">
-                Account Context
-                <span className="text-muted/50 font-normal ml-1">(voice or type — what do you know about this account?)</span>
-              </label>
-              <VoiceTextarea
-                value={form.accountContext}
-                onChange={(val) => setForm({ ...form, accountContext: val })}
-                placeholder="Share what you know about this account — what were they evaluating, who were the key stakeholders, what caused the loss, and anything else that would help personalize outreach..."
-                rows={4}
-                autoExpand
-                minHeight={100}
-              />
-            </div>
-
-            {formError && (
-              <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                {formError}
-              </div>
-            )}
-            {formSuccess && (
-              <div className="flex items-center gap-2 text-green-400 text-sm bg-green-400/10 border border-green-400/20 rounded-lg px-3 py-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                {formSuccess}
-              </div>
-            )}
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={enrolling}
-                className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
-              >
-                {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                Enroll in Nurture Track
-              </button>
-            </div>
-          </form>
+          )}
         </div>
       )}
 
@@ -466,7 +652,7 @@ export default function NurturePage() {
         ) : enrollments.length === 0 ? (
           <div className="text-center py-16 text-muted">
             <Users className="w-10 h-10 mx-auto mb-3 opacity-40" />
-            <p className="text-sm">No enrollments yet. Enroll a closed-lost contact to get started.</p>
+            <p className="text-sm">No contacts yet. Add a closed-lost contact to get started.</p>
           </div>
         ) : (
           <div>
@@ -476,10 +662,9 @@ export default function NurturePage() {
                   <th className="px-4 py-3 text-muted font-medium w-8"></th>
                   <th className="px-4 py-3 text-muted font-medium">Contact</th>
                   <th className="px-4 py-3 text-muted font-medium hidden md:table-cell">Company</th>
-                  <th className="px-4 py-3 text-muted font-medium hidden lg:table-cell">Vertical</th>
                   <th className="px-4 py-3 text-muted font-medium">Status</th>
-                  <th className="px-4 py-3 text-muted font-medium hidden md:table-cell">Step</th>
-                  <th className="px-4 py-3 text-muted font-medium hidden lg:table-cell">Next Send</th>
+                  <th className="px-4 py-3 text-muted font-medium hidden md:table-cell">Progress</th>
+                  <th className="px-4 py-3 text-muted font-medium hidden lg:table-cell">Next Email</th>
                   <th className="px-4 py-3 text-muted font-medium">Actions</th>
                 </tr>
               </thead>
@@ -498,7 +683,7 @@ export default function NurturePage() {
               </tbody>
             </table>
             <div className="px-4 py-3 border-t border-border text-xs text-muted">
-              Showing {enrollments.length} of {total} enrollments
+              Showing {enrollments.length} of {total}
             </div>
           </div>
         )}
@@ -506,6 +691,8 @@ export default function NurturePage() {
     </div>
   );
 }
+
+// --- Sub-components ---
 
 function StatCard({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ElementType }) {
   return (
@@ -535,6 +722,7 @@ function EnrollmentRow({
   onStatusChange: (id: number, status: string) => void;
 }) {
   const statusColor = STATUS_COLORS[enrollment.status] || 'text-muted bg-muted/10 border-muted/20';
+  const totalSteps = 6;
 
   return (
     <>
@@ -549,44 +737,55 @@ function EnrollmentRow({
           <div className="text-xs text-muted">{enrollment.contact_email}</div>
         </td>
         <td className="px-4 py-3 hidden md:table-cell text-muted">{enrollment.company_name || '—'}</td>
-        <td className="px-4 py-3 hidden lg:table-cell text-muted capitalize">{enrollment.vertical?.replace('-', ' ') || '—'}</td>
         <td className="px-4 py-3">
           <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${statusColor}`}>
             {enrollment.status}
           </span>
         </td>
-        <td className="px-4 py-3 hidden md:table-cell text-muted">{enrollment.current_step}/6</td>
-        <td className="px-4 py-3 hidden lg:table-cell text-muted text-xs">
-          {enrollment.next_send_at
-            ? new Date(enrollment.next_send_at).toLocaleDateString()
-            : '—'}
+        <td className="px-4 py-3 hidden md:table-cell">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-4 h-1.5 rounded-full ${
+                    i < enrollment.current_step
+                      ? 'bg-accent'
+                      : i === enrollment.current_step && enrollment.status === 'active'
+                      ? 'bg-accent/40'
+                      : 'bg-border'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-muted">{Math.max(0, enrollment.current_step - 1)}/{totalSteps}</span>
+          </div>
+        </td>
+        <td className="px-4 py-3 hidden lg:table-cell text-xs text-muted">
+          {enrollment.status === 'completed' ? (
+            <span className="text-blue-400">Completed</span>
+          ) : enrollment.next_send_at ? (
+            formatDate(enrollment.next_send_at)
+          ) : enrollment.status === 'active' ? (
+            <span className="text-muted/50">Scheduling...</span>
+          ) : (
+            '—'
+          )}
         </td>
         <td className="px-4 py-3">
           <div className="flex items-center gap-1">
             {enrollment.status === 'active' && (
-              <button
-                onClick={() => onStatusChange(enrollment.id, 'paused')}
-                className="p-1 text-muted hover:text-yellow-400 cursor-pointer"
-                title="Pause"
-              >
+              <button onClick={() => onStatusChange(enrollment.id, 'paused')} className="p-1 text-muted hover:text-yellow-400 cursor-pointer" title="Pause">
                 <Pause className="w-4 h-4" />
               </button>
             )}
             {enrollment.status === 'paused' && (
-              <button
-                onClick={() => onStatusChange(enrollment.id, 'active')}
-                className="p-1 text-muted hover:text-green-400 cursor-pointer"
-                title="Resume"
-              >
+              <button onClick={() => onStatusChange(enrollment.id, 'active')} className="p-1 text-muted hover:text-green-400 cursor-pointer" title="Resume">
                 <Play className="w-4 h-4" />
               </button>
             )}
             {(enrollment.status === 'active' || enrollment.status === 'paused') && (
-              <button
-                onClick={() => onStatusChange(enrollment.id, 'removed')}
-                className="p-1 text-muted hover:text-red-400 cursor-pointer"
-                title="Remove"
-              >
+              <button onClick={() => onStatusChange(enrollment.id, 'removed')} className="p-1 text-muted hover:text-red-400 cursor-pointer" title="Remove">
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
@@ -595,101 +794,159 @@ function EnrollmentRow({
       </tr>
       {isExpanded && (
         <tr>
-          <td colSpan={8} className="bg-surface/30 px-4 py-4 border-b border-border/50">
+          <td colSpan={7} className="bg-surface/30 px-4 py-4 border-b border-border/50">
             {loadingDetail ? (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="w-5 h-5 animate-spin text-accent" />
               </div>
             ) : detail ? (
-              <div className="space-y-4">
-                {/* Account Context */}
-                {detail.enrollment.account_context && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-1">Account Context</h4>
-                    <p className="text-sm text-foreground/80 whitespace-pre-wrap bg-surface border border-border rounded-lg p-3">
-                      {detail.enrollment.account_context}
-                    </p>
-                  </div>
-                )}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <span className="text-muted">Loss Reason:</span>
-                    <span className="ml-1 text-foreground capitalize">{detail.enrollment.loss_reason?.replace('_', ' ') || '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Enrolled:</span>
-                    <span className="ml-1 text-foreground">{new Date(detail.enrollment.enrolled_at).toLocaleDateString()}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Enrolled By:</span>
-                    <span className="ml-1 text-foreground">{detail.enrollment.enrolled_by_email || '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted">Vertical:</span>
-                    <span className="ml-1 text-foreground capitalize">{detail.enrollment.vertical?.replace('-', ' ') || '—'}</span>
-                  </div>
-                </div>
-
-                {/* Sends */}
-                {detail.sends.length > 0 ? (
-                  <div>
-                    <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-2">Email Activity</h4>
-                    <div className="space-y-2">
-                      {detail.sends.map((send) => {
-                        const opened = send.events.some((e) => e.event_type === 'opened');
-                        const clicked = send.events.filter((e) => e.event_type === 'clicked');
-                        const bounced = send.events.some((e) => e.event_type === 'bounced');
-
-                        return (
-                          <div key={send.id} className="bg-surface border border-border rounded-lg p-3 text-sm">
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <div className="font-medium text-foreground">{send.subject_sent || 'No subject'}</div>
-                                <div className="text-xs text-muted mt-0.5">
-                                  Sent {new Date(send.sent_at).toLocaleString()}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {bounced && (
-                                  <span className="flex items-center gap-1 text-xs text-red-400">
-                                    <AlertTriangle className="w-3 h-3" /> Bounced
-                                  </span>
-                                )}
-                                {opened && (
-                                  <span className="flex items-center gap-1 text-xs text-green-400">
-                                    <Eye className="w-3 h-3" /> Opened
-                                  </span>
-                                )}
-                                {clicked.length > 0 && (
-                                  <span className="flex items-center gap-1 text-xs text-blue-400">
-                                    <MousePointerClick className="w-3 h-3" /> {clicked.length} click{clicked.length > 1 ? 's' : ''}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            {clicked.length > 0 && (
-                              <div className="mt-2 space-y-1">
-                                {clicked.map((c, i) => (
-                                  <div key={i} className="flex items-center gap-1 text-xs text-muted">
-                                    <LinkIcon className="w-3 h-3 shrink-0" />
-                                    <span className="truncate">{c.clicked_url}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted">No emails sent yet. First email is scheduled.</p>
-                )}
-              </div>
+              <ExpandedDetail detail={detail} />
             ) : null}
           </td>
         </tr>
       )}
     </>
+  );
+}
+
+function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
+  const { enrollment, sends, steps } = detail;
+  const enrolledDate = new Date(enrollment.enrolled_at);
+
+  return (
+    <div className="space-y-5">
+      {/* Account Context */}
+      {enrollment.account_context && (
+        <div>
+          <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-1">Account Context</h4>
+          <p className="text-sm text-foreground/80 whitespace-pre-wrap bg-surface border border-border rounded-lg p-3">
+            {enrollment.account_context}
+          </p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+        <div>
+          <span className="text-muted">Loss Reason:</span>
+          <span className="ml-1 text-foreground capitalize">{enrollment.loss_reason?.replace('_', ' ') || '—'}</span>
+        </div>
+        <div>
+          <span className="text-muted">Enrolled:</span>
+          <span className="ml-1 text-foreground">{formatDate(enrollment.enrolled_at)}</span>
+        </div>
+        <div>
+          <span className="text-muted">Enrolled By:</span>
+          <span className="ml-1 text-foreground">{enrollment.enrolled_by_email || '—'}</span>
+        </div>
+        <div>
+          <span className="text-muted">Vertical:</span>
+          <span className="ml-1 text-foreground capitalize">{enrollment.vertical?.replace('-', ' ') || '—'}</span>
+        </div>
+      </div>
+
+      {/* Full timeline */}
+      <div>
+        <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">Engagement Timeline</h4>
+        <div className="space-y-0">
+          {(steps || []).map((step, i) => {
+            const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
+            const scheduledDate = addDays(enrolledDate, step.delay_days);
+            const matchingSend = sends.find((s) => s.step_id === step.id);
+            const isLast = i === (steps || []).length - 1;
+
+            const isSent = !!matchingSend;
+            const isCurrent = !isSent && enrollment.current_step === step.step_number && enrollment.status === 'active';
+            const isFuture = !isSent && !isCurrent;
+
+            const opened = matchingSend?.events.some((e) => e.event_type === 'opened');
+            const clicked = matchingSend?.events.filter((e) => e.event_type === 'clicked') || [];
+            const bounced = matchingSend?.events.some((e) => e.event_type === 'bounced');
+
+            return (
+              <div key={step.step_number} className="flex gap-3">
+                {/* Timeline node */}
+                <div className="flex flex-col items-center">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                    isSent
+                      ? bounced
+                        ? 'bg-red-500/20 border border-red-500/40'
+                        : 'bg-green-500/20 border border-green-500/40'
+                      : isCurrent
+                      ? 'bg-accent/20 border border-accent/40'
+                      : 'bg-surface border border-border'
+                  }`}>
+                    {isSent ? (
+                      bounced
+                        ? <AlertTriangle className="w-3 h-3 text-red-400" />
+                        : <CheckCircle2 className="w-3 h-3 text-green-400" />
+                    ) : isCurrent ? (
+                      <Clock className="w-3 h-3 text-accent" />
+                    ) : (
+                      <Circle className="w-3 h-3 text-muted/30" />
+                    )}
+                  </div>
+                  {!isLast && <div className="w-px flex-1 bg-border min-h-[16px]" />}
+                </div>
+
+                {/* Content */}
+                <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-3'}`}>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className={`text-sm font-medium ${isFuture ? 'text-muted' : 'text-foreground'}`}>{theme.theme}</span>
+                    <span className="text-xs text-muted">Day {step.delay_days}</span>
+                    {isCurrent && <span className="text-xs text-accent font-medium">Next up</span>}
+                  </div>
+
+                  {isSent && matchingSend ? (
+                    <div className="mt-1">
+                      <div className="text-xs text-muted">
+                        Sent {formatDate(matchingSend.sent_at)}
+                        {matchingSend.subject_sent && <span className="ml-1">— {matchingSend.subject_sent}</span>}
+                      </div>
+                      <div className="flex items-center gap-3 mt-1">
+                        {opened && (
+                          <span className="flex items-center gap-1 text-xs text-green-400">
+                            <Eye className="w-3 h-3" /> Opened
+                          </span>
+                        )}
+                        {clicked.length > 0 && (
+                          <span className="flex items-center gap-1 text-xs text-blue-400">
+                            <MousePointerClick className="w-3 h-3" /> {clicked.length} click{clicked.length > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {bounced && (
+                          <span className="flex items-center gap-1 text-xs text-red-400">
+                            <AlertTriangle className="w-3 h-3" /> Bounced
+                          </span>
+                        )}
+                      </div>
+                      {clicked.length > 0 && (
+                        <div className="mt-1 space-y-0.5">
+                          {clicked.map((c, ci) => (
+                            <div key={ci} className="flex items-center gap-1 text-xs text-muted">
+                              <LinkIcon className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{c.clicked_url}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Calendar className="w-3 h-3 text-muted/50" />
+                      <span className={`text-xs ${isCurrent ? 'text-accent' : 'text-muted/50'}`}>
+                        {isCurrent && enrollment.next_send_at
+                          ? formatDate(enrollment.next_send_at)
+                          : scheduledDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                        }
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

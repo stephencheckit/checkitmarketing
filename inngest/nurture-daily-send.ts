@@ -17,6 +17,16 @@ import { seedDefaultTrack, seedDefaultContent } from '@/lib/nurture-seed';
 const PHYSICAL_ADDRESS = 'Checkit HQ - 385 Mariner Blvd. Spring Hill, FL 34609';
 const FROM_EMAIL = 'Checkit <noreply@checkitv6.com>';
 
+function linkifyLine(line: string): string {
+  return line.replace(
+    /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" style="color: #2563eb; text-decoration: underline;">$1</a>'
+  ).replace(
+    /(^|[\s(])((https?:\/\/[^\s)<]+))/g,
+    '$1<a href="$2" style="color: #2563eb; text-decoration: underline;">$2</a>'
+  );
+}
+
 function getBaseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
@@ -109,7 +119,8 @@ Instructions:
 - Replace {{company_name}} with the company name
 - Replace {{vertical}} with a natural industry name (e.g., "senior living" not "senior-living")
 - Replace {{personalized_context}} with 1-2 sentences weaving in the account context naturally
-- Replace {{content_block}} with a brief reference to the most relevant content piece(s) — include URLs naturally
+- Replace {{content_block}} with a brief reference to the most relevant content piece(s)
+- For links, put the URL on its own line like: https://example.com — do NOT use markdown link syntax like [text](url)
 - Keep the marketing tone — informative, not salesy
 - Keep the email under 250 words
 - Do NOT include subject line in the body
@@ -147,7 +158,7 @@ BODY:
   <div style="padding: 32px; background: #ffffff;">
     ${personalizedBody.split('\n').map((line: string) =>
       line.trim()
-        ? `<p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0 0 12px 0;">${line}</p>`
+        ? `<p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0 0 12px 0;">${linkifyLine(line)}</p>`
         : ''
     ).join('')}
   </div>

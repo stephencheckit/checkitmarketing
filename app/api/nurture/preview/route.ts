@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         step_number: s.step_number,
         delay_days: s.delay_days,
         subject_template: s.subject_template,
+        body_template: s.body_template,
         content_tags: s.content_tags,
       })),
     });

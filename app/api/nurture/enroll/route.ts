@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { contactName, contactEmail, companyName, vertical, accountContext, lossReason, trackId, enrolledByEmail } = body;
+    const { contactName, contactEmail, companyName, vertical, accountContext, lossReason, trackId, enrolledByEmail, startDate } = body;
 
     if (!contactName || !contactEmail) {
       return NextResponse.json({ error: 'Contact name and email are required' }, { status: 400 });
@@ -85,11 +85,11 @@ export async function POST(request: NextRequest) {
       enrolledByEmail,
     });
 
-    // Set next_send_at immediately so the UI shows the schedule right away
     const steps = await getTrackSteps(resolvedTrackId);
     const firstStep = steps.find((s) => s.step_number === 1);
     if (firstStep) {
-      const nextSendAt = new Date();
+      const baseDate = startDate ? new Date(startDate) : new Date();
+      const nextSendAt = new Date(baseDate);
       nextSendAt.setDate(nextSendAt.getDate() + firstStep.delay_days);
       await sql`
         UPDATE nurture_enrollments

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Mail,
   Users,
@@ -26,8 +26,12 @@ import {
   Calendar,
   Clock,
   Circle,
+  Mic,
+  Square,
+  Pencil,
+  Type,
 } from 'lucide-react';
-import VoiceTextarea from '@/components/VoiceTextarea';
+import { useVoiceRecording, formatRecordingTime } from '@/lib/useVoiceRecording';
 
 // --- Types ---
 
@@ -61,6 +65,7 @@ interface StepPreview {
   step_number: number;
   delay_days: number;
   subject_template: string;
+  body_template: string;
   content_tags: string[];
 }
 
@@ -167,6 +172,12 @@ export default function NurturePage() {
   const [enrollStep, setEnrollStep] = useState<1 | 2>(1);
   const [previewSteps, setPreviewSteps] = useState<StepPreview[]>([]);
   const [loadingPreview, setLoadingPreview] = useState(false);
+  const [expandedPreviewStep, setExpandedPreviewStep] = useState<number | null>(null);
+  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now');
+  const [scheduledDate, setScheduledDate] = useState('');
+
+  // Voice-first context input
+  const [showTextInput, setShowTextInput] = useState(false);
 
   const [form, setForm] = useState({
     contactName: '',
@@ -178,6 +189,7 @@ export default function NurturePage() {
   });
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+  const [editingName, setEditingName] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -236,10 +248,14 @@ export default function NurturePage() {
     setFormSuccess('');
     setEnrolling(true);
     try {
+      const payload: Record<string, string> = { ...form };
+      if (scheduleMode === 'later' && scheduledDate) {
+        payload.startDate = scheduledDate;
+      }
       const res = await fetch('/api/nurture/enroll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -252,6 +268,11 @@ export default function NurturePage() {
       setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', accountContext: '' });
       setEnrollStep(1);
       setPreviewSteps([]);
+      setScheduleMode('now');
+      setScheduledDate('');
+      setShowTextInput(false);
+      setExpandedPreviewStep(null);
+      setEditingName(false);
       loadData();
       setTimeout(() => { setFormSuccess(''); setShowForm(false); }, 4000);
     } catch {
@@ -399,109 +420,49 @@ export default function NurturePage() {
           </div>
 
           {enrollStep === 1 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Contact Name *</label>
-                  <input
-                    type="text"
-                    value={form.contactName}
-                    onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                    placeholder="Jane Smith"
-                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Email *</label>
-                  <input
-                    type="email"
-                    value={form.contactEmail}
-                    onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
-                    placeholder="jane@company.com"
-                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Company</label>
-                  <input
-                    type="text"
-                    value={form.companyName}
-                    onChange={(e) => setForm({ ...form, companyName: e.target.value })}
-                    placeholder="Acme Corp"
-                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Vertical</label>
-                  <select
-                    value={form.vertical}
-                    onChange={(e) => setForm({ ...form, vertical: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                  >
-                    {VERTICALS.map((v) => (
-                      <option key={v.value} value={v.value}>{v.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted mb-1">Loss Reason</label>
-                  <select
-                    value={form.lossReason}
-                    onChange={(e) => setForm({ ...form, lossReason: e.target.value })}
-                    className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
-                  >
-                    {LOSS_REASONS.map((r) => (
-                      <option key={r.value} value={r.value}>{r.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-muted mb-1">
-                  Account Context
-                </label>
-                <VoiceTextarea
-                  value={form.accountContext}
-                  onChange={(val) => setForm({ ...form, accountContext: val })}
-                  placeholder="What were they evaluating? Who were the key stakeholders? What caused the loss?"
-                  rows={4}
-                  autoExpand
-                  minHeight={100}
-                  prominentMic
-                />
-              </div>
-
-              {formError && (
-                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  {formError}
-                </div>
-              )}
-
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={loadingPreview}
-                  className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
-                >
-                  {loadingPreview ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Next — Preview Pathway
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            <Step1Form
+              form={form}
+              setForm={(f) => setForm(f)}
+              showTextInput={showTextInput}
+              setShowTextInput={setShowTextInput}
+              formError={formError}
+              loadingPreview={loadingPreview}
+              onNext={handleNext}
+            />
           )}
 
           {enrollStep === 2 && (
             <div className="space-y-5">
-              {/* Contact summary */}
+              {/* Contact summary — editable name */}
               <div className="bg-surface border border-border rounded-lg p-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div>
                     <span className="text-muted text-xs">Contact</span>
-                    <div className="font-medium text-foreground">{form.contactName}</div>
+                    {editingName ? (
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <input
+                          type="text"
+                          value={form.contactName}
+                          onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+                          className="flex-1 px-2 py-1 text-sm bg-surface-elevated border border-accent rounded focus:outline-none font-medium"
+                          autoFocus
+                          onKeyDown={(e) => { if (e.key === 'Enter') setEditingName(false); }}
+                          onBlur={() => setEditingName(false)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-foreground">{form.contactName}</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditingName(true)}
+                          className="p-0.5 text-muted hover:text-accent transition-colors cursor-pointer"
+                          title="Edit name — verify spelling"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <span className="text-muted text-xs">Email</span>
@@ -524,36 +485,115 @@ export default function NurturePage() {
                 )}
               </div>
 
-              {/* Engagement pathway timeline */}
+              {/* Scheduling */}
+              <div className="bg-surface border border-border rounded-lg p-4">
+                <h4 className="text-xs font-semibold text-muted uppercase tracking-wide mb-3">When to start</h4>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleMode('now')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                      scheduleMode === 'now'
+                        ? 'bg-accent/10 border-accent/40 text-accent'
+                        : 'bg-surface border-border text-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Start now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScheduleMode('later')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                      scheduleMode === 'later'
+                        ? 'bg-accent/10 border-accent/40 text-accent'
+                        : 'bg-surface border-border text-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Schedule for later
+                  </button>
+                  {scheduleMode === 'later' && (
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="px-3 py-2 text-sm bg-surface-elevated border border-border rounded-lg focus:outline-none focus:border-accent"
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Engagement pathway timeline — clickable previews */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3">Engagement Pathway — 6 emails over 90 days</h3>
-                <p className="text-xs text-muted mb-4">Each email is personalized using the account context you provided. Content is selected based on the contact&apos;s vertical.</p>
+                <p className="text-xs text-muted mb-4">Click any email to preview. Each is personalized using your account context.</p>
                 <div className="space-y-0">
                   {previewSteps.map((step, i) => {
                     const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
-                    const sendDate = addDays(new Date(), step.delay_days);
+                    const baseDate = scheduleMode === 'later' && scheduledDate ? new Date(scheduledDate + 'T00:00:00') : new Date();
+                    const sendDate = addDays(baseDate, step.delay_days);
                     const isLast = i === previewSteps.length - 1;
+                    const isExpanded = expandedPreviewStep === step.step_number;
+
+                    const previewBody = step.body_template
+                      .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
+                      .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
+                      .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry')
+                      .replace(/\{\{sender_name\}\}/g, 'Your Checkit Rep')
+                      .replace(/\{\{personalized_context\}\}/g, '[Personalized based on the context you shared]')
+                      .replace(/\{\{content_block\}\}/g, '[Relevant content will be selected based on vertical and topic]');
+
+                    const previewSubject = step.subject_template
+                      .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
+                      .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
+                      .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry');
 
                     return (
                       <div key={step.step_number} className="flex gap-3">
-                        {/* Timeline line */}
                         <div className="flex flex-col items-center">
                           <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center shrink-0">
                             <span className="text-xs font-bold text-accent">{step.step_number}</span>
                           </div>
                           {!isLast && <div className="w-px flex-1 bg-border min-h-[24px]" />}
                         </div>
-                        {/* Content */}
                         <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-4'}`}>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-sm font-medium text-foreground">{theme.theme}</span>
-                            <span className="text-xs text-muted">Day {step.delay_days}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <Calendar className="w-3 h-3 text-muted" />
-                            <span className="text-xs text-muted">{sendDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                          </div>
-                          <p className="text-xs text-muted/70 mt-1">{theme.description}</p>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedPreviewStep(isExpanded ? null : step.step_number)}
+                            className="w-full text-left group cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">{theme.theme}</span>
+                              <span className="text-xs text-muted">Day {step.delay_days}</span>
+                              <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Calendar className="w-3 h-3 text-muted" />
+                              <span className="text-xs text-muted">{sendDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                            </div>
+                            <p className="text-xs text-muted/70 mt-1">{theme.description}</p>
+                          </button>
+
+                          {isExpanded && (
+                            <div className="mt-3 bg-surface-elevated border border-border rounded-lg overflow-hidden">
+                              <div className="px-4 py-2.5 border-b border-border bg-surface">
+                                <div className="text-xs text-muted">Subject</div>
+                                <div className="text-sm font-medium text-foreground mt-0.5">{previewSubject}</div>
+                              </div>
+                              <div className="px-4 py-3">
+                                <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{previewBody}</div>
+                                {(step.body_template.includes('{{personalized_context}}') || step.body_template.includes('{{content_block}}')) && (
+                                  <div className="mt-3 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg">
+                                    <p className="text-xs text-accent">
+                                      Bracketed sections will be personalized using your account context and relevant content for {form.contactName || 'this contact'}&apos;s vertical.
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -586,11 +626,11 @@ export default function NurturePage() {
                 <button
                   type="button"
                   onClick={handleConfirmEnroll}
-                  disabled={enrolling}
+                  disabled={enrolling || (scheduleMode === 'later' && !scheduledDate)}
                   className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
                 >
                   {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Start Engagement
+                  {scheduleMode === 'later' ? 'Schedule Engagement' : 'Start Engagement'}
                 </button>
               </div>
             </div>
@@ -693,6 +733,304 @@ export default function NurturePage() {
 }
 
 // --- Sub-components ---
+
+function Step1Form({
+  form,
+  setForm,
+  showTextInput,
+  setShowTextInput,
+  formError,
+  loadingPreview,
+  onNext,
+}: {
+  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; lossReason: string; accountContext: string };
+  setForm: (f: typeof form) => void;
+  showTextInput: boolean;
+  setShowTextInput: (v: boolean) => void;
+  formError: string;
+  loadingPreview: boolean;
+  onNext: () => void;
+}) {
+  const {
+    isRecording,
+    isTranscribing,
+    recordingTime,
+    micPermission,
+    error: voiceError,
+    audioStream,
+    startRecording,
+    stopRecording,
+  } = useVoiceRecording({
+    onTranscriptionComplete: (text) => {
+      if (form.accountContext.trim()) {
+        setForm({ ...form, accountContext: form.accountContext + '\n\n' + text });
+      } else {
+        setForm({ ...form, accountContext: text });
+      }
+    },
+  });
+
+  const showMic = micPermission !== 'denied';
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Contact Name *</label>
+          <input
+            type="text"
+            value={form.contactName}
+            onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+            placeholder="Jane Smith"
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Email *</label>
+          <input
+            type="email"
+            value={form.contactEmail}
+            onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
+            placeholder="jane@company.com"
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Company</label>
+          <input
+            type="text"
+            value={form.companyName}
+            onChange={(e) => setForm({ ...form, companyName: e.target.value })}
+            placeholder="Acme Corp"
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Vertical</label>
+          <select
+            value={form.vertical}
+            onChange={(e) => setForm({ ...form, vertical: e.target.value })}
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          >
+            {VERTICALS.map((v) => (
+              <option key={v.value} value={v.value}>{v.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Loss Reason</label>
+          <select
+            value={form.lossReason}
+            onChange={(e) => setForm({ ...form, lossReason: e.target.value })}
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          >
+            {LOSS_REASONS.map((r) => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Account Context — voice-first */}
+      <div className="bg-surface border border-border rounded-xl p-4">
+        <label className="block text-sm font-medium text-foreground mb-1">Account Context</label>
+        <p className="text-xs text-muted mb-3">What do you know about this account? Share via voice or text.</p>
+
+        {form.accountContext && !showTextInput && (
+          <div className="mb-3 bg-surface-elevated border border-border rounded-lg p-3">
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm text-foreground/80 whitespace-pre-wrap flex-1">{form.accountContext}</p>
+              <button
+                type="button"
+                onClick={() => setShowTextInput(true)}
+                className="p-1 text-muted hover:text-accent shrink-0 cursor-pointer"
+                title="Edit"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showTextInput ? (
+          <div className="space-y-2">
+            <textarea
+              value={form.accountContext}
+              onChange={(e) => setForm({ ...form, accountContext: e.target.value })}
+              placeholder="What were they evaluating? Who were the key stakeholders? What caused the loss?"
+              rows={4}
+              className="w-full px-3 py-2.5 text-sm bg-surface-elevated border border-border rounded-lg focus:outline-none focus:border-accent resize-none"
+            />
+            {showMic && !isRecording && !isTranscribing && (
+              <button
+                type="button"
+                onClick={() => setShowTextInput(false)}
+                className="text-xs text-muted hover:text-accent cursor-pointer"
+              >
+                Switch to voice
+              </button>
+            )}
+          </div>
+        ) : !form.accountContext || isRecording || isTranscribing ? (
+          <div>
+            {showMic && (
+              <>
+                {isRecording ? (
+                  <div className="flex items-center gap-4 bg-red-500/5 border border-red-500/20 rounded-xl px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={stopRecording}
+                      className="shrink-0 w-14 h-14 flex items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/30 hover:bg-red-600 transition-all cursor-pointer"
+                    >
+                      <Square className="w-6 h-6" />
+                    </button>
+                    <div className="flex-1 flex items-center gap-3 min-w-0">
+                      <VoiceWaveform stream={audioStream} />
+                      <span className="text-sm font-mono text-red-400 shrink-0">{formatRecordingTime(recordingTime)}</span>
+                    </div>
+                  </div>
+                ) : isTranscribing ? (
+                  <div className="flex items-center gap-3 bg-accent/5 border border-accent/20 rounded-xl px-4 py-3">
+                    <div className="w-14 h-14 flex items-center justify-center rounded-full bg-accent/20">
+                      <Loader2 className="w-6 h-6 text-accent animate-spin" />
+                    </div>
+                    <span className="text-sm text-accent">Processing audio...</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startRecording}
+                    className="flex items-center gap-4 w-full bg-accent/5 hover:bg-accent/10 border border-accent/20 hover:border-accent/40 rounded-xl px-4 py-4 transition-all cursor-pointer group"
+                  >
+                    <div className="w-14 h-14 flex items-center justify-center rounded-full bg-accent/15 group-hover:bg-accent/25 transition-colors">
+                      <Mic className="w-6 h-6 text-accent" />
+                    </div>
+                    <div className="text-left">
+                      <span className="text-sm font-medium text-foreground">Tap to record</span>
+                      <span className="block text-xs text-muted">Share what you know about this account</span>
+                    </div>
+                  </button>
+                )}
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowTextInput(true)}
+              className="flex items-center gap-1.5 mt-2 text-xs text-muted hover:text-accent cursor-pointer"
+            >
+              <Type className="w-3 h-3" />
+              Or type instead
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            {showMic && !isRecording && !isTranscribing && (
+              <button
+                type="button"
+                onClick={startRecording}
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted hover:text-accent bg-surface hover:bg-surface-elevated border border-border rounded-lg cursor-pointer transition-colors"
+              >
+                <Mic className="w-3 h-3" />
+                Add more via voice
+              </button>
+            )}
+          </div>
+        )}
+
+        {voiceError && <p className="text-xs text-red-400 mt-2">{voiceError}</p>}
+      </div>
+
+      {formError && (
+        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          {formError}
+        </div>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={loadingPreview}
+          className="flex items-center gap-2 px-6 py-2.5 btn-gradient text-white rounded-lg text-sm font-medium cursor-pointer disabled:opacity-50"
+        >
+          {loadingPreview ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          Next — Preview Pathway
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VoiceWaveform({ stream }: { stream: MediaStream | null }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animFrameRef = useRef<number>(0);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+
+  useEffect(() => {
+    if (!stream || !canvasRef.current) return;
+
+    const audioCtx = new AudioContext();
+    const source = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+    source.connect(analyser);
+    analyserRef.current = analyser;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const barCount = 24;
+
+    function draw() {
+      if (!analyserRef.current || !ctx) return;
+      animFrameRef.current = requestAnimationFrame(draw);
+      analyserRef.current.getByteFrequencyData(dataArray);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barWidth = canvas.width / barCount;
+      const centerY = canvas.height / 2;
+
+      for (let i = 0; i < barCount; i++) {
+        const dataIndex = Math.floor((i / barCount) * dataArray.length);
+        const value = dataArray[dataIndex] / 255;
+        const barHeight = Math.max(3, value * centerY * 0.9);
+
+        ctx.fillStyle = `rgba(239, 68, 68, ${0.4 + value * 0.6})`;
+        ctx.beginPath();
+        ctx.roundRect(
+          i * barWidth + barWidth * 0.15,
+          centerY - barHeight,
+          barWidth * 0.7,
+          barHeight * 2,
+          2
+        );
+        ctx.fill();
+      }
+    }
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animFrameRef.current);
+      analyserRef.current = null;
+      source.disconnect();
+      audioCtx.close();
+    };
+  }, [stream]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={240}
+      height={48}
+      className="w-full max-w-[240px] h-12"
+    />
+  );
+}
 
 function StatCard({ label, value, icon: Icon }: { label: string; value: string | number; icon: React.ElementType }) {
   return (

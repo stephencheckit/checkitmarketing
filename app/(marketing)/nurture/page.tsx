@@ -192,6 +192,7 @@ export default function NurturePage() {
   const [editingName, setEditingName] = useState(false);
   const [sendingTest, setSendingTest] = useState<number | null>(null);
   const [testSentStep, setTestSentStep] = useState<number | null>(null);
+  const [highlightedEnrollmentId, setHighlightedEnrollmentId] = useState<number | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -263,11 +264,11 @@ export default function NurturePage() {
       const data = await res.json();
       if (!res.ok) {
         setFormError(data.error || 'Failed to start engagement');
+        setEnrolling(false);
         return;
       }
-      setFormSuccess(`${form.contactName} added to engagement track. First email goes out ${
-        data.enrollment?.next_send_at ? formatDate(data.enrollment.next_send_at) : 'in 3 days'
-      }.`);
+      // Clean exit: close form, reset state, highlight the new row
+      setShowForm(false);
       setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', accountContext: '' });
       setEnrollStep(1);
       setPreviewSteps([]);
@@ -278,11 +279,14 @@ export default function NurturePage() {
       setEditingName(false);
       setSendingTest(null);
       setTestSentStep(null);
-      loadData();
-      setTimeout(() => { setFormSuccess(''); setShowForm(false); }, 4000);
+      setEnrolling(false);
+      await loadData();
+      if (data.enrollment?.id) {
+        setHighlightedEnrollmentId(data.enrollment.id);
+        setTimeout(() => setHighlightedEnrollmentId(null), 5000);
+      }
     } catch {
       setFormError('Failed to start engagement');
-    } finally {
       setEnrolling(false);
     }
   };
@@ -443,6 +447,14 @@ export default function NurturePage() {
       {/* Enrollment Form — Two Steps */}
       {showForm && (
         <div className="bg-surface-elevated border border-border rounded-xl p-6 mb-8">
+          {enrolling ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-accent mb-4" />
+              <p className="text-sm font-medium text-foreground">Adding to engagement track...</p>
+              <p className="text-xs text-muted mt-1">Setting up the email sequence</p>
+            </div>
+          ) : (
+          <>
           {/* Step indicator */}
           <div className="flex items-center gap-3 mb-6">
             <div className={`flex items-center gap-2 text-sm font-medium ${enrollStep === 1 ? 'text-accent' : 'text-muted'}`}>
@@ -665,6 +677,8 @@ export default function NurturePage() {
               </div>
             </div>
           )}
+          </>
+          )}
         </div>
       )}
 
@@ -748,6 +762,7 @@ export default function NurturePage() {
                     loadingDetail={expandedId === e.id && loadingDetail}
                     onToggle={() => loadDetail(e.id)}
                     onStatusChange={handleStatusChange}
+                    isHighlighted={highlightedEnrollmentId === e.id}
                   />
                 ))}
               </tbody>
@@ -1170,6 +1185,7 @@ function EnrollmentRow({
   loadingDetail,
   onToggle,
   onStatusChange,
+  isHighlighted = false,
 }: {
   enrollment: Enrollment;
   isExpanded: boolean;
@@ -1177,13 +1193,18 @@ function EnrollmentRow({
   loadingDetail: boolean;
   onToggle: () => void;
   onStatusChange: (id: number, status: string) => void;
+  isHighlighted?: boolean;
 }) {
   const statusColor = STATUS_COLORS[enrollment.status] || 'text-muted bg-muted/10 border-muted/20';
   const totalSteps = 6;
 
   return (
     <>
-      <tr className="border-b border-border/50 hover:bg-surface/50 transition-colors">
+      <tr className={`border-b hover:bg-surface/50 transition-all duration-700 ${
+        isHighlighted
+          ? 'bg-green-500/5 border-green-500/30 shadow-[inset_0_0_0_1px_rgba(34,197,94,0.2)]'
+          : 'border-border/50'
+      }`}>
         <td className="px-4 py-3">
           <button onClick={onToggle} className="text-muted hover:text-foreground cursor-pointer">
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}

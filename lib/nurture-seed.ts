@@ -3,117 +3,156 @@ import { createNurtureTrack, createNurtureStep, addNurtureContent } from './nurt
 
 export async function seedDefaultTrack(): Promise<number> {
   const existing = await sql`SELECT id FROM nurture_tracks WHERE name = 'Closed-Lost Generic' LIMIT 1`;
-  if (existing.length > 0) return existing[0].id;
+  if (existing.length > 0) {
+    await migrateSteps(existing[0].id);
+    return existing[0].id;
+  }
 
   const track = await createNurtureTrack(
     'Closed-Lost Generic',
-    'Re-engagement nurture track for closed-lost deals. 6 emails over 90 days covering value stories, product updates, and social proof.'
+    'Re-engagement nurture track for closed-lost deals. 6 emails over 90 days — marketing content, industry insights, and product updates.'
   );
 
-  await createNurtureStep(track.id, 1, 3,
-    'Thinking of you, {{contact_name}}',
+  await writeSteps(track.id);
+  return track.id;
+}
+
+async function migrateSteps(trackId: number) {
+  const check = await sql`SELECT delay_days FROM nurture_steps WHERE track_id = ${trackId} AND step_number = 1`;
+  if (check.length > 0 && check[0].delay_days === 1) return;
+  await writeSteps(trackId);
+}
+
+async function writeSteps(trackId: number) {
+  await createNurtureStep(trackId, 1, 1,
+    'What teams like {{company_name}} are doing differently in {{vertical}}',
     `Hi {{contact_name}},
 
-It's been a little while since we last connected about operational compliance at {{company_name}}. I wanted to reach out because I've been thinking about some of the challenges you mentioned.
+Operations teams across {{vertical}} are rethinking how they handle compliance — moving away from paper checklists and manual temperature logs toward automated, real-time monitoring.
 
 {{personalized_context}}
 
-A lot has been happening on our end, and I think some of it might be relevant to what you're working on. No pressure — just wanted to keep the line open.
+Here's what's driving the shift:
 
-If you'd ever like to revisit the conversation, I'm here.
+• Automated sensors that log temperatures 24/7 — no manual checks needed
+• Digital checklists that flag missed tasks before they become audit issues
+• Predictive alerts that catch equipment failures before they happen
 
-Best,
-{{sender_name}}
-Checkit`,
-    ['account_context']
-  );
-
-  await createNurtureStep(track.id, 2, 10,
-    '{{company_name}} — a quick story I thought you\'d find interesting',
-    `Hi {{contact_name}},
-
-I wanted to share a quick customer story that reminded me of {{company_name}}.
+We put together a quick overview of how this works in practice:
 
 {{content_block}}
 
-The results have been significant — reduced compliance prep time, fewer manual errors, and better visibility across sites.
+Worth a look if operational visibility is on your radar.
 
-Thought it might spark some ideas for you. Happy to walk through the details if you're curious.
-
-{{sender_name}}
-Checkit`,
-    ['case_study']
+The Checkit Team`,
+    ['account_context', 'product_update']
   );
 
-  await createNurtureStep(track.id, 3, 21,
-    'What\'s new at Checkit — thought you should know',
+  await createNurtureStep(trackId, 2, 10,
+    'How {{vertical}} teams are cutting compliance prep by 60%',
     `Hi {{contact_name}},
 
-Since we last spoke, we've been busy. A few things that might be on your radar:
+We recently published a case study that's been getting a lot of attention from {{vertical}} operations leaders.
 
 {{content_block}}
 
-These updates address some of the most common challenges we hear from operations and compliance teams — and they're directly applicable to organizations like {{company_name}}.
+The headline numbers:
+• 60% reduction in audit preparation time
+• 90%+ compliance scores across all sites
+• Full digital audit trail — no more paper binders
 
-Would love to show you what's changed. A quick 15-minute call would do it.
+These results came from a team facing challenges similar to what many organizations in {{vertical}} deal with every day.
 
-{{sender_name}}
-Checkit`,
+If you'd like to see the full breakdown, it's linked above.
+
+The Checkit Team`,
+    ['case_study', 'social_proof']
+  );
+
+  await createNurtureStep(trackId, 3, 21,
+    'New from Checkit: asset intelligence and predictive monitoring',
+    `Hi {{contact_name}},
+
+We've been shipping some major updates to the Checkit platform and wanted to make sure you saw them:
+
+🔧 Asset Intelligence — Track equipment health, predict failures before they happen, and reduce unplanned downtime.
+
+🌡️ Enhanced Temperature Automation — Expanded sensor support, faster alerting, and smarter escalation rules.
+
+📋 Workflow Builder 2.0 — Build custom compliance workflows with conditional logic, photo evidence, and automated sign-offs.
+
+{{content_block}}
+
+These updates were built directly from feedback from operations teams in {{vertical}} and adjacent industries.
+
+See what's new → https://checkitv6.com/platform
+
+The Checkit Team`,
     ['product_update', 'temperature_automation', 'asset_intelligence']
   );
 
-  await createNurtureStep(track.id, 4, 45,
-    'A trend worth watching in {{vertical}}',
+  await createNurtureStep(trackId, 4, 45,
+    '3 {{vertical}} trends every operations leader should know',
     `Hi {{contact_name}},
 
-I've been tracking some trends in the {{vertical}} space that I thought you'd find relevant.
+We've been tracking some important shifts in {{vertical}} that are reshaping how operations and compliance teams work:
+
+1. Regulatory bodies are increasingly expecting digital records — paper logs are becoming a liability.
+
+2. Insurance providers are offering better rates to facilities with automated monitoring and predictive maintenance.
+
+3. Labor shortages are accelerating the move to technology-assisted compliance — doing more with fewer hands.
 
 {{content_block}}
 
-Organizations that are getting ahead of this are seeing real operational advantages. Curious whether this is something {{company_name}} is thinking about.
+Organizations getting ahead of these trends are seeing real competitive advantages in audits, insurance costs, and staff efficiency.
 
-Either way, I thought it was worth sharing.
-
-{{sender_name}}
-Checkit`,
+The Checkit Team`,
     ['industry_insight', 'blog']
   );
 
-  await createNurtureStep(track.id, 5, 75,
-    'The numbers speak for themselves',
+  await createNurtureStep(trackId, 5, 75,
+    'The ROI of automated compliance: real numbers from real teams',
     `Hi {{contact_name}},
 
-I wanted to share some results we've been seeing across our customer base:
+We hear from a lot of operations leaders who want to modernize but need to make the business case first. So we pulled together the numbers:
+
+📊 Average results across Checkit customers:
+• 60% less time spent on compliance prep
+• 35% reduction in equipment-related incidents
+• $15K–$50K annual savings per facility from reduced waste and fewer violations
 
 {{content_block}}
 
-These aren't theoretical — they're measured outcomes from organizations similar to {{company_name}}.
+We also built a free calculator so you can estimate the impact for your specific operation:
+→ https://checkitv6.com/tools/paper-to-digital
 
-If ROI is a factor in revisiting this conversation, I'd be happy to run a quick analysis specific to your operation. No strings attached.
+No sales pitch — just math.
 
-{{sender_name}}
-Checkit`,
+The Checkit Team`,
     ['roi', 'social_proof', 'case_study']
   );
 
-  await createNurtureStep(track.id, 6, 90,
-    'Door\'s always open, {{contact_name}}',
+  await createNurtureStep(trackId, 6, 90,
+    '{{contact_name}}, quick question',
     `Hi {{contact_name}},
 
-I'll keep this brief. I know timing is everything, and what didn't work before might make sense now.
+We've been sharing updates from Checkit over the past few months. Before we wrap up this series, we wanted to ask:
 
-If anything has changed at {{company_name}} — new compliance requirements, staffing shifts, equipment concerns — I'd love to pick up where we left off.
+Is operational compliance still a priority at {{company_name}}?
 
-No pressure at all. But if you'd like to reconnect, you can grab time with our team here: https://checkitv6.com
+If so, our team would love to set up a quick 15-minute walkthrough — tailored to {{vertical}}, no slides, just a live look at the platform.
 
-Either way, I wish you and the team all the best.
+→ Book a time: https://checkitv6.com
+→ Or just reply to this email
 
-{{sender_name}}
-Checkit`,
+If the timing isn't right, no worries at all. We'll keep publishing useful content on our blog that you can access anytime:
+→ https://www.checkit.net/blog/
+
+Thanks for reading,
+The Checkit Team`,
     ['demo_request']
   );
-
-  return track.id;
 }
 
 export async function seedDefaultContent(): Promise<void> {

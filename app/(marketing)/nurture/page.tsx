@@ -124,12 +124,12 @@ const LOSS_REASONS = [
 ];
 
 const STEP_THEMES: Record<number, { theme: string; description: string }> = {
-  1: { theme: 'Check-in', description: 'Brief personal check-in referencing what they were evaluating' },
-  2: { theme: 'Value Story', description: 'Relevant case study based on their vertical' },
-  3: { theme: 'Product Update', description: 'What\'s new since they last looked — temperature automation, asset intelligence' },
-  4: { theme: 'Industry Insight', description: 'Relevant trend or challenge in their vertical' },
-  5: { theme: 'Social Proof', description: 'Customer results and ROI data' },
-  6: { theme: 'Open Door', description: 'Soft close with a clear call to action' },
+  1: { theme: 'Industry Overview', description: 'How teams in their vertical are modernizing operations' },
+  2: { theme: 'Case Study', description: 'Real customer results — compliance time, audit scores, ROI' },
+  3: { theme: 'Product Update', description: 'New platform features — asset intelligence, sensors, workflows' },
+  4: { theme: 'Industry Trends', description: 'Key trends shaping operations and compliance in their space' },
+  5: { theme: 'ROI & Results', description: 'Hard numbers and a free ROI calculator' },
+  6: { theme: 'Reconnect', description: 'Quick question + easy way to book time or keep reading' },
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -237,6 +237,7 @@ export default function NurturePage() {
       const res = await fetch('/api/nurture/preview');
       const data = await res.json();
       setPreviewSteps(data.steps || []);
+      setExpandedPreviewStep(1);
       setEnrollStep(2);
     } catch {
       setFormError('Failed to load engagement pathway');
@@ -561,102 +562,72 @@ export default function NurturePage() {
                 </div>
               </div>
 
-              {/* Engagement pathway timeline — clickable previews */}
+              {/* Engagement pathway — split layout */}
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-3">Engagement Pathway — 6 emails over 90 days</h3>
-                <p className="text-xs text-muted mb-4">Click any email to preview. Each is personalized using your account context.</p>
-                <div className="space-y-0">
-                  {previewSteps.map((step, i) => {
-                    const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
-                    const baseDate = scheduleMode === 'later' && scheduledDate ? new Date(scheduledDate + 'T00:00:00') : new Date();
-                    const sendDate = addDays(baseDate, step.delay_days);
-                    const isLast = i === previewSteps.length - 1;
-                    const isExpanded = expandedPreviewStep === step.step_number;
+                <p className="text-xs text-muted mb-4">Click an email to preview it on the right.</p>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {/* Left: email list */}
+                  <div className="md:col-span-2 space-y-0">
+                    {previewSteps.map((step, i) => {
+                      const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
+                      const baseDate = scheduleMode === 'later' && scheduledDate ? new Date(scheduledDate + 'T00:00:00') : new Date();
+                      const sendDate = addDays(baseDate, step.delay_days);
+                      const isLast = i === previewSteps.length - 1;
+                      const isSelected = expandedPreviewStep === step.step_number;
 
-                    const previewBody = step.body_template
-                      .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
-                      .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
-                      .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry')
-                      .replace(/\{\{sender_name\}\}/g, 'Your Checkit Rep')
-                      .replace(/\{\{personalized_context\}\}/g, '[Personalized based on the context you shared]')
-                      .replace(/\{\{content_block\}\}/g, '[Relevant content will be selected based on vertical and topic]');
-
-                    const previewSubject = step.subject_template
-                      .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
-                      .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
-                      .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry');
-
-                    return (
-                      <div key={step.step_number} className="flex gap-3">
-                        <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center shrink-0">
-                            <span className="text-xs font-bold text-accent">{step.step_number}</span>
+                      return (
+                        <div key={step.step_number} className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                              isSelected ? 'bg-accent text-white' : 'bg-accent/10 border border-accent/30'
+                            }`}>
+                              <span className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-accent'}`}>{step.step_number}</span>
+                            </div>
+                            {!isLast && <div className="w-px flex-1 bg-border min-h-[16px]" />}
                           </div>
-                          {!isLast && <div className="w-px flex-1 bg-border min-h-[24px]" />}
+                          <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-3'}`}>
+                            <button
+                              type="button"
+                              onClick={() => setExpandedPreviewStep(step.step_number)}
+                              className={`w-full text-left px-3 py-2 -ml-1 rounded-lg transition-all cursor-pointer ${
+                                isSelected ? 'bg-accent/10 border border-accent/20' : 'hover:bg-surface-elevated'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-medium ${isSelected ? 'text-accent' : 'text-foreground'}`}>{theme.theme}</span>
+                                <span className="text-xs text-muted">Day {step.delay_days}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <Calendar className="w-3 h-3 text-muted" />
+                                <span className="text-xs text-muted">{sendDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                              </div>
+                            </button>
+                          </div>
                         </div>
-                        <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-4'}`}>
-                          <button
-                            type="button"
-                            onClick={() => setExpandedPreviewStep(isExpanded ? null : step.step_number)}
-                            className="w-full text-left group cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">{theme.theme}</span>
-                              <span className="text-xs text-muted">Day {step.delay_days}</span>
-                              <ChevronDown className={`w-3.5 h-3.5 text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Calendar className="w-3 h-3 text-muted" />
-                              <span className="text-xs text-muted">{sendDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                            </div>
-                            <p className="text-xs text-muted/70 mt-1">{theme.description}</p>
-                          </button>
+                      );
+                    })}
+                  </div>
 
-                          {isExpanded && (
-                            <div className="mt-3 bg-surface-elevated border border-border rounded-lg overflow-hidden">
-                              <div className="px-4 py-2.5 border-b border-border bg-surface">
-                                <div className="text-xs text-muted">Subject</div>
-                                <div className="text-sm font-medium text-foreground mt-0.5">{previewSubject}</div>
-                              </div>
-                              <div className="px-4 py-3">
-                                <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{previewBody}</div>
-                                {(step.body_template.includes('{{personalized_context}}') || step.body_template.includes('{{content_block}}')) && (
-                                  <div className="mt-3 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg">
-                                    <p className="text-xs text-accent">
-                                      Bracketed sections will be personalized using your account context and relevant content for {form.contactName || 'this contact'}&apos;s vertical.
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="px-4 py-2.5 border-t border-border bg-surface flex items-center justify-between">
-                                <p className="text-xs text-muted">See the actual personalized email in your inbox</p>
-                                {testSentStep === step.step_number ? (
-                                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
-                                    Sent — check your inbox
-                                  </span>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); handleTestSend(step.step_number); }}
-                                    disabled={sendingTest !== null}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg cursor-pointer disabled:opacity-50 transition-colors"
-                                  >
-                                    {sendingTest === step.step_number ? (
-                                      <Loader2 className="w-3 h-3 animate-spin" />
-                                    ) : (
-                                      <Mail className="w-3 h-3" />
-                                    )}
-                                    Send test to me
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          )}
+                  {/* Right: preview panel */}
+                  <div className="md:col-span-3">
+                    {expandedPreviewStep ? (
+                      <EmailPreviewPanel
+                        step={previewSteps.find((s) => s.step_number === expandedPreviewStep)!}
+                        form={form}
+                        sendingTest={sendingTest}
+                        testSentStep={testSentStep}
+                        onTestSend={handleTestSend}
+                      />
+                    ) : (
+                      <div className="bg-surface border border-border rounded-lg p-8 text-center h-full flex items-center justify-center">
+                        <div>
+                          <Mail className="w-8 h-8 text-muted/30 mx-auto mb-2" />
+                          <p className="text-sm text-muted">Click an email on the left to preview it</p>
                         </div>
                       </div>
-                    );
-                  })}
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1017,6 +988,95 @@ function Step1Form({
           Next — Preview Pathway
           <ArrowRight className="w-4 h-4" />
         </button>
+      </div>
+    </div>
+  );
+}
+
+function EmailPreviewPanel({
+  step,
+  form,
+  sendingTest,
+  testSentStep,
+  onTestSend,
+}: {
+  step: StepPreview;
+  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; accountContext: string; lossReason: string };
+  sendingTest: number | null;
+  testSentStep: number | null;
+  onTestSend: (stepNumber: number) => void;
+}) {
+  const theme = STEP_THEMES[step.step_number] || { theme: `Step ${step.step_number}`, description: '' };
+
+  const previewBody = step.body_template
+    .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
+    .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
+    .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry')
+    .replace(/\{\{sender_name\}\}/g, 'The Checkit Team')
+    .replace(/\{\{personalized_context\}\}/g, form.accountContext
+      ? '[Context from your notes will be woven in here]'
+      : '[Additional context about their specific situation]')
+    .replace(/\{\{content_block\}\}/g, '[Relevant content links selected for their vertical]');
+
+  const previewSubject = step.subject_template
+    .replace(/\{\{contact_name\}\}/g, form.contactName || 'there')
+    .replace(/\{\{company_name\}\}/g, form.companyName || 'your organization')
+    .replace(/\{\{vertical\}\}/g, form.vertical?.replace('-', ' ') || 'your industry');
+
+  return (
+    <div className="bg-surface-elevated border border-border rounded-lg overflow-hidden sticky top-4">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border bg-surface">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-xs text-muted">Email {step.step_number} of 6</span>
+            <span className="mx-2 text-muted/30">·</span>
+            <span className="text-xs text-accent font-medium">{theme.theme}</span>
+          </div>
+          <span className="text-xs text-muted">Day {step.delay_days}</span>
+        </div>
+      </div>
+
+      {/* Subject */}
+      <div className="px-4 py-2.5 border-b border-border/50">
+        <div className="text-xs text-muted mb-0.5">Subject</div>
+        <div className="text-sm font-medium text-foreground">{previewSubject}</div>
+      </div>
+
+      {/* Body */}
+      <div className="px-4 py-4 max-h-[400px] overflow-y-auto">
+        <div className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{previewBody}</div>
+        {(step.body_template.includes('{{personalized_context}}') || step.body_template.includes('{{content_block}}')) && (
+          <div className="mt-4 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg">
+            <p className="text-xs text-accent">
+              Bracketed sections are filled with personalized content and relevant links when the email is sent.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Test send footer */}
+      <div className="px-4 py-3 border-t border-border bg-surface">
+        {testSentStep === step.step_number ? (
+          <div className="flex items-center gap-2 text-green-400 text-sm">
+            <CheckCircle2 className="w-4 h-4" />
+            Test sent — check your inbox
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onTestSend(step.step_number)}
+            disabled={sendingTest !== null}
+            className="flex items-center gap-2 w-full justify-center px-4 py-2.5 text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg cursor-pointer disabled:opacity-50 transition-colors"
+          >
+            {sendingTest === step.step_number ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+            Send test preview to me
+          </button>
+        )}
       </div>
     </div>
   );

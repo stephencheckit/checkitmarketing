@@ -84,23 +84,17 @@ export const nurtureDailySend = inngest.createFunction(
             `- ${c.title}: ${c.description || ''}\n  ${c.url}`
           ).join('\n') || 'Visit checkitv6.com to learn more about our platform.';
 
-          // Personalize via GPT
           const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-          const senderName = enrollment.enrolled_by_email
-            ? enrollment.enrolled_by_email.split('@')[0].split('.').map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join(' ')
-            : 'The Checkit Team';
+          const prompt = `You are writing a marketing email for Checkit, an operational compliance and automated monitoring platform.
 
-          const prompt = `You are writing a professional marketing email for Checkit, an operational compliance and automated monitoring platform.
-
-Personalize this email template for the recipient. Keep the tone warm, professional, and consultative — not pushy. Replace template variables with appropriate content.
+This is a marketing-style email (not a 1-to-1 sales email). Keep the tone professional, informative, and value-driven — like a company newsletter or product update. Do NOT sound like a personal sales rep writing a follow-up.
 
 RECIPIENT:
 - Name: ${enrollment.contact_name}
 - Company: ${enrollment.company_name || 'their organization'}
 - Vertical: ${enrollment.vertical || 'operations'}
-- Loss reason: ${enrollment.loss_reason || 'unknown'}
-- Account context from the sales rep: ${enrollment.account_context || 'No additional context provided.'}
+- Account context: ${enrollment.account_context || 'No additional context provided.'}
 
 TEMPLATE SUBJECT: ${stepData.subject_template}
 
@@ -110,16 +104,14 @@ ${stepData.body_template}
 CONTENT TO REFERENCE (pick the most relevant):
 ${contentBlock}
 
-SENDER NAME: ${senderName}
-
 Instructions:
 - Replace {{contact_name}} with the recipient's first name
 - Replace {{company_name}} with the company name
 - Replace {{vertical}} with a natural industry name (e.g., "senior living" not "senior-living")
-- Replace {{sender_name}} with the sender name
-- Replace {{personalized_context}} with 1-2 sentences referencing the account context
-- Replace {{content_block}} with a brief, natural reference to the most relevant content piece(s) — include the URL naturally
-- Keep the email under 200 words
+- Replace {{personalized_context}} with 1-2 sentences weaving in the account context naturally
+- Replace {{content_block}} with a brief reference to the most relevant content piece(s) — include URLs naturally
+- Keep the marketing tone — informative, not salesy
+- Keep the email under 250 words
 - Do NOT include subject line in the body
 - Return ONLY the email body text, no markdown formatting
 

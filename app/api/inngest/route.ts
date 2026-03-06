@@ -4,6 +4,7 @@ import {
   nurtureDailySend,
   nurtureDailyRecap,
   nurturContactEnrolled,
+  nurtureImmediateSend,
   nurturResendWebhook,
 } from '@/inngest/functions';
 
@@ -13,6 +14,7 @@ export const { GET, POST, PUT } = serve({
     nurtureDailySend,
     nurtureDailyRecap,
     nurturContactEnrolled,
+    nurtureImmediateSend,
     nurturResendWebhook,
   ],
 });

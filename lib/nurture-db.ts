@@ -40,6 +40,10 @@ export async function initializeNurtureTables() {
       vertical VARCHAR(100),
       account_context TEXT,
       loss_reason VARCHAR(100),
+      persona_type VARCHAR(50),
+      persona_function VARCHAR(100),
+      email_count INTEGER DEFAULT 6,
+      period_days INTEGER DEFAULT 90,
       enrolled_by INTEGER,
       enrolled_by_email VARCHAR(255),
       status VARCHAR(50) DEFAULT 'active',
@@ -50,6 +54,12 @@ export async function initializeNurtureTables() {
       completed_at TIMESTAMP
     )
   `;
+
+  // Migrate existing tables
+  await sql`ALTER TABLE nurture_enrollments ADD COLUMN IF NOT EXISTS persona_type VARCHAR(50)`;
+  await sql`ALTER TABLE nurture_enrollments ADD COLUMN IF NOT EXISTS persona_function VARCHAR(100)`;
+  await sql`ALTER TABLE nurture_enrollments ADD COLUMN IF NOT EXISTS email_count INTEGER DEFAULT 6`;
+  await sql`ALTER TABLE nurture_enrollments ADD COLUMN IF NOT EXISTS period_days INTEGER DEFAULT 90`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS nurture_sends (
@@ -231,6 +241,10 @@ export interface NurtureEnrollment {
   vertical: string | null;
   account_context: string | null;
   loss_reason: string | null;
+  persona_type: string | null;
+  persona_function: string | null;
+  email_count: number;
+  period_days: number;
   enrolled_by: number | null;
   enrolled_by_email: string | null;
   status: string;
@@ -249,6 +263,10 @@ export interface EnrollContactInput {
   vertical?: string;
   accountContext?: string;
   lossReason?: string;
+  personaType?: string;
+  personaFunction?: string;
+  emailCount?: number;
+  periodDays?: number;
   enrolledBy?: number;
   enrolledByEmail?: string;
 }
@@ -257,12 +275,16 @@ export async function enrollContact(input: EnrollContactInput): Promise<NurtureE
   const result = await sql`
     INSERT INTO nurture_enrollments (
       track_id, contact_email, contact_name, company_name,
-      vertical, account_context, loss_reason, enrolled_by, enrolled_by_email
+      vertical, account_context, loss_reason,
+      persona_type, persona_function, email_count, period_days,
+      enrolled_by, enrolled_by_email
     )
     VALUES (
       ${input.trackId}, ${input.contactEmail}, ${input.contactName},
       ${input.companyName || null}, ${input.vertical || null},
       ${input.accountContext || null}, ${input.lossReason || null},
+      ${input.personaType || null}, ${input.personaFunction || null},
+      ${input.emailCount || 6}, ${input.periodDays || 90},
       ${input.enrolledBy || null}, ${input.enrolledByEmail || null}
     )
     RETURNING *

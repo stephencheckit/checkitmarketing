@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { contactName, contactEmail, companyName, vertical, accountContext, lossReason, trackId, enrolledByEmail, startDate } = body;
+    const { contactName, contactEmail, companyName, vertical, accountContext, lossReason, trackId, enrolledByEmail, startDate, personaType, personaFunction, emailCount, periodDays, sendNow } = body;
 
     if (!contactName || !contactEmail) {
       return NextResponse.json({ error: 'Contact name and email are required' }, { status: 400 });
@@ -82,15 +82,26 @@ export async function POST(request: NextRequest) {
       vertical,
       accountContext,
       lossReason,
+      personaType,
+      personaFunction,
+      emailCount: emailCount ? parseInt(emailCount) : undefined,
+      periodDays: periodDays ? parseInt(periodDays) : undefined,
       enrolledByEmail,
     });
 
     const steps = await getTrackSteps(resolvedTrackId);
     const firstStep = steps.find((s) => s.step_number === 1);
     if (firstStep) {
-      const baseDate = startDate ? new Date(startDate) : new Date();
-      const nextSendAt = new Date(baseDate);
-      nextSendAt.setDate(nextSendAt.getDate() + firstStep.delay_days);
+      let nextSendAt: Date;
+      if (sendNow) {
+        nextSendAt = new Date();
+      } else if (startDate) {
+        nextSendAt = new Date(startDate);
+        nextSendAt.setDate(nextSendAt.getDate() + firstStep.delay_days);
+      } else {
+        nextSendAt = new Date();
+        nextSendAt.setDate(nextSendAt.getDate() + firstStep.delay_days);
+      }
       await sql`
         UPDATE nurture_enrollments
         SET current_step = 1, next_send_at = ${nextSendAt.toISOString()}
@@ -102,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     await inngest.send({
       name: 'nurture/contact.enrolled',
-      data: { enrollmentId: enrollment.id },
+      data: { enrollmentId: enrollment.id, sendNow: !!sendNow },
     });
 
     return NextResponse.json({ success: true, enrollment });

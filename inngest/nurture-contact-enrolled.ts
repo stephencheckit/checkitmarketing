@@ -5,7 +5,7 @@ export const nurturContactEnrolled = inngest.createFunction(
   { id: 'nurture-contact-enrolled' },
   { event: 'nurture/contact.enrolled' },
   async ({ event }) => {
-    const { enrollmentId } = event.data;
+    const { enrollmentId, sendNow } = event.data;
 
     const enrollment = await sql`
       SELECT e.*, s.delay_days
@@ -24,15 +24,14 @@ export const nurturContactEnrolled = inngest.createFunction(
       return { error: 'Contact is on suppression list' };
     }
 
-    const nextSendAt = new Date();
-    nextSendAt.setDate(nextSendAt.getDate() + enrollment[0].delay_days);
+    if (sendNow) {
+      await inngest.send({
+        name: 'nurture/immediate-send',
+        data: { enrollmentId },
+      });
+      return { success: true, immediate: true };
+    }
 
-    await sql`
-      UPDATE nurture_enrollments
-      SET next_send_at = ${nextSendAt.toISOString()}, current_step = 1
-      WHERE id = ${enrollmentId}
-    `;
-
-    return { success: true, nextSendAt };
+    return { success: true };
   }
 );

@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
       vertical,
       accountContext,
       lossReason,
+      personaType,
+      personaFunction,
     } = body;
 
     if (!testEmail || !stepNumber) {
@@ -93,7 +95,7 @@ This is a marketing-style email (not a 1-to-1 sales email). Keep the tone profes
 RECIPIENT:
 - Name: ${contactName || 'there'}
 - Company: ${companyName || 'their organization'}
-- Vertical: ${vertical || 'operations'}
+- Vertical: ${vertical || 'operations'}${personaType ? `\n- Role level: ${personaType}` : ''}${personaFunction ? `\n- Function: ${personaFunction}` : ''}
 - Account context: ${accountContext || 'No additional context provided.'}
 
 TEMPLATE SUBJECT: ${stepData.subject_template}
@@ -111,7 +113,8 @@ Instructions:
 - Replace {{personalized_context}} with 1-2 sentences weaving in the account context naturally
 - Replace {{content_block}} with a brief reference to the most relevant content piece(s)
 - For links, put the URL on its own line like: https://example.com — do NOT use markdown link syntax like [text](url)
-- Keep the marketing tone — informative, not salesy
+${personaType ? `- Tailor language for a ${personaType}-level reader (${personaType === 'exec' ? 'strategic, high-level, ROI-focused' : personaType === 'vp' ? 'strategic but with operational detail' : personaType === 'director' ? 'balanced strategic and tactical' : 'practical, tactical, implementation-focused'})` : '- Keep the marketing tone — informative, not salesy'}
+${personaFunction ? `- Focus content on ${personaFunction.replace('_', ' ')} concerns and priorities` : ''}
 - Keep the email under 250 words
 - Do NOT include subject line in the body
 - Return ONLY the email body text, no markdown formatting

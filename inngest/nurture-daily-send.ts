@@ -103,7 +103,7 @@ This is a marketing-style email (not a 1-to-1 sales email). Keep the tone profes
 RECIPIENT:
 - Name: ${enrollment.contact_name}
 - Company: ${enrollment.company_name || 'their organization'}
-- Vertical: ${enrollment.vertical || 'operations'}
+- Vertical: ${enrollment.vertical || 'operations'}${enrollment.persona_type ? `\n- Role level: ${enrollment.persona_type}` : ''}${enrollment.persona_function ? `\n- Function: ${enrollment.persona_function}` : ''}
 - Account context: ${enrollment.account_context || 'No additional context provided.'}
 
 TEMPLATE SUBJECT: ${stepData.subject_template}
@@ -121,7 +121,8 @@ Instructions:
 - Replace {{personalized_context}} with 1-2 sentences weaving in the account context naturally
 - Replace {{content_block}} with a brief reference to the most relevant content piece(s)
 - For links, put the URL on its own line like: https://example.com — do NOT use markdown link syntax like [text](url)
-- Keep the marketing tone — informative, not salesy
+${enrollment.persona_type ? `- Tailor language for a ${enrollment.persona_type}-level reader (${enrollment.persona_type === 'exec' ? 'strategic, high-level, ROI-focused' : enrollment.persona_type === 'vp' ? 'strategic but with operational detail' : enrollment.persona_type === 'director' ? 'balanced strategic and tactical' : 'practical, tactical, implementation-focused'})` : '- Keep the marketing tone — informative, not salesy'}
+${enrollment.persona_function ? `- Focus content on ${enrollment.persona_function.replace('_', ' ')} concerns and priorities` : ''}
 - Keep the email under 250 words
 - Do NOT include subject line in the body
 - Return ONLY the email body text, no markdown formatting

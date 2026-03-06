@@ -52,6 +52,10 @@ interface Enrollment {
   vertical: string | null;
   account_context: string | null;
   loss_reason: string | null;
+  persona_type: string | null;
+  persona_function: string | null;
+  email_count: number | null;
+  period_days: number | null;
   enrolled_by_email: string | null;
   status: string;
   current_step: number;
@@ -124,6 +128,35 @@ const LOSS_REASONS = [
   { value: 'other', label: 'Other' },
 ];
 
+const PERSONA_TYPES = [
+  { value: '', label: 'Select level...' },
+  { value: 'exec', label: 'C-Suite / Executive' },
+  { value: 'vp', label: 'VP' },
+  { value: 'director', label: 'Director' },
+  { value: 'manager', label: 'Manager' },
+  { value: 'individual', label: 'Individual Contributor' },
+];
+
+const PERSONA_FUNCTIONS = [
+  { value: '', label: 'Select function...' },
+  { value: 'operations', label: 'Operations' },
+  { value: 'food_safety', label: 'Food Safety / HACCP' },
+  { value: 'compliance', label: 'Compliance / Quality' },
+  { value: 'facilities', label: 'Facilities Management' },
+  { value: 'it', label: 'IT / Technology' },
+  { value: 'procurement', label: 'Procurement' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'general_management', label: 'General Management' },
+];
+
+const CADENCE_OPTIONS = [
+  { emails: 4, days: 30, label: '4 emails / 30 days' },
+  { emails: 6, days: 60, label: '6 emails / 60 days' },
+  { emails: 6, days: 90, label: '6 emails / 90 days' },
+  { emails: 8, days: 90, label: '8 emails / 90 days' },
+  { emails: 8, days: 120, label: '8 emails / 120 days' },
+];
+
 const STEP_THEMES: Record<number, { theme: string; description: string }> = {
   1: { theme: 'Industry Overview', description: 'How teams in their vertical are modernizing operations' },
   2: { theme: 'Case Study', description: 'Real customer results — compliance time, audit scores, ROI' },
@@ -186,6 +219,10 @@ export default function NurturePage() {
     companyName: '',
     vertical: '',
     lossReason: '',
+    personaType: '',
+    personaFunction: '',
+    emailCount: '6',
+    periodDays: '90',
     accountContext: '',
   });
   const [formError, setFormError] = useState('');
@@ -254,9 +291,12 @@ export default function NurturePage() {
     setEnrolling(true);
     let newId: number | null = null;
     try {
-      const payload: Record<string, string> = { ...form };
+      const payload: Record<string, string | boolean> = { ...form };
       if (scheduleMode === 'later' && scheduledDate) {
         payload.startDate = scheduledDate;
+      }
+      if (scheduleMode === 'now') {
+        payload.sendNow = true;
       }
       const res = await fetch('/api/nurture/enroll', {
         method: 'POST',
@@ -271,7 +311,7 @@ export default function NurturePage() {
       }
       newId = data.enrollment?.id || null;
       setShowForm(false);
-      setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', accountContext: '' });
+      setForm({ contactName: '', contactEmail: '', companyName: '', vertical: '', lossReason: '', personaType: '', personaFunction: '', emailCount: '6', periodDays: '90', accountContext: '' });
       setEnrollStep(1);
       setPreviewSteps([]);
       setScheduleMode('now');
@@ -309,6 +349,8 @@ export default function NurturePage() {
           vertical: form.vertical,
           accountContext: form.accountContext,
           lossReason: form.lossReason,
+          personaType: form.personaType,
+          personaFunction: form.personaFunction,
         }),
       });
       const data = await res.json();
@@ -532,6 +574,24 @@ export default function NurturePage() {
                   <div>
                     <span className="text-muted text-xs">Vertical</span>
                     <div className="font-medium text-foreground capitalize">{form.vertical?.replace('-', ' ') || '—'}</div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mt-3 pt-3 border-t border-border">
+                  <div>
+                    <span className="text-muted text-xs">Persona</span>
+                    <div className="font-medium text-foreground">{PERSONA_TYPES.find(p => p.value === form.personaType)?.label || '—'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Function</span>
+                    <div className="font-medium text-foreground">{PERSONA_FUNCTIONS.find(f => f.value === form.personaFunction)?.label || '—'}</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Cadence</span>
+                    <div className="font-medium text-foreground">{form.emailCount} emails / {form.periodDays} days</div>
+                  </div>
+                  <div>
+                    <span className="text-muted text-xs">Loss Reason</span>
+                    <div className="font-medium text-foreground capitalize">{form.lossReason?.replace('_', ' ') || '—'}</div>
                   </div>
                 </div>
                 {form.accountContext && (
@@ -794,7 +854,7 @@ function Step1Form({
   loadingPreview,
   onNext,
 }: {
-  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; lossReason: string; accountContext: string };
+  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; lossReason: string; personaType: string; personaFunction: string; emailCount: string; periodDays: string; accountContext: string };
   setForm: (f: typeof form) => void;
   showTextInput: boolean;
   setShowTextInput: (v: boolean) => void;
@@ -877,6 +937,45 @@ function Step1Form({
           >
             {LOSS_REASONS.map((r) => (
               <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Persona Level</label>
+          <select
+            value={form.personaType}
+            onChange={(e) => setForm({ ...form, personaType: e.target.value })}
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          >
+            {PERSONA_TYPES.map((p) => (
+              <option key={p.value} value={p.value}>{p.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Function</label>
+          <select
+            value={form.personaFunction}
+            onChange={(e) => setForm({ ...form, personaFunction: e.target.value })}
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          >
+            {PERSONA_FUNCTIONS.map((f) => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-muted mb-1">Email Cadence</label>
+          <select
+            value={`${form.emailCount}-${form.periodDays}`}
+            onChange={(e) => {
+              const [emails, days] = e.target.value.split('-');
+              setForm({ ...form, emailCount: emails, periodDays: days });
+            }}
+            className="w-full px-3 py-2 text-sm bg-surface border border-border rounded-lg focus:outline-none focus:border-accent"
+          >
+            {CADENCE_OPTIONS.map((c) => (
+              <option key={`${c.emails}-${c.days}`} value={`${c.emails}-${c.days}`}>{c.label}</option>
             ))}
           </select>
         </div>
@@ -1022,7 +1121,7 @@ function EmailPreviewPanel({
   onTestSend,
 }: {
   step: StepPreview;
-  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; accountContext: string; lossReason: string };
+  form: { contactName: string; contactEmail: string; companyName: string; vertical: string; accountContext: string; lossReason: string; personaType: string; personaFunction: string; emailCount: string; periodDays: string };
   sendingTest: number | null;
   testSentStep: number | null;
   onTestSend: (stepNumber: number) => void;
@@ -1351,6 +1450,24 @@ function ExpandedDetail({ detail }: { detail: EnrollmentDetail }) {
           <span className="text-muted">Vertical:</span>
           <span className="ml-1 text-foreground capitalize">{enrollment.vertical?.replace('-', ' ') || '—'}</span>
         </div>
+        {enrollment.persona_type && (
+          <div>
+            <span className="text-muted">Persona:</span>
+            <span className="ml-1 text-foreground capitalize">{enrollment.persona_type}</span>
+          </div>
+        )}
+        {enrollment.persona_function && (
+          <div>
+            <span className="text-muted">Function:</span>
+            <span className="ml-1 text-foreground capitalize">{enrollment.persona_function?.replace('_', ' ')}</span>
+          </div>
+        )}
+        {enrollment.email_count && (
+          <div>
+            <span className="text-muted">Cadence:</span>
+            <span className="ml-1 text-foreground">{enrollment.email_count} emails / {enrollment.period_days} days</span>
+          </div>
+        )}
         {enrollment.account_context && (
           <div className="col-span-2 md:col-span-5">
             <span className="text-muted">Context:</span>

@@ -1,13 +1,5 @@
 import { Metadata } from 'next';
 import BrochureTemplate from '../BrochureTemplate';
-import {
-  Thermometer,
-  Wrench,
-  FileCheck,
-  BarChart3,
-  Zap,
-  Activity,
-} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Checkit for Facilities Management | Environmental Monitoring & Compliance',
@@ -61,37 +53,37 @@ export default function FacilitiesPage() {
       ]}
       capabilities={[
         {
-          icon: Thermometer,
+          icon: 'Thermometer',
           title: 'Environmental Monitoring',
           description:
             'Continuous monitoring of temperature, humidity, and air quality across all sites with wireless sensors.',
         },
         {
-          icon: Wrench,
+          icon: 'Wrench',
           title: 'Predictive Maintenance',
           description:
             'Spot equipment degradation early through performance trend analysis and get alerted before failures happen.',
         },
         {
-          icon: FileCheck,
+          icon: 'FileCheck',
           title: 'Digital Compliance Workflows',
           description:
             'Replace paper with automated, scheduled compliance checklists that create a verifiable digital audit trail.',
         },
         {
-          icon: BarChart3,
+          icon: 'BarChart3',
           title: 'Portfolio Dashboards',
           description:
             "A single view of every site's status, compliance scores, and open issues across your entire portfolio.",
         },
         {
-          icon: Zap,
+          icon: 'Zap',
           title: 'Energy Monitoring',
           description:
             'Track energy usage patterns tied to equipment performance and identify optimisation opportunities.',
         },
         {
-          icon: Activity,
+          icon: 'Activity',
           title: 'Real-Time Alerting',
           description:
             'Instant alerts when environmental conditions breach thresholds or equipment performance degrades.',

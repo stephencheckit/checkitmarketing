@@ -1,13 +1,5 @@
 import { Metadata } from 'next';
 import BrochureTemplate from '../BrochureTemplate';
-import {
-  Thermometer,
-  FileCheck,
-  AlertTriangle,
-  BarChart3,
-  Utensils,
-  Shield,
-} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Checkit for Chain Dining & Pub Groups | Food Safety Compliance',
@@ -61,37 +53,37 @@ export default function ChainDiningPage() {
       ]}
       capabilities={[
         {
-          icon: Thermometer,
+          icon: 'Thermometer',
           title: 'Temperature Monitoring (incl. Cellars)',
           description:
             'Automated monitoring across fridges, freezers, hot holds, and beer cellars — logged 24/7 without manual checks.',
         },
         {
-          icon: FileCheck,
+          icon: 'FileCheck',
           title: 'Digital Food Safety Checklists',
           description:
             'Standardised opening, closing, and cleaning checklists with photo evidence and staff sign-off.',
         },
         {
-          icon: AlertTriangle,
+          icon: 'AlertTriangle',
           title: 'Smart Escalations',
           description:
             "If a corrective action isn't completed on time, the platform automatically escalates to the right person.",
         },
         {
-          icon: BarChart3,
+          icon: 'BarChart3',
           title: 'Multi-Site Comparison',
           description:
             "Rank and compare compliance scores across all sites so area managers can focus attention where it's needed.",
         },
         {
-          icon: Utensils,
+          icon: 'Utensils',
           title: 'Allergen Management',
           description:
             'Structured allergen workflows with staff acknowledgement ensure consistent handling across every kitchen.',
         },
         {
-          icon: Shield,
+          icon: 'Shield',
           title: 'Audit-Ready Records',
           description:
             'Every check, temperature reading, and corrective action is logged digitally — always ready for inspection.',

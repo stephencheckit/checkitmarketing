@@ -9,7 +9,46 @@ import {
   Clock,
   Users,
   ChevronRight,
+  Thermometer,
+  FileCheck,
+  AlertTriangle,
+  Wifi,
+  Smartphone,
+  Building,
+  Activity,
+  Wrench,
+  Utensils,
+  Snowflake,
+  ClipboardList,
+  Bell,
+  Lock,
+  Zap,
+  Server,
+  type LucideIcon,
 } from 'lucide-react';
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Thermometer,
+  FileCheck,
+  AlertTriangle,
+  BarChart3,
+  Shield,
+  Wifi,
+  Smartphone,
+  Building,
+  Activity,
+  Wrench,
+  Clock,
+  Users,
+  Utensils,
+  Snowflake,
+  ClipboardList,
+  CheckCircle2,
+  Bell,
+  Lock,
+  Zap,
+  Server,
+};
 
 interface Challenge {
   title: string;
@@ -17,7 +56,7 @@ interface Challenge {
 }
 
 interface Capability {
-  icon: React.ElementType;
+  icon: string;
   title: string;
   description: string;
 }
@@ -144,7 +183,7 @@ export default function BrochureTemplate({
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {capabilities.map((cap, i) => {
-              const Icon = cap.icon;
+              const Icon = ICON_MAP[cap.icon] || Shield;
               return (
                 <div key={i} className="flex gap-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-6">
                   <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">

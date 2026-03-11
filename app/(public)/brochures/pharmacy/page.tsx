@@ -1,13 +1,5 @@
 import { Metadata } from 'next';
 import BrochureTemplate from '../BrochureTemplate';
-import {
-  Thermometer,
-  Lock,
-  Bell,
-  BarChart3,
-  FileCheck,
-  Server,
-} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Checkit CAM+ for Pharmacy & Pathology | Cold Chain Compliance',
@@ -61,37 +53,37 @@ export default function PharmacyPage() {
       ]}
       capabilities={[
         {
-          icon: Thermometer,
+          icon: 'Thermometer',
           title: '24/7 Automated Cold Chain Monitoring',
           description:
             'Wireless sensors log temperatures every few minutes across vaccine fridges, blood banks, and specimen storage — day and night.',
         },
         {
-          icon: Lock,
+          icon: 'Lock',
           title: 'Tamper-Proof Digital Records',
           description:
             "Every reading is timestamped and immutable, creating a regulatory-grade audit trail that can't be altered or backfilled.",
         },
         {
-          icon: Bell,
+          icon: 'Bell',
           title: 'Multi-Tier Alerting with Escalation',
           description:
             'Alerts reach the right person at the right time — from on-site staff to managers — with automatic escalation if unresolved.',
         },
         {
-          icon: BarChart3,
+          icon: 'BarChart3',
           title: 'Multi-Site Dashboards',
           description:
             'See cold chain status across all pharmacy and lab locations from a single dashboard with drill-down detail.',
         },
         {
-          icon: FileCheck,
+          icon: 'FileCheck',
           title: 'One-Click Regulatory Reports',
           description:
             'Generate MHRA and CQC-ready reports instantly — no manual data compilation or spreadsheet formatting.',
         },
         {
-          icon: Server,
+          icon: 'Server',
           title: 'Battery-Backed Sensors',
           description:
             'Sensors continue logging during power outages, so you never lose data when it matters most.',

@@ -1,13 +1,5 @@
 import { Metadata } from 'next';
 import BrochureTemplate from '../BrochureTemplate';
-import {
-  Thermometer,
-  FileCheck,
-  AlertTriangle,
-  BarChart3,
-  Wrench,
-  Bell,
-} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Checkit for Forecourts | Automated Compliance & Temperature Monitoring',
@@ -61,37 +53,37 @@ export default function ForecourtsPage() {
       ]}
       capabilities={[
         {
-          icon: Thermometer,
+          icon: 'Thermometer',
           title: 'Automated Temperature Monitoring',
           description:
             'Wireless sensors continuously log fridge, freezer, and food-to-go cabinet temperatures with no manual checks needed.',
         },
         {
-          icon: FileCheck,
+          icon: 'FileCheck',
           title: 'Digital Checklists',
           description:
             'Replace paper with guided digital checklists for shift handovers, cleaning, and food safety — with photo evidence.',
         },
         {
-          icon: AlertTriangle,
+          icon: 'AlertTriangle',
           title: 'Real-Time Alerts',
           description:
             'Instant notifications when temperatures breach thresholds or a fridge door is left open, so issues are caught immediately.',
         },
         {
-          icon: BarChart3,
+          icon: 'BarChart3',
           title: 'Multi-Site Dashboards',
           description:
             'Area managers can check compliance status, scores, and trends across 50+ sites from a single dashboard.',
         },
         {
-          icon: Wrench,
+          icon: 'Wrench',
           title: 'Asset Intelligence',
           description:
             'Track equipment health over time to spot ageing assets and prevent unplanned failures before they cause waste.',
         },
         {
-          icon: Bell,
+          icon: 'Bell',
           title: 'Automatic Escalations',
           description:
             "If a corrective action isn't completed in time, the platform automatically escalates to the next responsible person.",

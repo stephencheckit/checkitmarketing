@@ -1,13 +1,5 @@
 import { Metadata } from 'next';
 import BrochureTemplate from '../BrochureTemplate';
-import {
-  Thermometer,
-  FileCheck,
-  AlertTriangle,
-  BarChart3,
-  Shield,
-  Clock,
-} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Checkit for Food-to-Go | HACCP Compliance & Food Safety',
@@ -61,37 +53,37 @@ export default function FoodToGoPage() {
       ]}
       capabilities={[
         {
-          icon: Thermometer,
+          icon: 'Thermometer',
           title: 'Automated HACCP Logging',
           description:
             'Continuous temperature monitoring across hot holds, fridges, and prep areas — logged automatically with no manual input.',
         },
         {
-          icon: FileCheck,
+          icon: 'FileCheck',
           title: 'Digital Food Safety Checklists',
           description:
             'Guided digital checklists with conditional logic and photo evidence replace paper-based HACCP documentation.',
         },
         {
-          icon: AlertTriangle,
+          icon: 'AlertTriangle',
           title: 'Predictive Temperature Alerts',
           description:
             'Get notified before a fridge fails — not after. Predictive alerts flag equipment trending toward unsafe temperatures.',
         },
         {
-          icon: BarChart3,
+          icon: 'BarChart3',
           title: 'Multi-Site Compliance Dashboards',
           description:
             'Compare compliance scores, completion rates, and trends across every site from a single view.',
         },
         {
-          icon: Shield,
+          icon: 'Shield',
           title: 'Allergen Management Workflows',
           description:
             'Structured allergen management workflows with staff sign-off ensure consistent handling across all sites.',
         },
         {
-          icon: Clock,
+          icon: 'Clock',
           title: 'Waste Reduction Tracking',
           description:
             'Track waste events alongside temperature data to identify patterns and reduce unnecessary food loss.',

@@ -70,7 +70,7 @@ The Checkit Team`,
   );
 
   await createNurtureStep(trackId, 3, 21,
-    'New from Checkit: asset intelligence and predictive monitoring',
+    'New from Checkit: Asset Intelligence and predictive monitoring',
     `Hi {{contact_name}},
 
 We've been shipping some major updates to the Checkit platform and wanted to make sure you saw them:
@@ -222,7 +222,7 @@ The Checkit Team`,
       },
       {
         stepNumber: 3, delayDays: 7,
-        subject: "What's new: asset intelligence for forecourt equipment",
+        subject: "What's new: Asset Intelligence for forecourt equipment",
         body: `Hi {{contact_name}},
 
 Quick update — we've been shipping some features that are particularly relevant for forecourt operations:
@@ -448,7 +448,7 @@ Key highlights:
 
 • Automated environmental monitoring — temperature, humidity, and air quality tracked 24/7 with wireless sensors
 • Digital compliance checklists with automated scheduling, escalations, and audit trails
-• Asset intelligence — track equipment health, predict failures, and reduce unplanned downtime
+• Asset Intelligence — track equipment health, predict failures, and reduce unplanned downtime
 • Multi-site dashboards that give you real-time visibility across your entire portfolio
 
 {{content_block}}
@@ -478,7 +478,7 @@ The Checkit Team`,
       },
       {
         stepNumber: 3, delayDays: 7,
-        subject: 'New: asset intelligence and predictive maintenance',
+        subject: 'New: Asset Intelligence and predictive maintenance',
         body: `Hi {{contact_name}},
 
 Some platform updates particularly relevant for facilities management:
@@ -894,7 +894,7 @@ export async function seedDefaultContent(): Promise<void> {
       source: 'checkitv6',
       verticalTags: ['senior-living', 'food-retail', 'food-facilities', 'medical', 'operations'],
       topicTags: ['product_update', 'temperature_automation', 'asset_intelligence'],
-      description: 'Checkit platform overview — sensors, automated monitoring, digital checklists, reporting, and asset intelligence.',
+      description: 'Checkit platform overview — sensors, automated monitoring, digital checklists, reporting, and Asset Intelligence.',
     },
     {
       title: 'Paper to Digital ROI Calculator',

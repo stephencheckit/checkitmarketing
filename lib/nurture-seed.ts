@@ -147,7 +147,7 @@ If so, our team would love to set up a quick 15-minute walkthrough — tailored 
 → Or just reply to this email
 
 If the timing isn't right, no worries at all. We'll keep publishing useful content on our blog that you can access anytime:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -295,7 +295,7 @@ If so, we'd love to set up a quick 15-minute walkthrough — tailored to fuel re
 → Reply to this email to book a time
 
 If the timing isn't right, no worries. We'll keep publishing useful content:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -422,7 +422,7 @@ If so, we'd love a quick 15-minute call — tailored to your operation, no slide
 → Reply to this email to book a time
 
 If not now, no worries — our blog has plenty of useful content:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -549,7 +549,7 @@ If so, we'd love a quick 15-minute walkthrough — tailored to facilities, no sl
 → Reply to this email to book a time
 
 If not now, our blog has useful content:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -676,7 +676,7 @@ If so, we'd love a quick 15-minute walkthrough — tailored to chain dining, no 
 → Reply to this email to book a time
 
 If not now, our blog has useful content:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -804,7 +804,7 @@ If so, we'd love a quick 15-minute walkthrough — tailored to your specific env
 → Reply to this email to book a time
 
 If not now, our blog has useful healthcare content:
-→ https://www.checkit.net/blog/
+→ https://checkitv6.com/blog
 
 Thanks for reading,
 The Checkit Team`,
@@ -905,24 +905,8 @@ export async function seedDefaultContent(): Promise<void> {
       description: 'Calculate ROI from switching paper-based compliance to digital automated monitoring.',
     },
     {
-      title: 'Temperature Monitoring Solutions',
-      url: 'https://www.checkit.net/solutions/automated-monitoring/',
-      source: 'checkit_net',
-      verticalTags: ['senior-living', 'food-retail', 'food-facilities', 'medical', 'operations'],
-      topicTags: ['temperature_automation', 'product_update'],
-      description: 'Automated temperature monitoring with wireless sensors — real-time alerts, compliance records, predictive insights.',
-    },
-    {
-      title: 'Digital Checklists & Workflows',
-      url: 'https://www.checkit.net/solutions/digital-checklists/',
-      source: 'checkit_net',
-      verticalTags: ['senior-living', 'food-retail', 'food-facilities', 'operations'],
-      topicTags: ['product_update', 'asset_intelligence'],
-      description: 'Replace paper checklists with digital workflows — photo evidence, escalation rules, and full audit trails.',
-    },
-    {
       title: 'Checkit Blog',
-      url: 'https://www.checkit.net/blog/',
+      url: 'https://checkitv6.com/blog',
       source: 'checkit_net_blog',
       verticalTags: ['senior-living', 'food-retail', 'food-facilities', 'medical', 'operations'],
       topicTags: ['blog', 'industry_insight'],

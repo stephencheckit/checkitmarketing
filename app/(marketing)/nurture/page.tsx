@@ -149,6 +149,13 @@ export default function NurturePage() {
   const [expandedDetail, setExpandedDetail] = useState<EnrollmentDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [highlightedEnrollmentId, setHighlightedEnrollmentId] = useState<number | null>(null);
+  const [userEmail, setUserEmail] = useState('');
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(d => {
+      if (d.user?.email) setUserEmail(d.user.email);
+    }).catch(() => {});
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -273,6 +280,7 @@ export default function NurturePage() {
           onClose={() => setShowModal(false)}
           onSuccess={handleModalSuccess}
           tracks={tracks}
+          enrolledByEmail={userEmail}
         />
       )}
 

@@ -183,10 +183,12 @@ export default function EnrollmentModal({
   onClose,
   onSuccess,
   tracks,
+  enrolledByEmail,
 }: {
   onClose: () => void;
   onSuccess: (newId: number | null) => void;
   tracks: NurtureTrackOption[];
+  enrolledByEmail?: string;
 }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
@@ -316,6 +318,9 @@ export default function EnrollmentModal({
       }
       if (scheduleMode === 'now') {
         payload.sendNow = true;
+      }
+      if (enrolledByEmail) {
+        payload.enrolledByEmail = enrolledByEmail;
       }
       const res = await fetch('/api/nurture/enroll', {
         method: 'POST',

@@ -4824,3 +4824,110 @@ export async function updatePpcLeadStatus(id: number, status: string, notes?: st
   `;
   return result[0] as PpcLead | null;
 }
+
+// ============================================
+// BOT VISIT TRACKING
+// ============================================
+
+export async function initializeBotVisitsTables() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS bot_visits (
+      id SERIAL PRIMARY KEY,
+      bot_name VARCHAR(50) NOT NULL,
+      user_agent TEXT NOT NULL,
+      path VARCHAR(500) NOT NULL,
+      ip_address VARCHAR(45),
+      country VARCHAR(100),
+      city VARCHAR(255),
+      referer TEXT,
+      method VARCHAR(10) DEFAULT 'GET',
+      visited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bot_visits_bot_name ON bot_visits(bot_name)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bot_visits_visited_at ON bot_visits(visited_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_bot_visits_path ON bot_visits(path)`;
+}
+
+export async function recordBotVisit(data: {
+  botName: string;
+  userAgent: string;
+  path: string;
+  ipAddress?: string;
+  country?: string;
+  city?: string;
+  referer?: string;
+  method?: string;
+}) {
+  const result = await sql`
+    INSERT INTO bot_visits (bot_name, user_agent, path, ip_address, country, city, referer, method)
+    VALUES (${data.botName}, ${data.userAgent}, ${data.path}, ${data.ipAddress || null}, ${data.country || null}, ${data.city || null}, ${data.referer || null}, ${data.method || 'GET'})
+    RETURNING id
+  `;
+  return result[0];
+}
+
+export async function getBotActivitySummary(daysBack: number = 30) {
+  const byBot = await sql`
+    SELECT bot_name, COUNT(*) as visits
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY bot_name
+    ORDER BY visits DESC
+  `;
+
+  const byDay = await sql`
+    SELECT DATE(visited_at) as date, bot_name, COUNT(*) as visits
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY DATE(visited_at), bot_name
+    ORDER BY date ASC
+  `;
+
+  const byPage = await sql`
+    SELECT path, COUNT(*) as visits,
+      COUNT(DISTINCT bot_name) as unique_bots,
+      ARRAY_AGG(DISTINCT bot_name) as bots
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY path
+    ORDER BY visits DESC
+    LIMIT 50
+  `;
+
+  const total = await sql`
+    SELECT COUNT(*) as count
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+  `;
+
+  const recent = await sql`
+    SELECT bot_name, path, ip_address, country, city, referer, visited_at
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    ORDER BY visited_at DESC
+    LIMIT 100
+  `;
+
+  const byHour = await sql`
+    SELECT EXTRACT(HOUR FROM visited_at)::integer as hour, COUNT(*) as visits
+    FROM bot_visits
+    WHERE visited_at >= NOW() - INTERVAL '1 day' * ${daysBack}
+    GROUP BY EXTRACT(HOUR FROM visited_at)
+    ORDER BY hour
+  `;
+
+  const firstVisit = await sql`
+    SELECT visited_at FROM bot_visits ORDER BY visited_at ASC LIMIT 1
+  `;
+
+  return {
+    total: parseInt(total[0]?.count || '0'),
+    firstVisit: firstVisit[0]?.visited_at || null,
+    byBot,
+    byDay,
+    byPage,
+    recent,
+    byHour,
+  };
+}

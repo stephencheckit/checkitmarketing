@@ -110,7 +110,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const channelsItems = [
     { href: '/search-console', label: 'Search Console', icon: Search },
     { href: '/ai-search', label: 'AI Search', icon: Bot },
-    // Google Ads coming soon
+    { href: '/bot-activity', label: 'Bot Activity', icon: Radio },
   ];
 
   // Biz Dev: Outbound prospecting

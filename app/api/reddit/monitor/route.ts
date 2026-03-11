@@ -144,16 +144,15 @@ export async function POST(request: NextRequest) {
 
     // Trigger a sync for all keywords
     if (action === 'sync') {
-      // Check for API credentials
+      // Verify Reddit is reachable before starting
       const connectionTest = await testConnection();
       if (!connectionTest.success) {
         return NextResponse.json(
           { 
-            error: 'Reddit API not configured', 
+            error: 'Cannot reach Reddit', 
             details: connectionTest.error,
-            hint: 'Add your Reddit API credentials to .env.local once approved'
           },
-          { status: 500 }
+          { status: 502 }
         );
       }
 

@@ -11,8 +11,14 @@ import {
   generateUnsubscribeToken,
 } from '@/lib/nurture-db';
 
-const PHYSICAL_ADDRESS = 'Checkit HQ - 385 Mariner Blvd. Spring Hill, FL 34609';
+const PHYSICAL_ADDRESS_US = 'Checkit Inc - 485 Mariner Blvd, Spring Hill, FL 34609';
+const PHYSICAL_ADDRESS_UK = 'Checkit plc - Broers Building, JJ Thomson Avenue, Cambridge CB3 0FA';
 const FROM_EMAIL = 'Checkit <noreply@checkitv6.com>';
+
+function getPhysicalAddress(vertical?: string | null): string {
+  if (vertical === 'nhs-pharmacies' || vertical === 'medical') return PHYSICAL_ADDRESS_UK;
+  return PHYSICAL_ADDRESS_US;
+}
 
 function linkifyLine(line: string): string {
   return line.replace(
@@ -135,7 +141,7 @@ BODY:
   </div>
   <div style="padding: 16px 32px; background: #f9fafb; border-top: 1px solid #e5e7eb;">
     <p style="color: #9ca3af; font-size: 11px; line-height: 1.5; margin: 0;">
-      ${PHYSICAL_ADDRESS}<br/>
+      ${getPhysicalAddress(enrollment.vertical)}<br/>
       <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a> from these emails.
     </p>
   </div>
@@ -150,7 +156,7 @@ BODY:
         replyTo,
         subject: personalizedSubject,
         html: htmlBody,
-        text: personalizedBody + `\n\n---\n${PHYSICAL_ADDRESS}\nUnsubscribe: ${unsubscribeUrl}`,
+        text: personalizedBody + `\n\n---\n${getPhysicalAddress(enrollment.vertical)}\nUnsubscribe: ${unsubscribeUrl}`,
         headers: {
           'List-Unsubscribe': `<${unsubscribeUrl}>`,
           'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

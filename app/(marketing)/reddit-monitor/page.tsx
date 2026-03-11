@@ -2,17 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import {
-  Search,
   Plus,
   Trash2,
   RefreshCw,
   ExternalLink,
   Star,
-  Clock,
   AlertCircle,
   Loader2,
   TrendingUp,
-  Users,
   Hash,
   X,
   MessageSquare,
@@ -62,9 +59,6 @@ interface RedditSummary {
   lastSyncStatus: string | null;
 }
 
-// Temporary flag - set to true once Reddit API is approved
-const redditApiApproved = false;
-
 // Default keywords for Checkit's industry
 const defaultKeywords = [
   { keyword: 'food safety software', subreddits: ['foodservice', 'restaurants', 'KitchenConfidential'] },
@@ -79,9 +73,13 @@ export default function RedditMonitorPage() {
   const [keywords, setKeywords] = useState<RedditKeyword[]>([]);
   const [posts, setPosts] = useState<RedditPost[]>([]);
   const [summary, setSummary] = useState<RedditSummary | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Connection state - checked dynamically instead of hardcoded flag
+  const [apiConnected, setApiConnected] = useState<boolean | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   
   // UI state
   const [viewMode, setViewMode] = useState<'all' | 'leads' | 'keywords'>('all');
@@ -196,11 +194,28 @@ export default function RedditMonitorPage() {
     await fetchData();
   };
 
-  // Load data on mount (only if approved)
+  // Check API connection and load data on mount
   useEffect(() => {
-    if (redditApiApproved) {
-      fetchData();
+    async function checkAndLoad() {
+      try {
+        const res = await fetch('/api/reddit/monitor?type=test');
+        const data = await res.json();
+        if (data.success) {
+          setApiConnected(true);
+          setApiError(null);
+          await fetchData();
+        } else {
+          setApiConnected(false);
+          setApiError(data.error || 'Reddit API not configured');
+          setLoading(false);
+        }
+      } catch {
+        setApiConnected(false);
+        setApiError('Failed to check Reddit API connection');
+        setLoading(false);
+      }
     }
+    checkAndLoad();
   }, [fetchData]);
 
   // Format relative time
@@ -234,7 +249,7 @@ export default function RedditMonitorPage() {
               Track mentions, find leads, and monitor conversations
             </p>
           </div>
-          {redditApiApproved && (
+          {apiConnected && (
             <button
               onClick={syncReddit}
               disabled={syncing}
@@ -250,103 +265,31 @@ export default function RedditMonitorPage() {
           )}
         </div>
 
-        {/* Pending Approval Message */}
-        {!redditApiApproved && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-8 text-center mb-8">
-            <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-yellow-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-yellow-400 mb-2">Pending API Approval</h3>
-            <p className="text-sm text-muted max-w-md mx-auto mb-4">
-              Your Reddit API access request has been submitted and is awaiting approval. 
-              This typically takes 1-2 business days.
-            </p>
-            <p className="text-xs text-muted">
-              Once approved, this dashboard will monitor Reddit for brand mentions, competitor discussions, and potential leads.
-            </p>
+        {/* Loading state while checking connection */}
+        {apiConnected === null && (
+          <div className="bg-surface border border-border rounded-xl p-12 text-center mb-6">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-orange-500 mb-4" />
+            <p className="text-muted">Checking Reddit API connection...</p>
           </div>
         )}
 
-        {/* Preview of what will be available */}
-        {!redditApiApproved && (
-          <div className="space-y-6">
-            {/* Preview Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-surface border border-border rounded-xl p-4 opacity-60">
-                <div className="text-2xl font-bold text-foreground">-</div>
-                <div className="text-sm text-muted">Keywords</div>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 opacity-60">
-                <div className="text-2xl font-bold text-foreground">-</div>
-                <div className="text-sm text-muted">Posts Found</div>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 opacity-60">
-                <div className="text-2xl font-bold text-foreground">-</div>
-                <div className="text-sm text-muted">Leads</div>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 opacity-60">
-                <div className="text-2xl font-bold text-foreground">-</div>
-                <div className="text-sm text-muted">Subreddits</div>
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4 opacity-60">
-                <div className="text-sm text-muted">Last Synced</div>
-                <div className="text-sm text-foreground">Never</div>
-              </div>
-            </div>
-
-            {/* Preview Keywords */}
-            <div className="bg-surface border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                <Hash className="w-4 h-4 text-orange-500" />
-                Default Keywords (will be added on approval)
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {defaultKeywords.map((kw, i) => (
-                  <div
-                    key={i}
-                    className="px-3 py-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full text-sm text-orange-400"
-                  >
-                    {kw.keyword}
-                    <span className="text-orange-400/60 ml-2">
-                      ({kw.subreddits.length} subreddits)
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview Features */}
-            <div className="bg-surface border border-border rounded-xl p-6">
-              <h3 className="font-semibold text-foreground mb-4">Features Coming</h3>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="flex items-start gap-3 p-4 bg-surface-elevated rounded-lg">
-                  <Search className="w-5 h-5 text-orange-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-foreground">Keyword Monitoring</h4>
-                    <p className="text-sm text-muted">Track industry keywords across target subreddits</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-surface-elevated rounded-lg">
-                  <Star className="w-5 h-5 text-orange-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-foreground">Lead Identification</h4>
-                    <p className="text-sm text-muted">Mark high-value posts as leads for follow-up</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-surface-elevated rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-orange-500 mt-0.5" />
-                  <div>
-                    <h4 className="font-medium text-foreground">Trend Detection</h4>
-                    <p className="text-sm text-muted">See what topics are gaining traction</p>
-                  </div>
-                </div>
+        {/* Not Connected - Error */}
+        {apiConnected === false && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
+              <div>
+                <h3 className="font-semibold text-red-400 mb-1">Cannot reach Reddit</h3>
+                <p className="text-sm text-red-400/80">
+                  {apiError || 'Reddit public endpoints are not responding. This may be temporary — try refreshing.'}
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Active Content (shown when API is approved) */}
-        {redditApiApproved && (
+        {/* Active Content (shown when API is connected) */}
+        {apiConnected && (
           <>
             {/* Error Alert */}
             {error && (

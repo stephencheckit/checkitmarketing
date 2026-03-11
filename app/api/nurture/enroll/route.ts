@@ -10,7 +10,7 @@ import {
   getNurtureSetting,
   getTrackSteps,
 } from '@/lib/nurture-db';
-import { seedDefaultTrack, seedDefaultContent } from '@/lib/nurture-seed';
+import { seedDefaultTrack, seedDefaultContent, seedIndustryTracks } from '@/lib/nurture-seed';
 
 let initialized = false;
 
@@ -18,6 +18,7 @@ async function ensureInitialized() {
   if (!initialized) {
     await initializeNurtureTables();
     await seedDefaultTrack();
+    await seedIndustryTracks();
     await seedDefaultContent();
     initialized = true;
   }

@@ -294,66 +294,115 @@ export async function enrollContact(input: EnrollContactInput): Promise<NurtureE
 
 export async function getEnrollments(filters?: {
   status?: string;
+  trackId?: number;
   enrolledBy?: number;
   search?: string;
   limit?: number;
   offset?: number;
-}): Promise<{ enrollments: NurtureEnrollment[]; total: number }> {
+}): Promise<{ enrollments: (NurtureEnrollment & { track_name?: string })[]; total: number }> {
   const limit = filters?.limit || 50;
   const offset = filters?.offset || 0;
 
-  let enrollments: NurtureEnrollment[];
-  let totalResult;
-
-  if (filters?.status && filters?.search) {
+  if (filters?.status && filters?.trackId && filters?.search) {
     const search = `%${filters.search}%`;
-    enrollments = await sql`
-      SELECT * FROM nurture_enrollments
-      WHERE status = ${filters.status}
-        AND (contact_name ILIKE ${search} OR contact_email ILIKE ${search} OR company_name ILIKE ${search})
-      ORDER BY enrolled_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    ` as NurtureEnrollment[];
-    totalResult = await sql`
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.status = ${filters.status} AND e.track_id = ${filters.trackId}
+        AND (e.contact_name ILIKE ${search} OR e.contact_email ILIKE ${search} OR e.company_name ILIKE ${search})
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
+      SELECT COUNT(*) as count FROM nurture_enrollments e
+      WHERE e.status = ${filters.status} AND e.track_id = ${filters.trackId}
+        AND (e.contact_name ILIKE ${search} OR e.contact_email ILIKE ${search} OR e.company_name ILIKE ${search})
+    `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
+  } else if (filters?.status && filters?.trackId) {
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.status = ${filters.status} AND e.track_id = ${filters.trackId}
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
+      SELECT COUNT(*) as count FROM nurture_enrollments WHERE status = ${filters.status} AND track_id = ${filters.trackId}
+    `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
+  } else if (filters?.status && filters?.search) {
+    const search = `%${filters.search}%`;
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.status = ${filters.status}
+        AND (e.contact_name ILIKE ${search} OR e.contact_email ILIKE ${search} OR e.company_name ILIKE ${search})
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
       SELECT COUNT(*) as count FROM nurture_enrollments
       WHERE status = ${filters.status}
         AND (contact_name ILIKE ${search} OR contact_email ILIKE ${search} OR company_name ILIKE ${search})
     `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
+  } else if (filters?.trackId && filters?.search) {
+    const search = `%${filters.search}%`;
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.track_id = ${filters.trackId}
+        AND (e.contact_name ILIKE ${search} OR e.contact_email ILIKE ${search} OR e.company_name ILIKE ${search})
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
+      SELECT COUNT(*) as count FROM nurture_enrollments
+      WHERE track_id = ${filters.trackId}
+        AND (contact_name ILIKE ${search} OR contact_email ILIKE ${search} OR company_name ILIKE ${search})
+    `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
   } else if (filters?.status) {
-    enrollments = await sql`
-      SELECT * FROM nurture_enrollments
-      WHERE status = ${filters.status}
-      ORDER BY enrolled_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    ` as NurtureEnrollment[];
-    totalResult = await sql`
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.status = ${filters.status}
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
       SELECT COUNT(*) as count FROM nurture_enrollments WHERE status = ${filters.status}
     `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
+  } else if (filters?.trackId) {
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.track_id = ${filters.trackId}
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
+      SELECT COUNT(*) as count FROM nurture_enrollments WHERE track_id = ${filters.trackId}
+    `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
   } else if (filters?.search) {
     const search = `%${filters.search}%`;
-    enrollments = await sql`
-      SELECT * FROM nurture_enrollments
-      WHERE contact_name ILIKE ${search} OR contact_email ILIKE ${search} OR company_name ILIKE ${search}
-      ORDER BY enrolled_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    ` as NurtureEnrollment[];
-    totalResult = await sql`
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      WHERE e.contact_name ILIKE ${search} OR e.contact_email ILIKE ${search} OR e.company_name ILIKE ${search}
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`
       SELECT COUNT(*) as count FROM nurture_enrollments
       WHERE contact_name ILIKE ${search} OR contact_email ILIKE ${search} OR company_name ILIKE ${search}
     `;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
   } else {
-    enrollments = await sql`
-      SELECT * FROM nurture_enrollments
-      ORDER BY enrolled_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    ` as NurtureEnrollment[];
-    totalResult = await sql`SELECT COUNT(*) as count FROM nurture_enrollments`;
+    const enrollments = await sql`
+      SELECT e.*, t.name as track_name FROM nurture_enrollments e
+      LEFT JOIN nurture_tracks t ON t.id = e.track_id
+      ORDER BY e.enrolled_at DESC LIMIT ${limit} OFFSET ${offset}
+    ` as (NurtureEnrollment & { track_name?: string })[];
+    const totalResult = await sql`SELECT COUNT(*) as count FROM nurture_enrollments`;
+    return { enrollments, total: parseInt(totalResult[0]?.count || '0') };
   }
-
-  return {
-    enrollments,
-    total: parseInt(totalResult[0]?.count || '0'),
-  };
 }
 
 export async function getEnrollment(id: number): Promise<NurtureEnrollment | null> {

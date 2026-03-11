@@ -4,7 +4,7 @@ import {
   getEnrollments,
   getNurtureStats,
 } from '@/lib/nurture-db';
-import { seedDefaultTrack } from '@/lib/nurture-seed';
+import { seedDefaultTrack, seedIndustryTracks } from '@/lib/nurture-seed';
 
 let initialized = false;
 
@@ -12,6 +12,7 @@ async function ensureInitialized() {
   if (!initialized) {
     await initializeNurtureTables();
     await seedDefaultTrack();
+    await seedIndustryTracks();
     initialized = true;
   }
 }
@@ -23,11 +24,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || undefined;
     const search = searchParams.get('search') || undefined;
+    const trackIdParam = searchParams.get('trackId');
+    const trackId = trackIdParam ? parseInt(trackIdParam) : undefined;
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
     const includeStats = searchParams.get('stats') === 'true';
 
-    const { enrollments, total } = await getEnrollments({ status, search, limit, offset });
+    const { enrollments, total } = await getEnrollments({ status, search, trackId, limit, offset });
 
     let stats = null;
     if (includeStats) {

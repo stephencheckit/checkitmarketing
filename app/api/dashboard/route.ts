@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getNurtureStats } from '@/lib/nurture-db';
-import { getAllBufferPosts } from '@/lib/buffer';
+import { getAllBufferData } from '@/lib/buffer';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,7 +155,7 @@ export async function GET() {
       getNurtureStats(),
       getRecentActivity(),
       getQuickStats(),
-      getAllBufferPosts(5, 5),
+      getAllBufferData(5, 5),
     ]);
 
     return NextResponse.json({

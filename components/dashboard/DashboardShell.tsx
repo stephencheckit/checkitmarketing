@@ -7,17 +7,20 @@ import ActivityFeedWidget from './ActivityFeedWidget';
 import NurtureStatsWidget from './NurtureStatsWidget';
 import QuickStatsWidget from './QuickStatsWidget';
 
-interface BufferUpdate {
+interface BufferPost {
   id: string;
   text: string;
-  text_formatted: string;
-  due_at: number;
-  due_time: string;
-  day: string;
-  sent_at?: number;
   status: string;
-  profile_service: string;
-  statistics?: { reach?: number; clicks?: number; retweets?: number; favorites?: number };
+  createdAt: string;
+  dueAt: string | null;
+  sentAt: string | null;
+  channelId: string;
+}
+
+interface BufferChannel {
+  id: string;
+  name: string;
+  service: string;
 }
 
 interface DashboardData {
@@ -34,22 +37,14 @@ interface DashboardData {
     contentTotal: number;
     contentPublished: number;
     contentInProgress: number;
-    demoRequests30d: number;
     ppcLeads30d: number;
   } | null;
-  buffer: Array<{
-    profile: {
-      id: string;
-      service: string;
-      service_username: string;
-      formatted_username: string;
-      avatar: string;
-    };
-    pending: BufferUpdate[];
-    sent: BufferUpdate[];
-    pendingTotal: number;
-    sentTotal: number;
-  }> | null;
+  buffer: {
+    channels: BufferChannel[];
+    channelMap: Record<string, BufferChannel>;
+    pending: BufferPost[];
+    sent: BufferPost[];
+  } | null;
   bufferError: string | null;
 }
 
@@ -81,8 +76,8 @@ export default function DashboardShell() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-3 gap-3">
+          {[1, 2, 3].map((i) => (
             <div key={i} className="bg-surface border border-border rounded-xl p-4 animate-pulse">
               <div className="h-4 bg-surface-elevated rounded w-20 mb-3" />
               <div className="h-8 bg-surface-elevated rounded w-12 mb-1" />

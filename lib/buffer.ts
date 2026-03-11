@@ -1,4 +1,5 @@
-const BUFFER_API_BASE = 'https://api.bufferapp.com/1';
+const BUFFER_API = 'https://api.buffer.com';
+const BUFFER_ORG_ID = process.env.BUFFER_ORG_ID || '68372580975e538c43fa1951';
 
 function getToken() {
   const token = process.env.BUFFER_API_TOKEN;
@@ -6,106 +7,112 @@ function getToken() {
   return token;
 }
 
-async function bufferFetch(path: string, params?: Record<string, string>) {
-  const url = new URL(`${BUFFER_API_BASE}${path}`);
-  url.searchParams.set('access_token', getToken());
-  if (params) {
-    for (const [k, v] of Object.entries(params)) {
-      url.searchParams.set(k, v);
-    }
-  }
+async function bufferGQL<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const res = await fetch(BUFFER_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({ query, variables }),
+    next: { revalidate: 300 },
+  });
 
-  const res = await fetch(url.toString(), { next: { revalidate: 300 } });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Buffer API error ${res.status}: ${text}`);
   }
-  return res.json();
+
+  const json = await res.json();
+  if (json.errors?.length) {
+    throw new Error(`Buffer GraphQL error: ${json.errors[0].message}`);
+  }
+  return json.data as T;
 }
 
-export interface BufferProfile {
+export interface BufferChannel {
   id: string;
+  name: string;
   service: string;
-  service_username: string;
-  formatted_username: string;
-  avatar: string;
-  statistics?: { followers?: number };
+  avatar?: string;
 }
 
-export interface BufferUpdate {
+export interface BufferPost {
   id: string;
-  created_at: number;
-  day: string;
-  due_at: number;
-  due_time: string;
-  profile_id: string;
-  profile_service: string;
-  sent_at?: number;
-  status: string;
   text: string;
-  text_formatted: string;
-  media?: {
-    link?: string;
-    picture?: string;
-    thumbnail?: string;
-    title?: string;
-    description?: string;
-  };
-  statistics?: {
-    reach?: number;
-    clicks?: number;
-    retweets?: number;
-    favorites?: number;
-    mentions?: number;
-  };
+  status: string;
+  createdAt: string;
+  dueAt: string | null;
+  sentAt: string | null;
+  channelId: string;
 }
 
-export async function getBufferProfiles(): Promise<BufferProfile[]> {
-  return bufferFetch('/profiles.json');
+const CHANNELS_QUERY = `
+  query GetChannels {
+    account {
+      organizations {
+        id
+        channels {
+          id
+          name
+          service
+        }
+      }
+    }
+  }
+`;
+
+const POSTS_QUERY = `
+  query GetPosts($orgId: ID!, $status: PostStatus!, $sortDir: SortDirection!) {
+    posts(
+      input: {
+        organizationId: $orgId
+        sort: [{ field: dueAt, direction: $sortDir }, { field: createdAt, direction: $sortDir }]
+        filter: { status: $status }
+      }
+    ) {
+      edges {
+        node {
+          id
+          text
+          status
+          createdAt
+          dueAt
+          sentAt
+          channelId
+        }
+      }
+    }
+  }
+`;
+
+export async function getBufferChannels(): Promise<BufferChannel[]> {
+  const data = await bufferGQL<{
+    account: { organizations: Array<{ id: string; channels: BufferChannel[] }> };
+  }>(CHANNELS_QUERY);
+
+  const org = data.account.organizations.find((o) => o.id === BUFFER_ORG_ID);
+  return org?.channels || [];
 }
 
-export async function getPendingUpdates(profileId: string, count = 10): Promise<{ total: number; updates: BufferUpdate[] }> {
-  return bufferFetch(`/profiles/${profileId}/updates/pending.json`, {
-    count: String(count),
-    utc: 'true',
-  });
+export async function getBufferPosts(status: 'sent' | 'draft' | 'scheduled', limit = 10): Promise<BufferPost[]> {
+  const sortDir = status === 'sent' ? 'desc' : 'asc';
+
+  const data = await bufferGQL<{
+    posts: { edges: Array<{ node: BufferPost }> };
+  }>(POSTS_QUERY, { orgId: BUFFER_ORG_ID, status, sortDir });
+
+  return (data.posts?.edges || []).map((e) => e.node).slice(0, limit);
 }
 
-export async function getSentUpdates(profileId: string, count = 10): Promise<{ total: number; updates: BufferUpdate[] }> {
-  return bufferFetch(`/profiles/${profileId}/updates/sent.json`, {
-    count: String(count),
-    utc: 'true',
-  });
-}
+export async function getAllBufferData(pendingCount = 5, sentCount = 5) {
+  const [channels, pending, sent] = await Promise.all([
+    getBufferChannels(),
+    getBufferPosts('scheduled', pendingCount).catch(() => [] as BufferPost[]),
+    getBufferPosts('sent', sentCount).catch(() => [] as BufferPost[]),
+  ]);
 
-export async function getAllBufferPosts(pendingCount = 5, sentCount = 5) {
-  const profiles = await getBufferProfiles();
+  const channelMap = new Map(channels.map((c) => [c.id, c]));
 
-  type ProfileResult = {
-    profile: BufferProfile;
-    pending: BufferUpdate[];
-    sent: BufferUpdate[];
-    pendingTotal: number;
-    sentTotal: number;
-  };
-
-  const results = await Promise.allSettled(
-    profiles.map(async (profile): Promise<ProfileResult> => {
-      const [pending, sent] = await Promise.all([
-        getPendingUpdates(profile.id, pendingCount),
-        getSentUpdates(profile.id, sentCount),
-      ]);
-      return {
-        profile,
-        pending: pending.updates || [],
-        sent: sent.updates || [],
-        pendingTotal: pending.total || 0,
-        sentTotal: sent.total || 0,
-      };
-    })
-  );
-
-  return results
-    .filter((r): r is PromiseFulfilledResult<ProfileResult> => r.status === 'fulfilled')
-    .map((r) => r.value);
+  return { channels, channelMap: Object.fromEntries(channelMap), pending, sent };
 }

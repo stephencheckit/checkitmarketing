@@ -128,7 +128,7 @@ async function getRecentActivity(limit = 20) {
 }
 
 async function getQuickStats() {
-  const [botCount, contentStats, demoCount, ppcCount] = await Promise.all([
+  const [botCount, contentStats, ppcCount] = await Promise.all([
     sql`SELECT COUNT(*) as count FROM bot_visits WHERE visited_at >= NOW() - INTERVAL '7 days'`.catch(() => [{ count: 0 }]),
     sql`
       SELECT
@@ -137,7 +137,6 @@ async function getQuickStats() {
         COUNT(*) FILTER (WHERE status IN ('draft', 'brief', 'review')) as in_progress
       FROM content_drafts
     `.catch(() => [{ total: 0, published: 0, in_progress: 0 }]),
-    sql`SELECT COUNT(*) as count FROM demo_requests WHERE created_at >= NOW() - INTERVAL '30 days'`.catch(() => [{ count: 0 }]),
     sql`SELECT COUNT(*) as count FROM ppc_leads WHERE created_at >= NOW() - INTERVAL '30 days'`.catch(() => [{ count: 0 }]),
   ]);
 
@@ -146,7 +145,6 @@ async function getQuickStats() {
     contentTotal: Number(contentStats[0]?.total || 0),
     contentPublished: Number(contentStats[0]?.published || 0),
     contentInProgress: Number(contentStats[0]?.in_progress || 0),
-    demoRequests30d: Number(demoCount[0]?.count || 0),
     ppcLeads30d: Number(ppcCount[0]?.count || 0),
   };
 }

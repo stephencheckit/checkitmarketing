@@ -1,6 +1,6 @@
 'use client';
 
-import { Bot, FileText, Megaphone, ArrowUpRight } from 'lucide-react';
+import { Bot, FileText, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface QuickStats {
@@ -8,7 +8,6 @@ interface QuickStats {
   contentTotal: number;
   contentPublished: number;
   contentInProgress: number;
-  demoRequests30d: number;
   ppcLeads30d: number;
 }
 
@@ -32,15 +31,6 @@ const statCards = [
     getValue: (s: QuickStats) => s.contentTotal,
   },
   {
-    key: 'demos' as const,
-    icon: Megaphone,
-    label: 'Demo Requests',
-    sublabel: 'last 30 days',
-    color: 'text-amber-400',
-    href: '/admin/leads',
-    getValue: (s: QuickStats) => s.demoRequests30d,
-  },
-  {
     key: 'ppc' as const,
     icon: ArrowUpRight,
     label: 'PPC Leads',
@@ -55,7 +45,7 @@ export default function QuickStatsWidget({ data }: { data: QuickStats | null }) 
   if (!data) return null;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-3 gap-3">
       {statCards.map((card) => {
         const Icon = card.icon;
         const sublabel = typeof card.sublabel === 'function' ? card.sublabel(data) : card.sublabel;

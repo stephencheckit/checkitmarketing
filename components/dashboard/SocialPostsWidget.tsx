@@ -70,26 +70,16 @@ function truncate(text: string, max = 120) {
 }
 
 export default function SocialPostsWidget({ data, error }: { data: ProfileData[] | null; error?: string | null }) {
-  if (error) {
+  if (error || !data || data.length === 0) {
     return (
       <div className="bg-surface border border-border rounded-xl p-6 card-glow">
         <div className="flex items-center gap-2 mb-4">
           <Send className="w-5 h-5 text-accent" />
           <h2 className="font-semibold">Social Media</h2>
         </div>
-        <p className="text-sm text-muted">{error}</p>
-      </div>
-    );
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-surface border border-border rounded-xl p-6 card-glow">
-        <div className="flex items-center gap-2 mb-4">
-          <Send className="w-5 h-5 text-accent" />
-          <h2 className="font-semibold">Social Media</h2>
-        </div>
-        <p className="text-sm text-muted text-center py-4">No Buffer profiles connected.</p>
+        <p className="text-sm text-muted text-center py-4">
+          {error ? 'Unable to connect to Buffer. Check your API token.' : 'No Buffer profiles connected.'}
+        </p>
       </div>
     );
   }

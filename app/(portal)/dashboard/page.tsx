@@ -2,7 +2,6 @@ import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { LayoutDashboard } from 'lucide-react';
 import DashboardShell from '@/components/dashboard/DashboardShell';
-import AdminInboxWidget from '@/components/AdminInboxWidget';
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -22,10 +21,6 @@ export default async function DashboardPage() {
           Marketing activity overview
         </p>
       </div>
-
-      {session.role === 'admin' && (
-        <AdminInboxWidget />
-      )}
 
       <DashboardShell />
     </div>

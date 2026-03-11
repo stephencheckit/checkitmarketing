@@ -46,16 +46,17 @@ export async function POST(request: NextRequest) {
       vertical: enrollment.vertical || undefined,
     });
     if (contentTags.length > 0) {
-      contentItems = contentItems.filter((c) => {
+      const tagged = contentItems.filter((c) => {
         const cTopics = c.topic_tags as string[];
         return contentTags.some((tag) => cTopics.includes(tag));
       });
+      if (tagged.length > 0) contentItems = tagged;
     }
     const contentBlock =
       contentItems
         .slice(0, 3)
         .map((c) => `- ${c.title}: ${c.description || ''}\n  ${c.url}`)
-        .join('\n') || 'Visit checkitv6.com to learn more about our platform.';
+        .join('\n') || '- Checkit Platform Overview\n  https://checkitv6.com/platform';
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

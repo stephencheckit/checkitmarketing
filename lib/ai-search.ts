@@ -313,12 +313,13 @@ export async function generateContentBrief(
   faqQuestions: string[];
   estimatedWordCount: number;
 }> {
+  const currentYear = new Date().getFullYear();
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: `You are a content strategist for Checkit, a leading temperature monitoring and operational compliance platform for food service, healthcare, and senior living facilities.
+        content: `You are a content strategist for Checkit, a leading temperature monitoring and operational compliance platform for food service, healthcare, and senior living facilities. The current year is ${currentYear}. All content should reference ${currentYear} when mentioning dates, trends, or timeframes.
 
 Your job is to create content briefs that will help Checkit appear in AI search results and rank well in traditional search engines.
 
@@ -385,12 +386,13 @@ export async function generateFullArticle(brief: {
   metaDescription: string;
   excerpt: string;
 }> {
+  const currentYear = new Date().getFullYear();
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
-        content: `You are a content writer for Checkit, a leading temperature monitoring and operational compliance platform.
+        content: `You are a content writer for Checkit, a leading temperature monitoring and operational compliance platform. The current year is ${currentYear}. Any year references in the content must use ${currentYear}.
 
 Write content that is:
 1. Comprehensive, authoritative, and genuinely helpful

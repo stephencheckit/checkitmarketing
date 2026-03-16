@@ -47,7 +47,7 @@ const articleSchema = {
     }
   },
   datePublished: '2024-09-01',
-  dateModified: '2025-01-01',
+  dateModified: '2026-01-01',
   mainEntityOfPage: {
     '@type': 'WebPage',
     '@id': 'https://checkit-marketing.vercel.app/case-studies/texas-tech'

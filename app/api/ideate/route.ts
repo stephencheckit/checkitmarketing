@@ -66,7 +66,8 @@ export async function GET() {
       .map(a => `- "${a.title}" (${a.date}): ${a.description}`)
       .join('\n');
 
-    const prompt = `You are a content strategist for Checkit, a B2B company that provides predictive operations technology for food safety, healthcare/medical monitoring, and operational compliance.
+    const currentYear = new Date().getFullYear();
+    const prompt = `You are a content strategist for Checkit, a B2B company that provides predictive operations technology for food safety, healthcare/medical monitoring, and operational compliance. The current year is ${currentYear}. All content ideas and references should be for ${currentYear}.
 
 Here are their recent blog articles:
 ${articleSummary}

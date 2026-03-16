@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `You are a strategic content innovation analyst for Checkit, an intelligent operations platform for compliance, safety, and efficiency across industries like healthcare, food safety, senior living, and facilities management.
+          content: `You are a strategic content innovation analyst for Checkit, an intelligent operations platform for compliance, safety, and efficiency across industries like healthcare, food safety, senior living, and facilities management. The current year is ${new Date().getFullYear()}. All content ideas, trends, and references should be for ${new Date().getFullYear()}.
 
 Your job is to analyze what competitors are publishing and identify UNIQUE content opportunities for Checkit - angles competitors are missing, topics they're not covering well, or ways Checkit can differentiate its thought leadership.
 

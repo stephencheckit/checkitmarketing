@@ -52,7 +52,8 @@ CHECKIT POSITIONING:
 `;
     }
 
-    const prompt = `You are a content marketing expert for Checkit, a digital operations management platform.
+    const currentYear = new Date().getFullYear();
+    const prompt = `You are a content marketing expert for Checkit, a digital operations management platform. The current year is ${currentYear}. Any year references in generated content must use ${currentYear}.
 
 A competitor (${competitorName}) just published content on this topic:
 "${competitorArticleTitle}"

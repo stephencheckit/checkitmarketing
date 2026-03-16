@@ -242,7 +242,7 @@ The Checkit Team`,
       },
       {
         stepNumber: 4, delayDays: 14,
-        subject: '3 trends shaping forecourt operations in 2025',
+        subject: '3 trends shaping forecourt operations in 2026',
         body: `Hi {{contact_name}},
 
 We've been tracking some important shifts in forecourt operations:
@@ -498,7 +498,7 @@ The Checkit Team`,
       },
       {
         stepNumber: 4, delayDays: 14,
-        subject: '3 trends reshaping facilities management in 2025',
+        subject: '3 trends reshaping facilities management in 2026',
         body: `Hi {{contact_name}},
 
 Key shifts we're seeing in facilities management:

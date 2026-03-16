@@ -13,7 +13,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
-    const prompt = `Write a professional blog article for Checkit, a B2B company specializing in predictive operations technology for food safety, healthcare monitoring, and operational compliance.
+    const currentYear = new Date().getFullYear();
+    const prompt = `Write a professional blog article for Checkit, a B2B company specializing in predictive operations technology for food safety, healthcare monitoring, and operational compliance. The current year is ${currentYear}. Any year references in the content must use ${currentYear}.
 
 Article Details:
 - Title: ${title}

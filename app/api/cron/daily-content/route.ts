@@ -26,11 +26,51 @@ import {
   isNonBrandedQuery,
 } from '@/lib/ai-search';
 
-// Verify cron secret to prevent unauthorized access
+export const maxDuration = 300;
+
 const CRON_SECRET = process.env.CRON_SECRET;
 
+const PARALLEL_BATCH_SIZE = 10;
+
+async function processQueryBatch(
+  batch: { id: number; query: string }[],
+  log: string[]
+): Promise<{ scanned: number; mentions: number }> {
+  const results = await Promise.allSettled(
+    batch.map(async (q) => {
+      const result = await queryOpenAI(q.query);
+      const brandsData: Record<string, { mentioned: boolean; context: string | null }> = {};
+      for (const brand of result.brandsFound) {
+        brandsData[brand.brand] = { mentioned: brand.mentioned, context: brand.context };
+      }
+      await saveAISearchResult({
+        queryId: q.id,
+        queryText: q.query,
+        response: result.response,
+        checkitMentioned: result.checkitMentioned,
+        checkitPosition: result.checkitPosition,
+        competitorsMentioned: result.competitorsMentioned,
+        brandsData,
+        source: 'openai-gpt4o-mini',
+      });
+      return result.checkitMentioned;
+    })
+  );
+
+  let scanned = 0;
+  let mentions = 0;
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].status === 'fulfilled') {
+      scanned++;
+      if ((results[i] as PromiseFulfilledResult<boolean>).value) mentions++;
+    } else {
+      log.push(`Error scanning "${batch[i].query}": ${(results[i] as PromiseRejectedResult).reason}`);
+    }
+  }
+  return { scanned, mentions };
+}
+
 export async function GET(request: NextRequest) {
-  // Verify the request is from Vercel Cron
   const authHeader = request.headers.get('authorization');
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,13 +82,12 @@ export async function GET(request: NextRequest) {
   try {
     log.push(`[${new Date().toISOString()}] Daily content pipeline started`);
 
-    // Initialize tables
     await initializeAISearchTables();
     await initializeContentDraftsTables();
     await initializeCompetitorFeedsTables();
 
     // ============================================
-    // STEP 1: Run AI Search Scan
+    // STEP 1: Run AI Search Scan (parallel batches)
     // ============================================
     log.push('Step 1: Running AI search scan...');
     
@@ -60,34 +99,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, log, duration: Date.now() - startTime });
     }
 
-    // Create scan record
     const scan = await createAISearchScan();
     let scannedCount = 0;
     let checkitMentions = 0;
 
-    for (const query of activeQueries) {
-      try {
-        const result = await queryOpenAI(query.query);
-        // Convert brandsFound array to brandsData object
-        const brandsData: Record<string, { mentioned: boolean; context: string | null }> = {};
-        for (const brand of result.brandsFound) {
-          brandsData[brand.brand] = { mentioned: brand.mentioned, context: brand.context };
-        }
-        await saveAISearchResult({
-          queryId: query.id,
-          queryText: query.query,
-          response: result.response,
-          checkitMentioned: result.checkitMentioned,
-          checkitPosition: result.checkitPosition,
-          competitorsMentioned: result.competitorsMentioned,
-          brandsData,
-          source: 'openai-gpt4o-mini',
-        });
-        scannedCount++;
-        if (result.checkitMentioned) checkitMentions++;
-      } catch (err) {
-        log.push(`Error scanning "${query.query}": ${err}`);
-      }
+    for (let i = 0; i < activeQueries.length; i += PARALLEL_BATCH_SIZE) {
+      const batch = activeQueries.slice(i, i + PARALLEL_BATCH_SIZE);
+      const { scanned, mentions } = await processQueryBatch(batch, log);
+      scannedCount += scanned;
+      checkitMentions += mentions;
     }
 
     await updateAISearchScan(scan.id, { status: 'completed', totalQueries: scannedCount, checkitMentions });
@@ -193,24 +213,39 @@ export async function GET(request: NextRequest) {
 
     // ============================================
     // STEP 4: Generate & Publish Content (max 3/day)
-    // Reduced from 10 to avoid Vercel 300s timeout
     // ============================================
+    const elapsedSoFar = Date.now() - startTime;
+    const TIME_LIMIT_MS = 270_000; // Leave 30s buffer before 300s max
+
+    if (elapsedSoFar > TIME_LIMIT_MS) {
+      log.push(`Step 4: Skipped - ${Math.round(elapsedSoFar / 1000)}s elapsed, not enough time for content generation.`);
+      return NextResponse.json({
+        success: true,
+        log,
+        summary: { scanned: scannedCount, gaps: gaps.length, articlesCreated: 0 },
+        duration: Date.now() - startTime,
+      });
+    }
+
     log.push('Step 4: Generating content for gaps (max 3)...');
     
     const toProcess = gaps.slice(0, 3);
     let articlesCreated = 0;
 
     for (const gap of toProcess) {
+      if (Date.now() - startTime > TIME_LIMIT_MS) {
+        log.push(`Time limit approaching, stopping content generation after ${articlesCreated} articles.`);
+        break;
+      }
+
       try {
         log.push(`Processing: "${gap.query_text.substring(0, 50)}..."`);
 
-        // Generate brief
         const brief = await generateContentBrief(
           gap.query_text,
           gap.competitors_mentioned || []
         );
 
-        // Create draft record
         const draft = await createContentDraft({
           sourceQuery: gap.query_text,
           sourceQueryId: gap.query_id,
@@ -221,7 +256,6 @@ export async function GET(request: NextRequest) {
           faqQuestions: brief.faqQuestions,
         });
 
-        // Generate full article
         const article = await generateFullArticle({
           title: brief.title,
           targetKeywords: brief.targetKeywords,
@@ -230,14 +264,12 @@ export async function GET(request: NextRequest) {
           faqQuestions: brief.faqQuestions,
         });
 
-        // Update draft with content
         await updateDraftContent(draft.id, {
           content: article.content,
           metaDescription: article.metaDescription,
           excerpt: article.excerpt,
         });
 
-        // Auto-publish
         await updateDraftStatus(draft.id, 'published', `/resources/${draft.slug}`);
         
         articlesCreated++;

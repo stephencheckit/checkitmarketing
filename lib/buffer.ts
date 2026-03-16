@@ -63,7 +63,7 @@ const CHANNELS_QUERY = `
 `;
 
 const POSTS_QUERY = `
-  query GetPosts($orgId: ID!, $status: PostStatus!, $sortDir: SortDirection!) {
+  query GetPosts($orgId: OrganizationId!, $status: [PostStatus!], $sortDir: SortDirection!) {
     posts(
       input: {
         organizationId: $orgId
@@ -100,7 +100,7 @@ export async function getBufferPosts(status: 'sent' | 'draft' | 'scheduled', lim
 
   const data = await bufferGQL<{
     posts: { edges: Array<{ node: BufferPost }> };
-  }>(POSTS_QUERY, { orgId: BUFFER_ORG_ID, status, sortDir });
+  }>(POSTS_QUERY, { orgId: BUFFER_ORG_ID, status: [status], sortDir });
 
   return (data.posts?.edges || []).map((e) => e.node).slice(0, limit);
 }

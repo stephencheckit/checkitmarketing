@@ -178,6 +178,25 @@ This lead has been saved to the PPC leads database.
   }
 }
 
+async function sendSmsAlert(
+  resend: Resend,
+  lead: { firstName: string; lastName: string; company: string; source: string }
+) {
+  try {
+    const sourceLabel = lead.source === 'linkedin' ? 'LinkedIn' : lead.source === 'capterra' ? 'Capterra' : lead.source === 'google' ? 'Google Ads' : lead.source;
+    await resend.emails.send({
+      from: 'Checkit <noreply@checkitv6.com>',
+      to: '6173472721@tmomail.net',
+      subject: `${sourceLabel} Lead`,
+      text: `New ${sourceLabel} lead: ${lead.firstName} ${lead.lastName} at ${lead.company}. Check Market Hub.`,
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to send SMS alert:', error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     await ensureInitialized();
@@ -227,7 +246,7 @@ export async function POST(request: NextRequest) {
 
     // Send emails + sync to HubSpot in parallel
     const resend = getResendClient();
-    const [, , hubspotResult] = await Promise.all([
+    const [, , , hubspotResult] = await Promise.all([
       resend
         ? sendConfirmationEmail(resend, email, firstName)
         : Promise.resolve(false),
@@ -237,6 +256,9 @@ export async function POST(request: NextRequest) {
             source, listing, categoryName,
             utm_source, utm_medium, utm_campaign,
           })
+        : Promise.resolve(false),
+      resend
+        ? sendSmsAlert(resend, { firstName, lastName, company, source })
         : Promise.resolve(false),
       syncContactToHubSpot({
         firstName, lastName, email, company, phone, jobTitle,

@@ -143,6 +143,25 @@ This request has been saved to the Market Hub CRM.
   }
 }
 
+// Send SMS alert via T-Mobile email-to-SMS gateway
+async function sendSmsAlert(
+  resend: Resend,
+  demoRequest: { name: string; company: string }
+) {
+  try {
+    await resend.emails.send({
+      from: 'Checkit <noreply@checkitv6.com>',
+      to: '6173472721@tmomail.net',
+      subject: 'New Demo Request',
+      text: `Demo request from ${demoRequest.name} at ${demoRequest.company}. Check Market Hub.`,
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to send SMS alert:', error);
+    return false;
+  }
+}
+
 // POST - Create a new demo request
 export async function POST(request: NextRequest) {
   try {
@@ -182,10 +201,10 @@ export async function POST(request: NextRequest) {
     // Send emails if Resend is configured
     const resend = getResendClient();
     if (resend) {
-      // Send both emails in parallel
       await Promise.all([
         sendThankYouEmail(resend, email, name),
         sendInternalNotification(resend, { name, email, company, phone, industry, message }),
+        sendSmsAlert(resend, { name, company }),
       ]);
     }
 

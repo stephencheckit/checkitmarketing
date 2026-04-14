@@ -25,6 +25,12 @@ import {
   HardHat,
   UtensilsCrossed,
   ClipboardCheck,
+  DoorOpen,
+  Wind,
+  Radio,
+  Hand,
+  Activity,
+  ScanSearch,
 } from 'lucide-react';
 import DemoRequestButton from '@/components/DemoRequestButton';
 
@@ -134,33 +140,6 @@ const problemCategories = [
   },
 ];
 
-const productComponents = [
-  {
-    icon: Wifi,
-    title: 'Sensors',
-    subtitle: 'Automated Monitoring',
-    description:
-      'Wireless monitoring of fridges, freezers, hot holding units, and display cases. Continuous data, automatic alerts when thresholds breach. No manual temperature checks.',
-    detail: 'Readings every 60 seconds',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile App',
-    subtitle: 'Digital Workflows',
-    description:
-      'Frontline staff complete guided checklists on a tablet or phone. Pump checks, shift handovers, food prep workflows, incident reports — all in one app with photo evidence and timestamps.',
-    detail: 'Works offline, syncs automatically',
-  },
-  {
-    icon: Monitor,
-    title: 'Platform',
-    subtitle: 'Estate-Wide Visibility',
-    description:
-      'Estate-wide dashboards for ops directors and area managers. Compliance scoring, trend analysis, automatic escalations, and complete audit trails across every site.',
-    detail: 'Role-based views for every level',
-  },
-];
-
 const differentiators = [
   {
     icon: Zap,
@@ -190,22 +169,10 @@ const differentiators = [
 
 const useCases = [
   {
-    icon: Thermometer,
-    title: 'Fridge & Freezer Monitoring',
-    description: 'Continuous wireless temperature logging for food-to-go cabinets, fridges, and freezers — with automatic alerts on breach.',
-    tag: 'EC 852/2004',
-  },
-  {
     icon: Fuel,
     title: 'Pump Safety Checks',
     description: 'Daily and shift-based pump inspection workflows covering nozzles, hoses, emergency cut-offs, and signage compliance.',
     tag: 'APEA / HSE',
-  },
-  {
-    icon: Flame,
-    title: 'Hot Holding Compliance',
-    description: 'Automated temperature monitoring and timed checks for hot food counters, pastry warmers, and coffee stations.',
-    tag: '63°C minimum',
   },
   {
     icon: Truck,
@@ -256,10 +223,70 @@ const useCases = [
     tag: '20%+ improvement',
   },
   {
+    icon: Flame,
+    title: 'Opening & Closing Procedures',
+    description: 'Guided step-by-step workflows for site open and close — till reconciliation, lighting checks, security protocols, and signage.',
+    tag: 'Shift-triggered',
+  },
+  {
     icon: Shield,
-    title: 'Regulatory Compliance Records',
-    description: 'Centralised, timestamped audit trail for EHO visits, trading standards inspections, and environmental compliance documentation.',
-    tag: 'One-click export',
+    title: 'EHO & Regulatory Visits',
+    description: 'Log inspector visits in real time — capture findings, corrective actions, and follow-ups with photo evidence and deadlines.',
+    tag: 'Audit-ready',
+  },
+  {
+    icon: Scale,
+    title: 'Waste & Stock Management',
+    description: 'Record food waste, date-check failures, and stock discrepancies at the point they happen — with category tagging and trend tracking.',
+    tag: 'Loss prevention',
+  },
+];
+
+const sensorDataTypes = [
+  {
+    icon: Thermometer,
+    title: 'Temperature',
+    scenario: 'Fridges, freezers, hot holding cabinets, and food-to-go display cases — monitored 24/7 with automatic alerts when thresholds breach.',
+  },
+  {
+    icon: Droplets,
+    title: 'Humidity',
+    scenario: 'Back-of-house storage areas and walk-in cold rooms where moisture levels affect stock quality and shelf life.',
+  },
+  {
+    icon: DoorOpen,
+    title: 'Door & Window',
+    scenario: 'Cold room doors and freezer access points — detect when doors are left open, driving temperature excursions and energy waste.',
+  },
+  {
+    icon: Activity,
+    title: 'Water & Leak Detection',
+    scenario: 'Plant rooms, under-sink areas, and fuel pump bases — instant alerts on water ingress before it becomes a costly incident.',
+  },
+  {
+    icon: ScanSearch,
+    title: 'Motion & Occupancy',
+    scenario: 'Customer toilets, back offices, and storage areas — trigger cleaning schedules or security alerts based on actual usage.',
+  },
+  {
+    icon: Hand,
+    title: 'Touch',
+    scenario: 'Manual check-in points and panic buttons — staff tap to confirm task completion or trigger an immediate escalation.',
+  },
+  {
+    icon: Wind,
+    title: 'CO2 & Air Quality',
+    scenario: 'Enclosed kitchen areas and back-of-house prep spaces — monitor air quality for staff safety and ventilation compliance.',
+  },
+  {
+    icon: Radio,
+    title: 'Equipment Alarms',
+    scenario: 'Generator alerts, HVAC faults, and compressor failures — relay monitoring that captures equipment status changes automatically.',
+  },
+  {
+    icon: Eye,
+    title: 'Proximity',
+    scenario: 'Asset presence detection for high-value displays, safety equipment, and compliance signage — know immediately when something is removed.',
   },
 ];
 
@@ -361,8 +388,8 @@ export default function ForecourtsMarketPage() {
       </section>
 
       {/* Problems — dark, moody */}
-      <section className="relative py-20 lg:py-28 bg-gray-900 overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-b from-gray-800/50 via-transparent to-gray-950/80" />
+      <section className="relative py-20 lg:py-28 bg-gray-700 overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-b from-gray-600/50 via-transparent to-gray-800/60" />
         <div
           className="absolute inset-0 opacity-[0.06]"
           style={{
@@ -421,7 +448,7 @@ export default function ForecourtsMarketPage() {
         </div>
       </section>
 
-      {/* The Solution — clean, light */}
+      {/* The Solution — overview with product image */}
       <section className="relative py-20 lg:py-28 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-12">
@@ -429,81 +456,25 @@ export default function ForecourtsMarketPage() {
               The Checkit Platform
             </span>
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
-              Sensors, Apps, and Platform — Working Together
+              Sensors, App, and Platform — Working Together
             </h2>
             <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-              One connected system that automates asset monitoring, digitises
-              every check, and gives you estate-wide visibility.
+              One connected system that automates data collection, digitises
+              every workflow, and gives you estate-wide visibility and control.
             </p>
           </div>
 
-          {/* Product image showcase */}
-          <div className="mb-16">
+          <div>
             <img
               src="https://checkitv6.com/checkit%20v6-1.webp"
               alt="Checkit platform — sensors, dashboards, and mobile app working together"
               className="w-full max-w-4xl mx-auto"
             />
           </div>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {productComponents.map((component, i) => {
-              const Icon = component.icon;
-              const isMiddle = i === 1;
-              return (
-                <div
-                  key={component.title}
-                  className={`group/prod rounded-2xl p-8 transition-all duration-300 cursor-default ${
-                    isMiddle
-                      ? 'bg-teal-600 text-white shadow-xl shadow-teal-600/20 lg:-translate-y-2 hover:shadow-2xl hover:shadow-teal-600/30 hover:lg:-translate-y-3'
-                      : 'bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1'
-                  }`}
-                >
-                  <div
-                    className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 ${
-                      isMiddle ? 'bg-white/20 group-hover/prod:bg-white/30 group-hover/prod:scale-110' : 'bg-teal-50 group-hover/prod:bg-teal-100 group-hover/prod:scale-110'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-7 h-7 transition-transform duration-300 group-hover/prod:rotate-6 ${isMiddle ? 'text-white' : 'text-teal-600'}`}
-                    />
-                  </div>
-                  <p
-                    className={`text-xs font-semibold uppercase tracking-widest mb-2 ${
-                      isMiddle ? 'text-teal-200' : 'text-teal-600'
-                    }`}
-                  >
-                    {component.subtitle}
-                  </p>
-                  <h3
-                    className={`text-xl font-bold mb-3 ${
-                      isMiddle ? 'text-white' : 'text-slate-900'
-                    }`}
-                  >
-                    {component.title}
-                  </h3>
-                  <p
-                    className={`text-sm leading-relaxed ${
-                      isMiddle ? 'text-teal-100' : 'text-slate-500'
-                    }`}
-                  >
-                    {component.description}
-                  </p>
-                  <div className={`mt-4 pt-3 border-t overflow-hidden transition-all duration-300 max-h-0 opacity-0 group-hover/prod:max-h-12 group-hover/prod:opacity-100 ${
-                    isMiddle ? 'border-white/20' : 'border-slate-100'
-                  }`}>
-                    <p className={`text-xs font-semibold ${isMiddle ? 'text-teal-200' : 'text-teal-600'}`}>
-                      {component.detail}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       </section>
 
-      {/* Why Forecourt Operators Choose Checkit — numbered with left accent */}
+      {/* Why Forecourt Operators Choose Checkit */}
       <section className="relative py-20 lg:py-28 bg-slate-50">
         <div
           className="absolute inset-0 opacity-[0.4]"
@@ -561,44 +532,199 @@ export default function ForecourtsMarketPage() {
         </div>
       </section>
 
-      {/* Use Cases — forecourt-specific workflows */}
+      {/* 1. SENSORS — automated data collection */}
+      <section className="relative py-20 lg:py-28 bg-slate-900 overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='32' height='32' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23fff' fill-opacity='0.3'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                <Wifi className="w-5 h-5 text-teal-400" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-teal-400">
+                01 — Sensors
+              </span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4 tracking-tight">
+              Automate the Collection of Multiple Data Sources
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+              Wireless sensors collect operational data around the clock —
+              replacing clipboards, spreadsheets, and guesswork across your
+              forecourt.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {sensorDataTypes.map((sensor) => {
+              const Icon = sensor.icon;
+              return (
+                <div
+                  key={sensor.title}
+                  className="group flex items-center gap-5 p-4 lg:p-5 rounded-xl bg-white/5 border border-white/[0.07] hover:bg-teal-500/10 hover:border-teal-500/20 transition-all duration-200"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-white/10 group-hover:bg-teal-500 flex items-center justify-center shrink-0 transition-colors duration-200">
+                    <Icon className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors duration-200" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-3">
+                      <h3 className="text-sm font-semibold text-white whitespace-nowrap">
+                        {sensor.title}
+                      </h3>
+                      <div className="hidden sm:block h-px flex-1 bg-white/10" />
+                    </div>
+                    <p className="text-slate-400 group-hover:text-slate-300 text-sm leading-relaxed mt-0.5 transition-colors duration-200">
+                      {sensor.scenario}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 2. DIGITAL APP — forecourt workflows */}
       <section className="relative py-20 lg:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <span className="inline-block px-4 py-1.5 text-sm font-medium bg-teal-50 text-teal-700 rounded-full mb-5">
-              Forecourt Workflows
-            </span>
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                <Smartphone className="w-5 h-5 text-teal-600" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-teal-600">
+                02 — Digital App
+              </span>
+            </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
               Every Check on Your Forecourt, Digitised
             </h2>
             <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-              From fuel deliveries to food prep — one platform replaces paper
-              across every workflow on site.
+              Frontline staff complete guided checklists on a tablet or phone —
+              with photo evidence, timestamps, and offline capability built in.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid sm:grid-cols-2 gap-4">
             {useCases.map((useCase) => {
               const Icon = useCase.icon;
               return (
                 <div
                   key={useCase.title}
-                  className="group/uc p-6 rounded-2xl border border-slate-150 bg-slate-50/50 hover:bg-white hover:border-teal-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-default"
+                  className="group/uc flex gap-4 p-5 rounded-xl bg-slate-50 border-l-4 border-l-slate-200 hover:border-l-teal-500 hover:bg-teal-50/50 transition-all duration-200"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover/uc:bg-teal-500 flex items-center justify-center transition-all duration-300 group-hover/uc:shadow-lg group-hover/uc:shadow-teal-500/25">
-                      <Icon className="w-5 h-5 text-teal-600 group-hover/uc:text-white transition-colors duration-300" />
-                    </div>
-                    <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-400 rounded-full group-hover/uc:bg-teal-50 group-hover/uc:text-teal-600 transition-all duration-300 opacity-0 translate-y-1 group-hover/uc:opacity-100 group-hover/uc:translate-y-0">
-                      {useCase.tag}
-                    </span>
+                  <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 group-hover/uc:border-teal-200 group-hover/uc:bg-teal-50 flex items-center justify-center shrink-0 transition-all duration-200">
+                    <Icon className="w-5 h-5 text-slate-400 group-hover/uc:text-teal-600 transition-colors duration-200" />
                   </div>
-                  <h3 className="text-base font-semibold text-slate-900 mb-1.5 group-hover/uc:text-teal-900 transition-colors duration-300">
-                    {useCase.title}
-                  </h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    {useCase.description}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-sm font-semibold text-slate-900">
+                        {useCase.title}
+                      </h3>
+                      <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 bg-slate-100 group-hover/uc:text-teal-600 group-hover/uc:bg-teal-100 rounded transition-colors duration-200">
+                        {useCase.tag}
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-sm leading-relaxed">
+                      {useCase.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. PLATFORM — reporting, configuration, customization */}
+      <section className="relative py-20 lg:py-28 bg-slate-50">
+        <div
+          className="absolute inset-0 opacity-[0.4]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 24L24 0' stroke='%2394a3b8' stroke-width='0.4' stroke-opacity='0.15' fill='none'/%3E%3C/svg%3E")`,
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                <Monitor className="w-5 h-5 text-teal-600" />
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest text-teal-600">
+                03 — Platform
+              </span>
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
+              Estate-Wide Visibility and Control
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+              Dashboards, reporting, and configuration tools that give ops
+              directors and area managers a single view of compliance across
+              every site.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-5">
+            {[
+              {
+                icon: TrendingUp,
+                title: 'Compliance Dashboards',
+                description: 'Live compliance scoring across your entire estate. See which sites are on track and which need attention — at a glance.',
+              },
+              {
+                icon: ClipboardList,
+                title: 'Custom Workflow Builder',
+                description: 'Create and update checklists centrally, then push them to any site or group of sites. No per-site configuration needed.',
+              },
+              {
+                icon: Zap,
+                title: 'Automatic Escalations',
+                description: 'Missed checks, breached thresholds, and overdue tasks trigger automatic alerts to the right person at the right level.',
+              },
+              {
+                icon: Shield,
+                title: 'Complete Audit Trail',
+                description: 'Every check, every reading, every photo — timestamped and stored. Export-ready for EHO visits, audits, and inspections.',
+              },
+              {
+                icon: Users,
+                title: 'Role-Based Access',
+                description: 'Site managers see their site. Area managers see their region. Ops directors see the whole estate. Everyone gets the view they need.',
+              },
+              {
+                icon: Layers,
+                title: 'Trend Analysis & Reporting',
+                description: 'Spot patterns across sites and over time. Identify recurring issues, compare performance, and make data-driven decisions.',
+              },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="group flex gap-6 p-7 rounded-2xl bg-white border border-slate-200 hover:border-teal-200 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <span className="text-3xl font-bold text-slate-200 group-hover:text-teal-500 transition-colors duration-200">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div className="w-11 h-11 rounded-xl bg-slate-50 group-hover:bg-teal-50 flex items-center justify-center transition-colors duration-200">
+                      <Icon className="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors duration-200" />
+                    </div>
+                  </div>
+                  <div className="pt-1">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-slate-500 text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               );
             })}

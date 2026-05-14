@@ -3,10 +3,20 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import DemoRequestButton from '@/components/DemoRequestButton';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown, Calculator, FolderOpen } from 'lucide-react';
+
+const resourceLinks = [
+  {
+    href: '/digital-haccp-roi',
+    label: 'Digital HACCP ROI Calculator',
+    description: 'Translate the platform into pounds and pence',
+    icon: Calculator,
+  },
+];
 
 export default function HomeNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
 
   return (
     <header className="border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-50">
@@ -33,6 +43,52 @@ export default function HomeNav() {
             <Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">
               About Us
             </Link>
+
+            <div
+              className="relative"
+              onMouseEnter={() => setResourcesOpen(true)}
+              onMouseLeave={() => setResourcesOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setResourcesOpen((v) => !v)}
+                className="flex items-center gap-1 text-sm text-muted hover:text-foreground transition-colors cursor-pointer"
+                aria-haspopup="menu"
+                aria-expanded={resourcesOpen}
+              >
+                Resources
+                <ChevronDown
+                  className={`w-3.5 h-3.5 transition-transform ${resourcesOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {resourcesOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50">
+                  <div className="w-80 bg-surface border border-border rounded-xl shadow-xl p-2">
+                    {resourceLinks.map((r) => {
+                      const Icon = r.icon;
+                      return (
+                        <Link
+                          key={r.href}
+                          href={r.href}
+                          onClick={() => setResourcesOpen(false)}
+                          className="flex items-start gap-3 px-3 py-3 rounded-lg hover:bg-surface-elevated transition-colors group"
+                        >
+                          <div className="p-2 rounded-md bg-accent/10 text-accent shrink-0">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-foreground group-hover:text-accent transition-colors">
+                              {r.label}
+                            </div>
+                            <div className="text-xs text-muted mt-0.5">{r.description}</div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           <div className="hidden md:flex items-center shrink-0">
@@ -80,6 +136,28 @@ export default function HomeNav() {
               >
                 About Us
               </Link>
+
+              <div className="pt-2 mt-2 border-t border-border">
+                <div className="flex items-center gap-3 px-3 py-2 text-xs uppercase tracking-wider text-muted font-semibold">
+                  <FolderOpen className="w-4 h-4" />
+                  Resources
+                </div>
+                {resourceLinks.map((r) => {
+                  const Icon = r.icon;
+                  return (
+                    <Link
+                      key={r.href}
+                      href={r.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2 text-muted hover:text-foreground hover:bg-surface-elevated rounded-lg transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                      {r.label}
+                    </Link>
+                  );
+                })}
+              </div>
+
               <div className="border-t border-border my-3" />
               <div className="mx-3">
                 <DemoRequestButton label="Request Demo" className="w-full justify-center" />

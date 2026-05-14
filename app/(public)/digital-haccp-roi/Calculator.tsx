@@ -271,17 +271,22 @@ export default function Calculator() {
 
   return (
     <div className="bg-slate-950 print:bg-white text-slate-100 print:text-black">
-      {/* Print-only styles: hide page chrome and background */}
+      {/* Print stylesheet: swap to a clean PDF-only view */}
       <style>{`
         @media print {
+          @page { margin: 0.5in; size: A4; }
           header, footer, .demo-request-button-wrapper { display: none !important; }
           html, body { background: white !important; }
           body::before { display: none !important; }
+          .pdf-screen-content { display: none !important; }
+          .pdf-print-content { display: block !important; }
           .print-card { break-inside: avoid; page-break-inside: avoid; }
           .print-page-break { page-break-before: always; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
 
+      <div className="pdf-screen-content">
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-slate-800/70 print:border-slate-300">
         <div className="absolute inset-0 pointer-events-none print:hidden">
@@ -993,6 +998,180 @@ export default function Calculator() {
           </div>
         </div>
       </section>
+      </div>
+
+      {/* PRINT-ONLY clean PDF view */}
+      <div className="pdf-print-content hidden bg-white text-slate-900">
+        {/* Branded header strip */}
+        <div
+          className="bg-slate-950 px-5 py-3 flex items-center"
+          style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' } as React.CSSProperties}
+        >
+          <img
+            src="/checkit-logo-horizontal-standard-rgb-white.svg"
+            alt="Checkit"
+            style={{ height: '18px' }}
+          />
+        </div>
+
+        {/* Title row */}
+        <div className="px-1 mt-4 flex items-end justify-between border-b border-slate-300 pb-3">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-cyan-700 font-semibold">
+              Digital HACCP ROI &middot; Estate Business Case
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 mt-1 leading-tight">
+              Estate-wide annual value
+            </h1>
+          </div>
+          <div className="text-right text-[11px] text-slate-700">
+            <div className="font-semibold text-slate-900 text-sm">
+              {sites} {sites === 1 ? 'site' : 'sites'}
+            </div>
+            <div>
+              {new Date().toLocaleDateString('en-GB', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Big headline total */}
+        <div className="text-center my-5">
+          <div className="text-4xl font-bold text-slate-900 tracking-tight">
+            {fmtGBP(calc.total)}
+          </div>
+          <div className="text-[11px] text-slate-600 mt-0.5">
+            combined annual value &middot; composite of the four calculators
+          </div>
+        </div>
+
+        {/* 4 KPI tiles */}
+        <div className="grid grid-cols-4 gap-2 mb-5 px-1">
+          <PrintKpi
+            label="Paper & Printing"
+            valueType="Direct cost eliminated"
+            value={calc.paper}
+            accent="cyan"
+          />
+          <PrintKpi
+            label="Staff Time"
+            valueType="Labour reallocated"
+            value={calc.staff}
+            accent="indigo"
+            sub={`${Math.round(calc.staffTotalHours).toLocaleString('en-GB')} hrs · ${calc.staffFTE.toFixed(1)} FTE`}
+          />
+          <PrintKpi
+            label="Energy Saving"
+            valueType="Direct cost reduction"
+            value={calc.energy}
+            accent="emerald"
+            sub={`${calc.energyTCO2eAvoided.toFixed(1)} tCO₂e avoided`}
+          />
+          <PrintKpi
+            label="Stock Risk Coverage"
+            valueType="Annual exposure"
+            value={calc.stock}
+            accent="amber"
+            sub={`${fmtGBPCompact(sites * stockValuePerSite)} stock at risk`}
+          />
+        </div>
+
+        {/* Donut chart + hard / capacity split */}
+        <div className="grid grid-cols-2 gap-6 mb-5 items-center px-1">
+          <div className="flex justify-center">
+            <DonutChart
+              slices={[
+                { label: 'Paper & Printing', value: calc.paper, accent: 'cyan' },
+                { label: 'Staff Time', value: calc.staff, accent: 'indigo' },
+                { label: 'Energy Saving', value: calc.energy, accent: 'emerald' },
+                { label: 'Stock Risk Coverage', value: calc.stock, accent: 'amber' },
+              ]}
+              centerTop={fmtGBP(calc.total)}
+              centerBottom="/ year"
+            />
+          </div>
+          <div className="space-y-3">
+            <div className="rounded-lg border border-slate-300 p-3 print-card">
+              <div className="text-[10px] uppercase tracking-wider text-slate-700 font-semibold">
+                Hard savings
+              </div>
+              <div className="text-xl font-bold text-slate-900 mt-1 leading-none">
+                {fmtGBP(calc.hardSavings)}
+                <span className="text-xs font-normal text-slate-600 ml-1">/ year</span>
+              </div>
+              <div className="text-[10px] text-slate-600 mt-1 leading-snug">
+                Paper + Energy &middot; cash that comes off the invoice
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-300 p-3 print-card">
+              <div className="text-[10px] uppercase tracking-wider text-slate-700 font-semibold">
+                Capacity &amp; risk covered
+              </div>
+              <div className="text-xl font-bold text-slate-900 mt-1 leading-none">
+                {fmtGBP(calc.capacityAndRisk)}
+                <span className="text-xs font-normal text-slate-600 ml-1">/ year</span>
+              </div>
+              <div className="text-[10px] text-slate-600 mt-1 leading-snug">
+                Staff hours reclaimed + stock-loss exposure protected
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Inputs & assumptions */}
+        <div className="border-t border-slate-300 pt-3 mb-4 px-1 print-card">
+          <div className="text-[10px] uppercase tracking-wider text-slate-700 font-semibold mb-2">
+            Inputs &amp; assumptions
+          </div>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-[10px]">
+            <PrintAssumption label="Sites" value={String(sites)} />
+            <PrintAssumption label="Booklets / site / month" value={String(paperBookletsPerSite)} />
+            <PrintAssumption label="Cost per booklet" value={fmtGBP(paperCostPerBooklet)} />
+            <PrintAssumption label="% paper replaced" value={`${paperReductionPct}%`} />
+            <PrintAssumption
+              label="Mins not wasted / day / site"
+              value={String(staffMinsPerDay)}
+            />
+            <PrintAssumption label="Operating days / year" value={String(staffDaysPerYear)} />
+            <PrintAssumption label="Frontline wage" value={`${fmtGBP(staffWage)} / hr`} />
+            <PrintAssumption label="Admin hrs / month / site" value={String(adminHrsPerMonth)} />
+            <PrintAssumption label="Admin wage" value={`${fmtGBP(adminWage)} / hr`} />
+            <PrintAssumption label="Capture rate" value={`${staffCapturePct}%`} />
+            <PrintAssumption label="Freezers / site" value={String(energyFreezersPerSite)} />
+            <PrintAssumption
+              label="kWh / unit / year"
+              value={energyKwhPerUnitPerYear.toLocaleString('en-GB')}
+            />
+            <PrintAssumption label="Cost / kWh" value={fmtGBP(energyCostPerKwh)} />
+            <PrintAssumption label="Energy reduction" value={`${energyReductionPct}%`} />
+            <PrintAssumption
+              label="Grid carbon intensity"
+              value={`${energyGridCarbonIntensity} kgCO₂e/kWh`}
+            />
+            <PrintAssumption label="Stock value / site" value={fmtGBP(stockValuePerSite)} />
+            <PrintAssumption label="Annual stock-loss risk" value={`${stockAnnualRiskPct}%`} />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-3 border-t border-slate-300 text-[9px] text-slate-600 flex justify-between px-1">
+          <div>Prepared with Checkit Digital HACCP ROI Calculator</div>
+          <div>
+            {new Date().toLocaleDateString('en-GB', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </div>
+        </div>
+        <p className="mt-2 px-1 text-[9px] text-slate-600 leading-snug italic">
+          Defaults anchored to observed benchmarks across UK food service estates. Currency: GBP.
+          Estimate, not a quotation &mdash; talk to a Checkit expert for a tailored business case.
+        </p>
+      </div>
     </div>
   );
 }
@@ -1404,6 +1583,54 @@ function CalcFormula({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-4 text-[11px] text-slate-500 print:text-slate-600 leading-relaxed bg-slate-950/40 print:bg-slate-50 border border-slate-800/60 print:border-slate-200 rounded-md p-3 font-mono">
       {children}
+    </div>
+  );
+}
+
+function PrintKpi({
+  label,
+  valueType,
+  value,
+  accent,
+  sub,
+}: {
+  label: string;
+  valueType: string;
+  value: number;
+  accent: Accent;
+  sub?: string;
+}) {
+  const tone = accentTone(accent);
+  return (
+    <div
+      className="rounded-lg border border-slate-300 px-3 py-2.5 print-card"
+      style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' } as React.CSSProperties}
+    >
+      <div className="flex items-center gap-1.5">
+        <span
+          className="inline-block w-2 h-2 rounded-full"
+          style={{ background: accentMap[accent].hex }}
+        />
+        <div className="text-[10px] font-semibold text-slate-900 truncate">{label}</div>
+      </div>
+      <div className="text-lg font-bold text-slate-900 mt-1 leading-none">
+        {fmtGBPCompact(value)}
+      </div>
+      <div
+        className={`text-[9px] uppercase tracking-wider font-semibold mt-1 ${tone.iconText}`}
+      >
+        {valueType}
+      </div>
+      {sub && <div className="text-[9px] text-slate-600 mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function PrintAssumption({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-2 border-b border-slate-200 pb-0.5">
+      <span className="text-slate-600">{label}</span>
+      <span className="font-semibold text-slate-900">{value}</span>
     </div>
   );
 }

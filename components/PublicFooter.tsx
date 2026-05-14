@@ -14,7 +14,7 @@ export default function PublicFooter() {
   return (
     <footer className="border-t border-border py-12 bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
           {/* Brand */}
           <div className="lg:col-span-2">
             <img 
@@ -77,6 +77,21 @@ export default function PublicFooter() {
               <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
               <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Stories</Link></li>
               <li><Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">About Us</Link></li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-4">Resources</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/digital-haccp-roi"
+                  className="text-sm text-muted hover:text-foreground transition-colors"
+                >
+                  Digital HACCP ROI Calculator
+                </Link>
+              </li>
             </ul>
           </div>
           

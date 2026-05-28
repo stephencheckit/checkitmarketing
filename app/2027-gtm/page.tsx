@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import KitPipelineDeck from './KitPipelineDeck';
+import Deck from './Deck';
 import PasswordGate from './PasswordGate';
 
 export const dynamic = 'force-dynamic';
@@ -19,5 +19,5 @@ export default async function Page({
     return <PasswordGate error={params.error === '1'} />;
   }
 
-  return <KitPipelineDeck />;
+  return <Deck />;
 }

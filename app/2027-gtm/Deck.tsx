@@ -24,6 +24,12 @@ import {
   Linkedin,
   Workflow,
   RefreshCw,
+  Search,
+  Bot,
+  Mail,
+  PenTool,
+  Network,
+  MousePointerClick,
 } from 'lucide-react';
 
 type Slide = {
@@ -98,8 +104,8 @@ const slides: Slide[] = [
     body: (
       <div className="space-y-8">
         <p className="max-w-2xl text-lg text-muted">
-          Discussion deck for the Kit review — where we are, where we&apos;re going, and what
-          it will take to close the gap to FY28 coverage.
+          Checkit GTM review — where we are, where we&apos;re going, and what it will take to
+          close the gap to FY28 coverage.
         </p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <StatCard label="OKR" value="£1M / mo" sub="New PG target this FY" />
@@ -108,7 +114,7 @@ const slides: Slide[] = [
         </div>
         <div className="flex items-center gap-3 text-sm text-muted">
           <Sparkles className="h-4 w-4 text-blue-400" />
-          Part data, part discussion — aligned with Steve&apos;s framing.
+          Part data, part discussion.
         </div>
       </div>
     ),
@@ -121,15 +127,15 @@ const slides: Slide[] = [
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <SectionCard title="The Headline Number" icon={Target}>
           <ul className="space-y-3">
-            <Bullet>Kit OKR: <strong>£1M of new PG per month</strong> in this FY (~£12M total).</Bullet>
+            <Bullet>Checkit OKR: <strong>£1M of new PG per month</strong> in this FY (~£12M total).</Bullet>
             <Bullet>YTD: ~£1.6M added (~£400K / mo) — short of pace.</Bullet>
             <Bullet>Gap aligns with FY28 pipeline coverage need.</Bullet>
           </ul>
         </SectionCard>
-        <SectionCard title="Format for Thursday" icon={Users}>
+        <SectionCard title="Meeting Format" icon={Users}>
           <ul className="space-y-3">
-            <Bullet>Steve: pipeline value (FY27, FY28+) and current state.</Bullet>
-            <Bullet>Stephen: PG plan for rest of year + aligned US/RoW campaign for FM.</Bullet>
+            <Bullet>Pipeline value snapshot (FY27, FY28+) and current state.</Bullet>
+            <Bullet>PG plan for rest of year + aligned US / RoW campaign for FM.</Bullet>
             <Bullet>Open discussion: additional resourcing (pre-FSP / post-FSP).</Bullet>
           </ul>
         </SectionCard>
@@ -330,8 +336,72 @@ const slides: Slide[] = [
     ),
   },
   {
+    id: 'channels',
+    eyebrow: 'Slide 8 — Demand Engine',
+    title: 'Multi-Channel Orchestration',
+    body: (
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-transparent p-5">
+          <div className="flex items-start gap-3">
+            <Network className="mt-1 h-5 w-5 text-blue-300" />
+            <p className="text-base text-foreground/90">
+              One coordinated motion across channels — paid, organic, social, outbound and email —
+              feeding the same target account list and narrative.
+            </p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <SectionCard title="LinkedIn" icon={Linkedin}>
+            <p className="text-sm text-foreground/80">
+              Account-based outreach + exec visibility via Phantom Buster.
+            </p>
+          </SectionCard>
+          <SectionCard title="Google Ads" icon={MousePointerClick}>
+            <p className="text-sm text-foreground/80">
+              Intent capture on high-value vertical and competitor terms.
+            </p>
+          </SectionCard>
+          <SectionCard title="AI Search" icon={Bot}>
+            <p className="text-sm text-foreground/80">
+              Optimising for ChatGPT / Perplexity answers — visibility where buyers now research.
+            </p>
+          </SectionCard>
+          <SectionCard title="SEO" icon={Search}>
+            <p className="text-sm text-foreground/80">
+              Vertical landing pages + content depth for organic discovery.
+            </p>
+          </SectionCard>
+          <SectionCard title="Outbound" icon={Workflow}>
+            <p className="text-sm text-foreground/80">
+              Rep-led sequences supported by automated enrichment and triggers.
+            </p>
+          </SectionCard>
+          <SectionCard title="Marketing Email" icon={Mail}>
+            <p className="text-sm text-foreground/80">
+              Nurture, re-engagement and campaign drops to segmented audiences.
+            </p>
+          </SectionCard>
+          <SectionCard title="Content Generation" icon={PenTool}>
+            <p className="text-sm text-foreground/80">
+              AI-assisted production scaled to vertical narratives and case studies.
+            </p>
+          </SectionCard>
+          <SectionCard title="Orchestration" icon={Network}>
+            <p className="text-sm text-foreground/80">
+              Shared target list, shared messaging, sequenced touches across channels.
+            </p>
+          </SectionCard>
+        </div>
+        <div className="rounded-xl border border-green-500/30 bg-green-500/5 p-4 text-sm text-green-200">
+          The point isn&apos;t more channels — it&apos;s the <strong>same account</strong> seeing a
+          coherent story across <strong>multiple channels</strong> at the right moments.
+        </div>
+      </div>
+    ),
+  },
+  {
     id: 'hygiene',
-    eyebrow: 'Slide 8 — Plan, Step 4',
+    eyebrow: 'Slide 9 — Plan, Step 4',
     title: 'Pipeline Hygiene & Re-engagement',
     body: (
       <ul className="space-y-3">
@@ -349,7 +419,7 @@ const slides: Slide[] = [
   },
   {
     id: 'investor',
-    eyebrow: 'Slide 9',
+    eyebrow: 'Slide 10',
     title: 'The Investor / Resourcing Conversation',
     body: (
       <div className="space-y-6">
@@ -381,8 +451,8 @@ const slides: Slide[] = [
   },
   {
     id: 'decisions',
-    eyebrow: 'Slide 10',
-    title: 'Decisions / Asks for Thursday',
+    eyebrow: 'Slide 11',
+    title: 'Decisions / Asks',
     body: (
       <ul className="space-y-4">
         <Bullet>
@@ -390,8 +460,8 @@ const slides: Slide[] = [
         </Bullet>
         <Bullet>Endorse: pivot toward FM as the shared US/UK vertical in H2.</Bullet>
         <Bullet>
-          Direction: Stephen focused on marketing & demand-gen vs. continuing to carry inherited
-          pipeline (and commission structure if the latter).
+          Direction: focus on marketing & demand-gen vs. continuing to carry inherited pipeline
+          (and commission structure if the latter).
         </Bullet>
         <Bullet icon={HandCoins}>
           Appetite for incremental resourcing investment vs. holding the profitability line.
@@ -401,7 +471,7 @@ const slides: Slide[] = [
   },
   {
     id: 'headline',
-    eyebrow: 'Slide 11 — Close',
+    eyebrow: 'Slide 12 — Close',
     title: 'Headline Message',
     body: (
       <div className="space-y-8">
@@ -413,7 +483,7 @@ const slides: Slide[] = [
         </blockquote>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <StatCard label="Status Quo" value="£4.8M" sub="If we hold at £400K/mo for 12mo" tone="warning" />
-          <StatCard label="Target" value="£12M" sub="Kit OKR for the FY" tone="accent" />
+          <StatCard label="Target" value="£12M" sub="Checkit OKR for the FY" tone="accent" />
           <StatCard label="Required Lift" value="2.5×" sub="To bridge the gap" tone="success" />
         </div>
       </div>
@@ -421,7 +491,7 @@ const slides: Slide[] = [
   },
 ];
 
-export default function KitPipelineDeck() {
+export default function CheckitGtmDeck() {
   const [index, setIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const total = slides.length;
@@ -473,7 +543,7 @@ export default function KitPipelineDeck() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <LineChart className="h-7 w-7 text-blue-400" />
-            Kit Pipeline Plan
+            Checkit 2027 GTM
           </h1>
           <p className="text-sm text-muted mt-1">Internal discussion deck · Checkit GTM</p>
         </div>

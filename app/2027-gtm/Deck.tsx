@@ -179,35 +179,35 @@ const slides: Slide[] = [
     eyebrow: 'Slide 4 — Plan, Step 1',
     title: 'Finish the Forecourts Pass (UK)',
     body: (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
-          <div className="md:col-span-3 space-y-4">
-            <ul className="space-y-3">
-              <Bullet>~50–60 named accounts; 7-figure enterprise upside.</Bullet>
-              <Bullet>
-                Run a <strong>second, heavier cycle</strong> with Red / Amber / Green status using
-                what we&apos;ve learned.
-              </Bullet>
-              <Bullet>
-                Layer new tactics — e.g. Phantom Buster account-based LinkedIn outreach (already
-                piloted).
-              </Bullet>
-              <Bullet icon={AlertTriangle}>
-                Exit criteria: fewer than ~10 viable accounts remaining → move on.
-              </Bullet>
-            </ul>
-          </div>
-          <div className="md:col-span-2 space-y-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
+        <div className="md:col-span-3 space-y-4">
+          <ul className="space-y-3">
+            <Bullet>~50–60 named accounts; 7-figure enterprise upside.</Bullet>
+            <Bullet>
+              Run a <strong>second, heavier cycle</strong> with Red / Amber / Green status using
+              what we&apos;ve learned.
+            </Bullet>
+            <Bullet>
+              Layer new tactics — e.g. Phantom Buster account-based LinkedIn outreach (already
+              piloted).
+            </Bullet>
+            <Bullet icon={AlertTriangle}>
+              Exit criteria: fewer than ~10 viable accounts remaining → move on.
+            </Bullet>
+          </ul>
+          <div className="grid grid-cols-2 gap-3">
             <StatCard label="Accounts" value="50–60" sub="Named target list" />
             <StatCard label="Per-account upside" value="7-figure" sub="Enterprise multi-site" tone="success" />
           </div>
         </div>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/decks/2027-gtm/forecourts.png"
-          alt="Checkit Forecourts & Fuel Retail market page"
-          className="w-full rounded-lg border border-border object-cover"
-        />
+        <div className="md:col-span-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/decks/2027-gtm/forecourts.png"
+            alt="Checkit Forecourts & Fuel Retail market page"
+            className="w-full rounded-lg border border-border object-cover"
+          />
+        </div>
       </div>
     ),
   },

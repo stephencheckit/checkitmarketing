@@ -18,7 +18,6 @@ import {
   Sparkles,
   Flag,
   MapPin,
-  LineChart,
   Briefcase,
   Calculator,
   Linkedin,
@@ -31,6 +30,7 @@ import {
   Network,
   MousePointerClick,
 } from 'lucide-react';
+import Image from 'next/image';
 
 type Slide = {
   id: string;
@@ -423,7 +423,7 @@ const slides: Slide[] = [
   {
     id: 'headline',
     eyebrow: 'Slide 10 — Close',
-    title: 'Headline Message',
+    title: 'The Bottom Line',
     body: (
       <div className="space-y-8">
         <blockquote className="rounded-2xl border-l-4 border-blue-500 bg-gradient-to-r from-blue-500/10 to-transparent p-6 text-xl leading-relaxed text-foreground">
@@ -493,12 +493,19 @@ export default function CheckitGtmDeck() {
       <div className="space-y-4 deck-screen">
       {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-            <LineChart className="h-7 w-7 text-blue-400" />
-            Checkit 2027 GTM
-          </h1>
-          <p className="text-sm text-muted mt-1">Internal discussion deck · Checkit GTM</p>
+        <div className="flex items-center gap-4">
+          <Image
+            src="/checkit-logo-horizontal-standard-rgb-white.svg"
+            alt="Checkit"
+            width={140}
+            height={32}
+            priority
+            className="h-8 w-auto"
+          />
+          <div className="hidden sm:block border-l border-border pl-4">
+            <h1 className="text-lg font-semibold text-foreground">2027 GTM</h1>
+            <p className="text-xs text-muted">Internal discussion deck</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -558,43 +565,48 @@ export default function CheckitGtmDeck() {
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={prev}
-          disabled={index === 0}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back
-        </button>
-
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {slides.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setIndex(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`h-2.5 rounded-full transition-all ${
-                i === index ? 'w-8 bg-blue-400' : 'w-2.5 bg-border hover:bg-surface-hover'
-              }`}
-            />
-          ))}
-        </div>
-
-        <button
-          onClick={next}
-          disabled={index === total - 1}
-          className="inline-flex items-center gap-2 rounded-lg btn-gradient px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
       <p className="text-center text-xs text-muted">
         Tip: use ← / → keys to navigate, F to present, Home / End to jump.
       </p>
+
+      {/* Spacer so fixed bottom bar doesn't cover content */}
+      <div className="h-24" aria-hidden />
+      </div>
+
+      {/* Fixed bottom controls (no-print, hidden on print) */}
+      <div className="deck-controls fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <button
+            onClick={prev}
+            disabled={index === 0}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </button>
+
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {slides.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => setIndex(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-2.5 rounded-full transition-all ${
+                  i === index ? 'w-8 bg-blue-400' : 'w-2.5 bg-border hover:bg-surface-hover'
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={next}
+            disabled={index === total - 1}
+            className="inline-flex items-center gap-2 rounded-lg btn-gradient px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* Print-only stack: every slide on its own landscape page */}
@@ -634,7 +646,8 @@ const PRINT_CSS = `
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
-        .deck-screen {
+        .deck-screen,
+        .deck-controls {
           display: none !important;
         }
         .deck-print {

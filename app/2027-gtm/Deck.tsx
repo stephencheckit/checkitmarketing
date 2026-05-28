@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Users,
   Globe,
+  Building2,
   HandCoins,
   CheckCircle2,
   AlertTriangle,
@@ -340,53 +341,41 @@ const slides: Slide[] = [
           <div className="flex items-start gap-3">
             <Network className="mt-1 h-5 w-5 text-blue-300" />
             <p className="text-base text-foreground/90">
-              One coordinated motion across channels — paid, organic, social, outbound and email —
-              feeding the same target account list and narrative.
+              <strong>Inbound remains our anchor.</strong> Paid, social and outbound layer on top to
+              feed the same target accounts and narrative.
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <SectionCard title="LinkedIn" icon={Linkedin}>
-            <p className="text-sm text-foreground/80">
-              Account-based outreach + exec visibility via Phantom Buster.
-            </p>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SectionCard title="Inbound — Primary" icon={Search}>
+            <ul className="space-y-2 text-sm text-foreground/90">
+              <li>Organic search (SEO)</li>
+              <li>AI search visibility (ChatGPT / Perplexity)</li>
+              <li>Site chat</li>
+              <li>Form fills from content + landing pages</li>
+            </ul>
           </SectionCard>
-          <SectionCard title="Google Ads" icon={MousePointerClick}>
-            <p className="text-sm text-foreground/80">
-              Intent capture on high-value vertical and competitor terms.
-            </p>
+          <SectionCard title="Paid — Targeted" icon={MousePointerClick}>
+            <ul className="space-y-2 text-sm text-foreground/90">
+              <li>Google Ads — continuing spend on high-intent terms</li>
+              <li>LinkedIn — light spend, targeted account promos</li>
+            </ul>
           </SectionCard>
-          <SectionCard title="AI Search" icon={Bot}>
-            <p className="text-sm text-foreground/80">
-              Optimising for ChatGPT / Perplexity answers — visibility where buyers now research.
-            </p>
+          <SectionCard title="Outbound — Active" icon={Linkedin}>
+            <ul className="space-y-2 text-sm text-foreground/90">
+              <li>Apollo sequences into named accounts</li>
+              <li>Phantom Buster — LinkedIn account-based outreach</li>
+            </ul>
           </SectionCard>
-          <SectionCard title="SEO" icon={Search}>
-            <p className="text-sm text-foreground/80">
-              Vertical landing pages + content depth for organic discovery.
-            </p>
-          </SectionCard>
-          <SectionCard title="Outbound" icon={Workflow}>
-            <p className="text-sm text-foreground/80">
-              Rep-led sequences supported by automated enrichment and triggers.
-            </p>
-          </SectionCard>
-          <SectionCard title="Marketing Email" icon={Mail}>
-            <p className="text-sm text-foreground/80">
-              Nurture, re-engagement and campaign drops to segmented audiences.
-            </p>
-          </SectionCard>
-          <SectionCard title="Content Generation" icon={PenTool}>
-            <p className="text-sm text-foreground/80">
-              AI-assisted production scaled to vertical narratives and case studies.
-            </p>
-          </SectionCard>
-          <SectionCard title="Orchestration" icon={Network}>
-            <p className="text-sm text-foreground/80">
-              Shared target list, shared messaging, sequenced touches across channels.
-            </p>
+          <SectionCard title="Nurture — Ongoing" icon={Mail}>
+            <ul className="space-y-2 text-sm text-foreground/90">
+              <li>Email nurture across segmented audiences</li>
+              <li>Re-engagement workflows for inherited / stalled pipeline</li>
+            </ul>
           </SectionCard>
         </div>
+
         <div className="rounded-xl border border-green-500/30 bg-green-500/5 p-4 text-sm text-green-200">
           The point isn&apos;t more channels — it&apos;s the <strong>same account</strong> seeing a
           coherent story across <strong>multiple channels</strong> at the right moments.
@@ -395,8 +384,51 @@ const slides: Slide[] = [
     ),
   },
   {
+    id: 'deal-size',
+    eyebrow: 'Slide 9 — Future PG',
+    title: 'Where Mid & Large Deals Will Come From',
+    body: (
+      <div className="space-y-6">
+        <p className="max-w-3xl text-base text-muted">
+          Different deal sizes are sourced through different motions. Clarity here is how we make
+          sure the coverage adds up.
+        </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <SectionCard title="Small / SMB" icon={Search}>
+            <div className="space-y-2 text-sm text-foreground/90">
+              <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
+              <div>Inbound — organic, AI search, chat, form fills</div>
+              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
+              <div>Self-serve discovery → light-touch qualification</div>
+            </div>
+          </SectionCard>
+          <SectionCard title="Mid-Market" icon={Workflow}>
+            <div className="space-y-2 text-sm text-foreground/90">
+              <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
+              <div>Vertical campaigns + outbound (Apollo / Phantom Buster) into named lists</div>
+              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
+              <div>Forecourts second-pass model — rep-led, narrative-driven</div>
+            </div>
+          </SectionCard>
+          <SectionCard title="Large / Enterprise" icon={Building2}>
+            <div className="space-y-2 text-sm text-foreground/90">
+              <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
+              <div>Named-account ABM into FM (US + UK) and CAM+ medical / NHS systems</div>
+              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
+              <div>Multi-channel orchestration; exec relationships; partner / GPO entry points</div>
+            </div>
+          </SectionCard>
+        </div>
+        <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 text-sm text-blue-200">
+          Coverage math holds when the three motions are <strong>sized for the deal-size mix</strong>
+          we&apos;re forecasting — not all-in on one channel.
+        </div>
+      </div>
+    ),
+  },
+  {
     id: 'decisions',
-    eyebrow: 'Slide 9',
+    eyebrow: 'Slide 10',
     title: 'Decisions / Asks',
     body: (
       <ul className="space-y-4">
@@ -416,7 +448,7 @@ const slides: Slide[] = [
   },
   {
     id: 'headline',
-    eyebrow: 'Slide 10 — Close',
+    eyebrow: 'Slide 11 — Close',
     title: 'Headline Message',
     body: (
       <div className="space-y-8">

@@ -8,8 +8,6 @@ import {
   TrendingUp,
   Users,
   Globe,
-  Building2,
-  Rocket,
   HandCoins,
   CheckCircle2,
   AlertTriangle,
@@ -155,29 +153,25 @@ const slides: Slide[] = [
             Single-vertical focus per resource. Lean by design — profitability mandate has been met.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <SectionCard title="UK / RoW" icon={Globe}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SectionCard title="UK / Rest of World" icon={Globe}>
             <ul className="space-y-2 text-sm text-foreground/90">
               <li>April + Tom → Forecourts</li>
-              <li>Megan → Check-ins</li>
-              <li>Jordan → Customer stories</li>
+              <li>Megan → NHS / Pharmacy (Cam+ medical)</li>
             </ul>
           </SectionCard>
           <SectionCard title="US" icon={Flag}>
             <ul className="space-y-2 text-sm text-foreground/90">
-              <li>Senior Living (matured)</li>
-              <li>Facilities (expanding)</li>
-              <li>Stadiums via OVG</li>
-            </ul>
-          </SectionCard>
-          <SectionCard title="Medical / Camp+" icon={Briefcase}>
-            <ul className="space-y-2 text-sm text-foreground/90">
-              <li>Jen — NHS + account base</li>
-              <li>Locked-in motion</li>
-              <li>Tenant-driven cadence</li>
+              <li>Jordan → Facilities, OVG, customer expansion</li>
+              <li>Jennifer → Cam+ medical, account management</li>
             </ul>
           </SectionCard>
         </div>
+        <SectionCard title="Utility" icon={Briefcase}>
+          <p className="text-sm text-foreground/90">
+            Stephen → utility player across motions, with a medical lean.
+          </p>
+        </SectionCard>
       </div>
     ),
   },
@@ -221,11 +215,15 @@ const slides: Slide[] = [
             <div className="space-y-3 text-sm">
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted">US</div>
-                <div className="text-foreground/90">Senior Living → Facilities → Stadiums</div>
+                <div className="text-foreground/90">
+                  Senior Living → Facilities · Cam+
+                </div>
               </div>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted">UK / RoW</div>
-                <div className="text-foreground/90">Food Retail · Food-to-Go · Forecourts</div>
+                <div className="text-foreground/90">
+                  Food Retail · Food-to-Go · Forecourts · Cam+
+                </div>
               </div>
             </div>
           </SectionCard>
@@ -241,7 +239,7 @@ const slides: Slide[] = [
               <div>
                 <div className="text-xs uppercase tracking-wider text-blue-300">Shared vertical #2</div>
                 <div className="text-foreground/90">
-                  <strong>Stadiums</strong> — proven via OVG; replicable in UK.
+                  <strong>Cam+ Medical</strong> — NHS, plasma and broader medical account base.
                 </div>
               </div>
             </div>
@@ -269,7 +267,6 @@ const slides: Slide[] = [
         </SectionCard>
         <SectionCard title="Story Engine" icon={Sparkles}>
           <ul className="space-y-3">
-            <Bullet>Jordan-led customer narratives, packaged globally.</Bullet>
             <Bullet>OVG playbook reused for FM enterprise sales.</Bullet>
             <Bullet>Demand-gen aligned to single vertical for clarity.</Bullet>
           </ul>
@@ -400,58 +397,8 @@ const slides: Slide[] = [
     ),
   },
   {
-    id: 'hygiene',
-    eyebrow: 'Slide 9 — Plan, Step 4',
-    title: 'Pipeline Hygiene & Re-engagement',
-    body: (
-      <ul className="space-y-3">
-        <Bullet>New list from Jordan being worked now.</Bullet>
-        <Bullet>Re-qualify inherited pipeline; clean up or re-route stale opportunities.</Bullet>
-        <Bullet icon={Rocket}>
-          &quot;Hail Mary&quot; tactic: book meetings directly on calendars where email hasn&apos;t
-          landed.
-        </Bullet>
-        <Bullet icon={AlertTriangle}>
-          Need clarity on expectation + commission structure if I continue carrying this.
-        </Bullet>
-      </ul>
-    ),
-  },
-  {
-    id: 'investor',
-    eyebrow: 'Slide 10',
-    title: 'The Investor / Resourcing Conversation',
-    body: (
-      <div className="space-y-6">
-        <div className="rounded-xl border border-border bg-surface/60 p-5">
-          <div className="text-xs uppercase tracking-widest text-blue-300">Framing</div>
-          <p className="mt-2 text-foreground/90">
-            We&apos;ve hit profitability with lean resources and still generated healthy pipeline.
-            <strong> Adding fuel is upside, not a rescue.</strong>
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <SectionCard title="Pre-FSP Moves" icon={HandCoins}>
-            <ul className="space-y-3">
-              <Bullet>Full SDR — meaningfully accelerates PG.</Bullet>
-              <Bullet>BDR / backfill (e.g. Albert).</Bullet>
-              <Bullet>Targeted marketing / demand-gen spend.</Bullet>
-            </ul>
-          </SectionCard>
-          <SectionCard title="Post-FSP Expansion" icon={Building2}>
-            <ul className="space-y-3">
-              <Bullet>Dedicated GPO relationship owner (US) — gateway to hospitals.</Bullet>
-              <Bullet>Partnerships, sponsorships, associations (e.g. NACS, stadium orgs).</Bullet>
-              <Bullet>Multi-region FM coverage build-out.</Bullet>
-            </ul>
-          </SectionCard>
-        </div>
-      </div>
-    ),
-  },
-  {
     id: 'decisions',
-    eyebrow: 'Slide 11',
+    eyebrow: 'Slide 9',
     title: 'Decisions / Asks',
     body: (
       <ul className="space-y-4">
@@ -471,7 +418,7 @@ const slides: Slide[] = [
   },
   {
     id: 'headline',
-    eyebrow: 'Slide 12 — Close',
+    eyebrow: 'Slide 10 — Close',
     title: 'Headline Message',
     body: (
       <div className="space-y-8">

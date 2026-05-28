@@ -280,33 +280,49 @@ const slides: Slide[] = [
         <p className="max-w-3xl text-base text-muted">
           Concrete things shipped or in flight to support the reps — not theory, already in use.
         </p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <SectionCard title="ROI Calculator" icon={Calculator}>
-            <ul className="space-y-3">
+
+        {/* ROI Calculator showcase */}
+        <SectionCard title="ROI Calculator — Live" icon={Calculator}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+            <ul className="space-y-2 text-sm md:col-span-2">
               <Bullet>Supporting Megan in active conversations.</Bullet>
               <Bullet>Now also being used by the Forecourts team.</Bullet>
               <Bullet>Reusable across verticals as we expand into FM.</Bullet>
             </ul>
-          </SectionCard>
+            <div className="grid grid-cols-2 gap-3 md:col-span-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/decks/2027-gtm/roi-breakdown.png"
+                alt="ROI calculator — Pounds and Pence hero"
+                className="h-full w-full rounded-lg border border-border object-cover"
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/decks/2027-gtm/roi-hero.png"
+                alt="ROI calculator — composite business case"
+                className="h-full w-full rounded-lg border border-border object-cover"
+              />
+            </div>
+          </div>
+        </SectionCard>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <SectionCard title="Phantom Buster — Social Outreach" icon={Linkedin}>
-            <ul className="space-y-3">
+            <ul className="space-y-2 text-sm">
               <Bullet>Account-based LinkedIn outreach live with the UK team.</Bullet>
-              <Bullet>Auto-connect + soft intros to target-account executives.</Bullet>
-              <Bullet>Builds passive visibility via their published content.</Bullet>
+              <Bullet>Auto-connect + soft intros to target-account execs.</Bullet>
             </ul>
           </SectionCard>
-          <SectionCard title="Workflows for Tom & April" icon={Workflow}>
-            <ul className="space-y-3">
+          <SectionCard title="Workflows — Tom & April" icon={Workflow}>
+            <ul className="space-y-2 text-sm">
               <Bullet>Custom Phantom Buster sequences built out.</Bullet>
-              <Bullet>Standardises outreach without adding rep overhead.</Bullet>
               <Bullet>Repeatable as we cycle through Forecourts again.</Bullet>
             </ul>
           </SectionCard>
           <SectionCard title="Smarter Re-engagement" icon={RefreshCw}>
-            <ul className="space-y-3">
-              <Bullet>New process for re-warming inherited / stale pipeline.</Bullet>
+            <ul className="space-y-2 text-sm">
+              <Bullet>New process for re-warming inherited pipeline.</Bullet>
               <Bullet>Pairs with the Jordan list and hygiene work.</Bullet>
-              <Bullet>Lower-cost lift before adding new headcount.</Bullet>
             </ul>
           </SectionCard>
         </div>

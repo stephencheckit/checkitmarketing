@@ -16,21 +16,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 });
   }
 
-  let to = 'stephen.p.newman@gmail.com';
-  let subject = 'Test from Checkit Market Hub';
-  let body =
-    "Hey Stephen-\n\nThis is a quick test. If you're reading this, the send path works and replies should land in stephen.newman@checkit.net.\n\n-Stephen";
+  const { to, subject, body } = (await req.json().catch(() => ({}))) as {
+    to?: string;
+    subject?: string;
+    body?: string;
+  };
 
-  try {
-    const json = (await req.json().catch(() => ({}))) as {
-      to?: string;
-      subject?: string;
-      body?: string;
-    };
-    if (json.to) to = json.to;
-    if (json.subject) subject = json.subject;
-    if (json.body) body = json.body;
-  } catch {}
+  if (!to || !subject || !body) {
+    return NextResponse.json({ error: 'to, subject, body are required' }, { status: 400 });
+  }
 
   try {
     const resend = new Resend(apiKey);

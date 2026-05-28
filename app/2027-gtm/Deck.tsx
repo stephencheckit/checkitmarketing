@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Maximize2,
   Minimize2,
+  Printer,
   Sparkles,
   Flag,
   MapPin,
@@ -481,7 +482,9 @@ export default function CheckitGtmDeck() {
   const progress = useMemo(() => ((index + 1) / total) * 100, [index, total]);
 
   return (
-    <div className="space-y-4">
+    <>
+      <PrintStyles />
+      <div className="space-y-4 deck-screen">
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <div>
@@ -491,13 +494,23 @@ export default function CheckitGtmDeck() {
           </h1>
           <p className="text-sm text-muted mt-1">Internal discussion deck · Checkit GTM</p>
         </div>
-        <button
-          onClick={toggleFullscreen}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
-        >
-          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          {isFullscreen ? 'Exit' : 'Present'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
+            title="Print / Save as PDF (one slide per landscape page)"
+          >
+            <Printer className="h-4 w-4" />
+            Print / PDF
+          </button>
+          <button
+            onClick={toggleFullscreen}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {isFullscreen ? 'Exit' : 'Present'}
+          </button>
+        </div>
       </div>
 
       {/* Slide */}
@@ -576,6 +589,120 @@ export default function CheckitGtmDeck() {
       <p className="text-center text-xs text-muted">
         Tip: use ← / → keys to navigate, F to present, Home / End to jump.
       </p>
-    </div>
+      </div>
+
+      {/* Print-only stack: every slide on its own landscape page */}
+      <div className="deck-print" aria-hidden>
+        {slides.map((s, i) => (
+          <section key={s.id} className="print-slide">
+            <div className="print-slide-inner">
+              <div className="print-slide-header">
+                <span className="print-eyebrow">{s.eyebrow}</span>
+                <span className="print-pageno">
+                  {String(i + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+                </span>
+              </div>
+              <h2 className="print-title">{s.title}</h2>
+              <div className="print-body">{s.body}</div>
+              <div className="print-footer">
+                <span>Checkit · GTM Tracker</span>
+                <span>Confidential — internal use only</span>
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
+    </>
   );
+}
+
+const PRINT_CSS = `
+      @media print {
+        @page {
+          size: landscape;
+          margin: 0;
+        }
+        html,
+        body {
+          background: #0b1220 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        .deck-screen {
+          display: none !important;
+        }
+        .deck-print {
+          display: block !important;
+        }
+        .print-slide {
+          page-break-after: always;
+          break-after: page;
+          width: 100vw;
+          height: 100vh;
+          background:
+            radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.18), transparent 55%),
+            radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.12), transparent 55%),
+            linear-gradient(135deg, #111827 0%, #0b1220 100%);
+          color: #f3f4f6;
+          padding: 48px 64px;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+        }
+        .print-slide:last-child {
+          page-break-after: auto;
+        }
+        .print-slide-inner {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        .print-slide-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 11px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+        }
+        .print-eyebrow {
+          color: #93c5fd;
+        }
+        .print-pageno {
+          color: #9ca3af;
+        }
+        .print-title {
+          margin-top: 4px;
+          font-size: 40px;
+          font-weight: 800;
+          line-height: 1.1;
+          background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .print-body {
+          margin-top: 20px;
+          flex: 1;
+          overflow: hidden;
+        }
+        .print-footer {
+          margin-top: 16px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          justify-content: space-between;
+          font-size: 10px;
+          color: #9ca3af;
+        }
+      }
+      @media screen {
+        .deck-print {
+          display: none;
+        }
+      }
+`;
+
+function PrintStyles() {
+  return <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />;
 }

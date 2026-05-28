@@ -159,7 +159,7 @@ const slides: Slide[] = [
               <li>April → Forecourts (UK / RoW)</li>
               <li>Tom → Forecourts (UK / RoW)</li>
               <li>Jordan → Facilities, OVG, customer expansion (US)</li>
-              <li>Stephen → Utility player</li>
+              <li>Stephen → Marketing across both regions (US)</li>
             </ul>
           </SectionCard>
           <SectionCard title="CAM+" icon={Flag}>

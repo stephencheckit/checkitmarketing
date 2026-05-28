@@ -154,24 +154,21 @@ const slides: Slide[] = [
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <SectionCard title="UK / Rest of World" icon={Globe}>
+          <SectionCard title="CAM" icon={Globe}>
             <ul className="space-y-2 text-sm text-foreground/90">
-              <li>April + Tom → Forecourts</li>
-              <li>Megan → NHS / Pharmacy (Cam+ medical)</li>
+              <li>April → Forecourts (UK / RoW)</li>
+              <li>Tom → Forecourts (UK / RoW)</li>
+              <li>Jordan → Facilities, OVG, customer expansion (US)</li>
+              <li>Stephen → Utility player</li>
             </ul>
           </SectionCard>
-          <SectionCard title="US" icon={Flag}>
+          <SectionCard title="CAM+" icon={Flag}>
             <ul className="space-y-2 text-sm text-foreground/90">
-              <li>Jordan → Facilities, OVG, customer expansion</li>
-              <li>Jennifer → Cam+ medical, account management</li>
+              <li>Meghan → NHS / Pharmacy (UK / RoW)</li>
+              <li>Jennifer → Medical, account management (US)</li>
             </ul>
           </SectionCard>
         </div>
-        <SectionCard title="Utility" icon={Briefcase}>
-          <p className="text-sm text-foreground/90">
-            Stephen → utility player across motions, with a medical lean.
-          </p>
-        </SectionCard>
       </div>
     ),
   },
@@ -216,13 +213,13 @@ const slides: Slide[] = [
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted">US</div>
                 <div className="text-foreground/90">
-                  Senior Living → Facilities · Cam+
+                  Senior Living → Facilities · CAM+
                 </div>
               </div>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted">UK / RoW</div>
                 <div className="text-foreground/90">
-                  Food Retail · Food-to-Go · Forecourts · Cam+
+                  Food Retail · Food-to-Go · Forecourts · CAM+
                 </div>
               </div>
             </div>
@@ -239,7 +236,7 @@ const slides: Slide[] = [
               <div>
                 <div className="text-xs uppercase tracking-wider text-blue-300">Shared vertical #2</div>
                 <div className="text-foreground/90">
-                  <strong>Cam+ Medical</strong> — NHS, plasma and broader medical account base.
+                  <strong>CAM+ Medical</strong> — NHS, plasma and broader medical account base.
                 </div>
               </div>
             </div>
@@ -288,7 +285,7 @@ const slides: Slide[] = [
         <SectionCard title="ROI Calculator — Live" icon={Calculator}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
             <ul className="space-y-2 text-sm md:col-span-2">
-              <Bullet>Supporting Megan in active conversations.</Bullet>
+              <Bullet>Supporting Meghan in active conversations.</Bullet>
               <Bullet>Now also being used by the Forecourts team.</Bullet>
               <Bullet>Reusable across verticals as we expand into FM.</Bullet>
             </ul>

@@ -380,55 +380,29 @@ const slides: Slide[] = [
           The point isn&apos;t more channels — it&apos;s the <strong>same account</strong> seeing a
           coherent story across <strong>multiple channels</strong> at the right moments.
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'deal-size',
-    eyebrow: 'Slide 9 — Future PG',
-    title: 'Where Mid & Large Deals Will Come From',
-    body: (
-      <div className="space-y-6">
-        <p className="max-w-3xl text-base text-muted">
-          Different deal sizes are sourced through different motions. Clarity here is how we make
-          sure the coverage adds up.
-        </p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <SectionCard title="Small / SMB" icon={Search}>
-            <div className="space-y-2 text-sm text-foreground/90">
+
+        <SectionCard title="Large / Enterprise PG" icon={Building2}>
+          <div className="grid grid-cols-1 gap-4 text-sm text-foreground/90 md:grid-cols-2">
+            <div>
               <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
-              <div>Inbound — organic, AI search, chat, form fills</div>
-              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
-              <div>Self-serve discovery → light-touch qualification</div>
+              <div className="mt-1">
+                Named-account ABM into FM (US + UK) and CAM+ medical / NHS systems.
+              </div>
             </div>
-          </SectionCard>
-          <SectionCard title="Mid-Market" icon={Workflow}>
-            <div className="space-y-2 text-sm text-foreground/90">
-              <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
-              <div>Vertical campaigns + outbound (Apollo / Phantom Buster) into named lists</div>
-              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
-              <div>Forecourts second-pass model — rep-led, narrative-driven</div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-blue-300">Motion</div>
+              <div className="mt-1">
+                Multi-channel orchestration · exec relationships · partner / GPO entry points.
+              </div>
             </div>
-          </SectionCard>
-          <SectionCard title="Large / Enterprise" icon={Building2}>
-            <div className="space-y-2 text-sm text-foreground/90">
-              <div className="text-xs uppercase tracking-wider text-blue-300">Primary source</div>
-              <div>Named-account ABM into FM (US + UK) and CAM+ medical / NHS systems</div>
-              <div className="text-xs uppercase tracking-wider text-blue-300 pt-2">Motion</div>
-              <div>Multi-channel orchestration; exec relationships; partner / GPO entry points</div>
-            </div>
-          </SectionCard>
-        </div>
-        <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 text-sm text-blue-200">
-          Coverage math holds when the three motions are <strong>sized for the deal-size mix</strong>
-          we&apos;re forecasting — not all-in on one channel.
-        </div>
+          </div>
+        </SectionCard>
       </div>
     ),
   },
   {
     id: 'decisions',
-    eyebrow: 'Slide 10',
+    eyebrow: 'Slide 9',
     title: 'Decisions / Asks',
     body: (
       <ul className="space-y-4">
@@ -448,7 +422,7 @@ const slides: Slide[] = [
   },
   {
     id: 'headline',
-    eyebrow: 'Slide 11 — Close',
+    eyebrow: 'Slide 10 — Close',
     title: 'Headline Message',
     body: (
       <div className="space-y-8">

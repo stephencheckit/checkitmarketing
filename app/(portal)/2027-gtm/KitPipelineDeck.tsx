@@ -20,6 +20,10 @@ import {
   MapPin,
   LineChart,
   Briefcase,
+  Calculator,
+  Linkedin,
+  Workflow,
+  RefreshCw,
 } from 'lucide-react';
 
 type Slide = {
@@ -268,8 +272,50 @@ const slides: Slide[] = [
     ),
   },
   {
+    id: 'enablement',
+    eyebrow: 'Slide 7 — In Flight',
+    title: 'Enablement & Tactics Already Underway',
+    body: (
+      <div className="space-y-6">
+        <p className="max-w-3xl text-base text-muted">
+          Concrete things shipped or in flight to support the reps — not theory, already in use.
+        </p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <SectionCard title="ROI Calculator" icon={Calculator}>
+            <ul className="space-y-3">
+              <Bullet>Supporting Megan in active conversations.</Bullet>
+              <Bullet>Now also being used by the Forecourts team.</Bullet>
+              <Bullet>Reusable across verticals as we expand into FM.</Bullet>
+            </ul>
+          </SectionCard>
+          <SectionCard title="Phantom Buster — Social Outreach" icon={Linkedin}>
+            <ul className="space-y-3">
+              <Bullet>Account-based LinkedIn outreach live with the UK team.</Bullet>
+              <Bullet>Auto-connect + soft intros to target-account executives.</Bullet>
+              <Bullet>Builds passive visibility via their published content.</Bullet>
+            </ul>
+          </SectionCard>
+          <SectionCard title="Workflows for Tom & April" icon={Workflow}>
+            <ul className="space-y-3">
+              <Bullet>Custom Phantom Buster sequences built out.</Bullet>
+              <Bullet>Standardises outreach without adding rep overhead.</Bullet>
+              <Bullet>Repeatable as we cycle through Forecourts again.</Bullet>
+            </ul>
+          </SectionCard>
+          <SectionCard title="Smarter Re-engagement" icon={RefreshCw}>
+            <ul className="space-y-3">
+              <Bullet>New process for re-warming inherited / stale pipeline.</Bullet>
+              <Bullet>Pairs with the Jordan list and hygiene work.</Bullet>
+              <Bullet>Lower-cost lift before adding new headcount.</Bullet>
+            </ul>
+          </SectionCard>
+        </div>
+      </div>
+    ),
+  },
+  {
     id: 'hygiene',
-    eyebrow: 'Slide 7 — Plan, Step 4',
+    eyebrow: 'Slide 8 — Plan, Step 4',
     title: 'Pipeline Hygiene & Re-engagement',
     body: (
       <ul className="space-y-3">
@@ -287,7 +333,7 @@ const slides: Slide[] = [
   },
   {
     id: 'investor',
-    eyebrow: 'Slide 8',
+    eyebrow: 'Slide 9',
     title: 'The Investor / Resourcing Conversation',
     body: (
       <div className="space-y-6">
@@ -319,7 +365,7 @@ const slides: Slide[] = [
   },
   {
     id: 'decisions',
-    eyebrow: 'Slide 9',
+    eyebrow: 'Slide 10',
     title: 'Decisions / Asks for Thursday',
     body: (
       <ul className="space-y-4">
@@ -339,7 +385,7 @@ const slides: Slide[] = [
   },
   {
     id: 'headline',
-    eyebrow: 'Slide 10 — Close',
+    eyebrow: 'Slide 11 — Close',
     title: 'Headline Message',
     body: (
       <div className="space-y-8">

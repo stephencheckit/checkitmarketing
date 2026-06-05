@@ -4,6 +4,7 @@ import {
   Building2, 
   ShoppingCart, 
   UtensilsCrossed, 
+  Coffee,
   ArrowRight,
   CheckCircle2,
   Shield,
@@ -52,6 +53,15 @@ const industries = [
     customers: ['OVG', 'ISS'],
     product: 'V6',
     color: 'from-purple-500 to-purple-600'
+  },
+  {
+    href: '/markets/coffee-shops',
+    name: 'Coffee Shops & Cafés',
+    icon: Coffee,
+    description: 'Automated monitoring that keeps café teams on the counter, not running manual temperature checks',
+    customers: [],
+    product: 'V6',
+    color: 'from-amber-500 to-amber-600'
   },
 ];
 

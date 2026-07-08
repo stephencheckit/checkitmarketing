@@ -4931,3 +4931,29 @@ export async function getBotActivitySummary(daysBack: number = 30) {
     byHour,
   };
 }
+
+export interface LeadStats {
+  total: number;
+  byStatus: Record<string, number>;
+  newCount: number;
+  hotCount: number;
+  unsyncedCount: number;
+}
+
+export async function getLeadStats(): Promise<LeadStats> {
+  const byStatusRows = await sql`SELECT status, COUNT(*)::int AS count FROM lead_triage GROUP BY status`;
+  const totalRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage`;
+  const hotRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE score_band = 'hot'`;
+  const unsyncedRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE hubspot_contact_id IS NULL`;
+
+  const byStatus: Record<string, number> = {};
+  for (const r of byStatusRows) byStatus[r.status] = r.count;
+
+  return {
+    total: totalRow[0]?.count || 0,
+    byStatus,
+    newCount: byStatus['new'] || 0,
+    hotCount: hotRow[0]?.count || 0,
+    unsyncedCount: unsyncedRow[0]?.count || 0,
+  };
+}

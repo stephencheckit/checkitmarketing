@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkit — RFP Response | BioIVT Temperature Monitoring &amp; Validation</title>
+<style>
+  :root {
+    --ink: #1a2230;
+    --muted: #55627a;
+    --brand: #111827;
+    --accent: #2563eb;
+    --rule: #e2e6ee;
+    --band: #111827;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    margin: 0;
+    background: #f3f4f7;
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+
+  /* ---------- Floating export toolbar ---------- */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+    background: rgba(243, 244, 247, 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .05s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-secondary { background: #fff; color: var(--ink); border-color: var(--rule); }
+  .btn-secondary:hover { background: #f8fafc; }
+
+  /* ---------- Page sheet ---------- */
+  .sheet {
+    max-width: 8.5in;
+    margin: 28px auto;
+    background: #fff;
+    box-shadow: 0 10px 40px rgba(17, 24, 39, 0.10);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .doc {
+    padding: 0 0.9in 0.9in;
+  }
+
+  /* ---------- Brand header band ---------- */
+  .band {
+    background: var(--band);
+    padding: 30px 0.9in 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .band .logo { width: 190px; height: auto; flex: 0 0 auto; }
+  .band .band-tag {
+    color: #cbd5e1;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  /* ---------- Title block ---------- */
+  .titleblock {
+    padding: 38px 0 26px;
+    border-bottom: 2px solid var(--brand);
+    margin-bottom: 30px;
+  }
+  .titleblock .eyebrow {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+  }
+  .titleblock h1 {
+    margin: 0 0 14px;
+    font-size: 30px;
+    line-height: 1.2;
+    color: var(--brand);
+    font-weight: 700;
+  }
+  .titleblock .meta {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0;
+  }
+  .titleblock .meta strong { color: var(--ink); }
+
+  /* ---------- Sections ---------- */
+  h2 {
+    font-size: 19px;
+    color: var(--brand);
+    margin: 30px 0 10px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+    line-height: 1.3;
+  }
+
+  .lead {
+    font-size: 17px;
+    color: var(--ink);
+  }
+
+  p { margin: 0 0 14px; }
+
+  /* ---------- Closing signature ---------- */
+  .closing {
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    .sheet { box-shadow: none; margin: 0; max-width: none; border-radius: 0; }
+    .band { padding-left: 0.6in; padding-right: 0.6in; }
+    .doc { padding: 0 0.6in 0.6in; }
+    h2 { break-after: avoid; }
+    p { orphans: 3; widows: 3; }
+    @page { margin: 0.5in; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="toolbar" id="toolbar">
+    <button class="btn btn-primary" onclick="window.print()">Export as PDF</button>
+    <button class="btn btn-secondary" onclick="exportWord()">Export as Word</button>
+  </div>
+
+  <div class="sheet">
+    <div id="document">
+      <!-- Brand band -->
+      <div class="band">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 394 85" role="img" aria-label="Checkit">
+          <g fill="#ffffff">
+            <path d="M134.59,29.6a14.3,14.3,0,0,1,12,6.54l.32.5,7-4.57-.33-.49a22.73,22.73,0,1,0,0,24.76l.33-.5-7-4.57-.32.5a14.35,14.35,0,1,1-12-22.17Z"/>
+            <path d="M201,35.63a24.81,24.81,0,0,0-1.31-4.53,15.34,15.34,0,0,0-3-4.73,16.33,16.33,0,0,0-5.21-3.65,19.46,19.46,0,0,0-8-1.46,17.67,17.67,0,0,0-5.72.84A20.37,20.37,0,0,0,173.71,24a15.61,15.61,0,0,0-2.31,1.69V8.92l-8.56-5.56V65.2h8.56V39.46a18.73,18.73,0,0,1,.5-2.73,9.4,9.4,0,0,1,1.62-3.35,9.67,9.67,0,0,1,3.55-2.81,14.27,14.27,0,0,1,6.33-1.18,9.48,9.48,0,0,1,5.12,1.19,8.33,8.33,0,0,1,2.85,2.88A10.27,10.27,0,0,1,192.63,37a22.79,22.79,0,0,1,.29,3.25V65.2h8.47V38.73a12,12,0,0,0-.09-1.4C201.24,36.84,201.16,36.27,201,35.63Z"/>
+            <path d="M280.35,29.6a14.29,14.29,0,0,1,12,6.54l.33.5,7-4.57-.32-.49a22.73,22.73,0,1,0,0,24.76l.32-.5-7-4.57-.33.5a14.35,14.35,0,1,1-12-22.17Z"/>
+            <polygon points="342.12 25.14 334.89 20.44 317.06 38.97 317.06 8.86 308.59 3.36 308.59 65.2 317.06 65.2 317.06 51.3 321.57 46.56 337.09 65.2 348.14 65.2 327.54 40.38 342.12 25.14"/>
+            <rect x="353.07" y="22.89" width="8.47" height="42.31"/>
+            <path d="M357.35,6.43A5.29,5.29,0,0,0,353.55,8a5.07,5.07,0,0,0-1.6,3.77,5.21,5.21,0,0,0,1.59,3.8,5.2,5.2,0,0,0,3.81,1.59,5.09,5.09,0,0,0,3.76-1.59,5.28,5.28,0,0,0,1.54-3.8A5.12,5.12,0,0,0,361.1,8,5.09,5.09,0,0,0,357.35,6.43Z"/>
+            <path d="M390.43,57.87l-.53.17a7.28,7.28,0,0,1-1.74.36,10.65,10.65,0,0,1-1.58,0,3,3,0,0,1-1.39-.5c-1.54-1.07-2.32-3.79-2.32-8.08V30.66h8.57V22.88h-8.57V8.75l-8.3-5.39V22.88h-5.23v7.78h5.23V49.78c0,7.26,2,12.3,6,15a10.56,10.56,0,0,0,4.14,1.73,16.86,16.86,0,0,0,2.83.25c.34,0,.68,0,1,0a14,14,0,0,0,2.91-.5l1.38-.43.6-.19Z"/>
+            <path d="M251.33,38.78a22.63,22.63,0,0,0-2.73-6.91A22.87,22.87,0,0,0,244,26.33a20.84,20.84,0,0,0-6.08-3.66,19.84,19.84,0,0,0-14.23,0,20.59,20.59,0,0,0-6.08,3.66A22.72,22.72,0,0,0,213,31.87a22.46,22.46,0,0,0-2.73,6.89,22.29,22.29,0,0,0-.61,5.28c0,.36,0,.72,0,1.09s.05.61.05.93a23.18,23.18,0,0,0,6.77,14.73A21,21,0,0,0,223,65.15a19.38,19.38,0,0,0,7.81,1.59,21.49,21.49,0,0,0,10.93-2.86,22.74,22.74,0,0,0,7.89-7.58l-7-4.52a14.39,14.39,0,0,1-5,4.86,13.34,13.34,0,0,1-6.86,1.8,11,11,0,0,1-4.59-1,13.68,13.68,0,0,1-3.86-2.63,14,14,0,0,1-2.79-4,15.61,15.61,0,0,1-1.3-4.07h33.45l.06-.21.09-.48a5.09,5.09,0,0,0,.1-1.06V44A21.93,21.93,0,0,0,251.33,38.78ZM223.5,32.17a11.14,11.14,0,0,1,7.28-2.53,11.49,11.49,0,0,1,7.39,2.61,13.64,13.64,0,0,1,4.69,7.18H218.7A13.86,13.86,0,0,1,223.5,32.17Z"/>
+            <path d="M62.31,55.12a23.5,23.5,0,1,1,0-25.24l16-10.2a42.5,42.5,0,1,0,0,45.64Z"/>
+            <path d="M81,42.5a38.25,38.25,0,0,1-3.63,16.28l.55.35L80.77,61a42.35,42.35,0,0,0,0-36.9l-3.41,2.17A38.11,38.11,0,0,1,81,42.5Z"/>
+            <polygon points="80.77 60.95 80.77 60.95 77.92 59.13 80.77 60.95"/>
+            <path d="M64.55,34.39a23.42,23.42,0,0,1-2.24,20.73l3.37,2.15A27.35,27.35,0,0,0,68,32.2Z"/>
+            <path d="M71.88,52.32l3.47,2.21A34.8,34.8,0,0,0,72,23.71l-3.37,2.14a30.78,30.78,0,0,1,3.25,26.47Z"/>
+          </g>
+        </svg>
+        <div class="band-tag">Request for Proposal<br/>Response</div>
+      </div>
+
+      <div class="doc">
+        <!-- Title block -->
+        <div class="titleblock">
+          <p class="eyebrow">Temperature Monitoring &amp; Validation</p>
+          <h1>Response to BioIVT's Request for Proposal</h1>
+          <p class="meta"><strong>Prepared for:</strong> BioIVT &nbsp;&bull;&nbsp; <strong>Prepared by:</strong> Checkit</p>
+        </div>
+
+        <p class="lead">Thank you for the opportunity to respond to your Temperature Monitoring and Validation Request for Proposal. After reviewing the information laid out in the Technical Requirements Document and the questionnaire, it is apparent that Checkit has several strengths that align well with BioIVT's requirements and provide the foundation for a successful partnership.</p>
+
+        <h2>Why Checkit?</h2>
+        <p>Checkit is a global leader in environmental monitoring. We understand how critical it is to have a strong partner, and we have built long-standing relationships in the environmental monitoring space with some of the largest plasma and laboratory customers in the United States. Checkit combines highly accurate monitoring with 24/7 alarm management, FDA 21 CFR Part 11 compliant audit trails, and enterprise-wide visibility with long-term data integrity. We specialize in multi-site installations and employ our own in-house engineers who own the process from start to finish, including annual on-site calibrations.</p>
+        <p>These capabilities align closely with BioIVT's requirements for protecting high-value biospecimens, maintaining regulatory compliance, and ensuring operational continuity and efficiency across multiple laboratory and biorepository locations.</p>
+        <p>Our wireless temperature sensors are consistently shown to be extremely robust and accurate, with exceptionally low failure rates. Our sensors operate without maintenance and, in the rare event a replacement is necessary, can be easily replaced by lab staff. The solution is easy to operate and designed with frontline staff in mind.</p>
+
+        <h2>Uniquely Able to Deliver</h2>
+        <p>Checkit has no inventory, resourcing, or platform risks to delivery. We can guarantee adherence to the installation schedule that meets your needs and can complete the full deployment on your timeline. We employ our own trained engineers, staffed throughout the continental United States, who have a combined 50 years of installation experience in a variety of applications.</p>
+
+        <h2>Compelling Commercial Offer</h2>
+        <p>Checkit is unique in offering a full subscription-based proposal. Our subscription fee is inclusive of hardware, warranty, annual on-site calibration, and maintenance and support for the life of the agreement. Risk of hardware failure rests with Checkit, demonstrating confidence in the robustness of our technology, eliminating upfront capital investment, and providing transparency and certainty of future costs. Through this approach, Checkit accelerates time to value, maximises ROI, and minimizes risk.</p>
+
+        <h2>Proven to Deliver at Scale</h2>
+        <p>Checkit has delivered more than 800 successful installations in the United States, including many at significant scale with large enterprises such as Grifols, NAMSA, Quest Diagnostics, and the Center for Organ Recovery and Education. We provide temperature monitoring solutions covering a vast range of applications. Our specialty is multi-site organizations.</p>
+        <p>The Checkit system operates independently from your corporate IT infrastructure. Our sensors communicate via a dedicated wireless mesh network and do not traverse your corporate network, eliminating potential congestion and reliability issues.</p>
+        <p>Checkit offers 24x7x365 support and a nationwide network of skilled engineers. Our support and implementation capability is complemented by a dedicated customer success structure focused on building a long-term partnership.</p>
+
+        <h2>Stable, Future-Ready Partner</h2>
+        <p>In addition to meeting BioIVT's current requirements "out of the box," Checkit is "future ready" with further capability, available today, that could deliver long-term value. This includes Checkit's Asset Intelligence, which adds advanced machine learning capability and enables identification of assets that are not performing in an optimal manner — enabling early identification of maintenance issues and an opportunity for energy reduction. This functionality is already saving customers significant sums in energy, maintenance, and waste costs.</p>
+        <p>Checkit continues to maintain a robust innovation pipeline which will be available to BioIVT. Put simply, the low-risk nature of the Checkit solution extends well beyond the deployment project and initial scope.</p>
+
+        <h2>In Closing — Complete Peace of Mind</h2>
+        <p>We are excited about this partnership with BioIVT and believe that our many years of expertise in the environmental monitoring space make us well poised to be the best partner you can select. We pride ourselves in providing peace of mind through high-quality products, services, and our commercial approach to our customers, especially when lifesaving inventory is at stake. We understand the importance of a solid environmental monitoring solution and do not take that responsibility lightly. In closing, we appreciate the opportunity to present our proposal to you and look forward to next steps.</p>
+
+        <div class="closing">
+          Checkit &nbsp;&bull;&nbsp; Temperature Monitoring &amp; Validation Proposal &nbsp;&bull;&nbsp; Prepared for BioIVT
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function exportWord() {
+    var doc = document.getElementById('document').innerHTML;
+
+    // Inline the brand band background so it survives the Word conversion.
+    var styles = ''
+      + 'body{font-family:Calibri,Arial,sans-serif;color:#1a2230;line-height:1.5;font-size:11pt;}'
+      + '.band{background:#111827;padding:24px;}'
+      + '.band .logo{width:170px;height:auto;}'
+      + '.band-tag{color:#cbd5e1;font-size:9pt;letter-spacing:1px;text-transform:uppercase;text-align:right;}'
+      + '.eyebrow{color:#2563eb;font-size:10pt;font-weight:bold;letter-spacing:1px;text-transform:uppercase;}'
+      + 'h1{color:#111827;font-size:22pt;margin:6px 0 10px;}'
+      + 'h2{color:#111827;font-size:14pt;border-left:4px solid #2563eb;padding-left:10px;margin:20px 0 8px;}'
+      + '.meta{color:#55627a;font-size:10pt;}'
+      + '.lead{font-size:12pt;}'
+      + '.closing{color:#55627a;font-size:9pt;border-top:1px solid #e2e6ee;padding-top:12px;margin-top:24px;}';
+
+    var header = '<html xmlns:o="urn:schemas-microsoft-com:office:office" '
+      + 'xmlns:w="urn:schemas-microsoft-com:office:word" '
+      + 'xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">'
+      + '<style>' + styles + '</style></head><body>';
+    var footer = '</body></html>';
+
+    var sourceHTML = header + doc + footer;
+    var blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'Checkit-BioIVT-RFP-Response.doc';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+</script>
+</body>
+</html>

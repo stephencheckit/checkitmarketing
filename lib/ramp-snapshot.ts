@@ -274,6 +274,67 @@ export function spendByCategory(txns: RampTransaction[] = rampTransactions): Spe
   return [...map.values()].sort((a, b) => b.total - a.total);
 }
 
+// ---------------------------------------------------------------------------
+// Custom spend groups — business-level organization of vendors
+// ---------------------------------------------------------------------------
+
+const GROUP_ORDER = ['Channels', 'Sales Tools', 'Mktg Tools', 'AI Development', 'Other'] as const;
+
+const VENDOR_GROUPS: Record<string, string> = {
+  'Google Ads': 'Channels',
+  LinkedIn: 'Channels',
+  OpenAI: 'Channels',
+  Capterra: 'Channels',
+  'Apollo.io': 'Sales Tools',
+  Phantombuster: 'Sales Tools',
+  Semrush: 'Mktg Tools',
+  Zapier: 'Mktg Tools',
+  Adobe: 'Mktg Tools',
+  Smallpdf: 'Mktg Tools',
+  Canva: 'Mktg Tools',
+  Calendly: 'Mktg Tools',
+  Figma: 'Mktg Tools',
+  Buffer: 'Mktg Tools',
+  Empowerkit: 'Mktg Tools',
+  Cursor: 'AI Development',
+  Supabase: 'AI Development',
+  Vercel: 'AI Development',
+  Anthropic: 'AI Development',
+};
+
+export function vendorGroup(merchant: string): string {
+  return VENDOR_GROUPS[merchant] || 'Other';
+}
+
+export interface CustomSpendGroup {
+  key: string;
+  total: number;
+  count: number;
+  vendors: SpendGroup[];
+}
+
+export function spendByCustomGroup(txns: RampTransaction[] = rampTransactions): CustomSpendGroup[] {
+  const groups = new Map<string, CustomSpendGroup>();
+  for (const t of txns) {
+    const key = vendorGroup(t.merchant);
+    const g = groups.get(key) || { key, total: 0, count: 0, vendors: [] };
+    g.total += t.amount;
+    g.count += 1;
+    let v = g.vendors.find((x) => x.key === t.merchant);
+    if (!v) {
+      v = { key: t.merchant, total: 0, count: 0 };
+      g.vendors.push(v);
+    }
+    v.total += t.amount;
+    v.count += 1;
+    groups.set(key, g);
+  }
+  for (const g of groups.values()) g.vendors.sort((a, b) => b.total - a.total);
+  return [...groups.values()].sort(
+    (a, b) => GROUP_ORDER.indexOf(a.key as (typeof GROUP_ORDER)[number]) - GROUP_ORDER.indexOf(b.key as (typeof GROUP_ORDER)[number])
+  );
+}
+
 export function spendByVendor(txns: RampTransaction[] = rampTransactions): SpendGroup[] {
   const map = new Map<string, SpendGroup>();
   for (const t of txns) {

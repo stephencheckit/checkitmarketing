@@ -4,7 +4,7 @@ import {
   rampTransactions,
   rampSnapshotMeta,
   summarize,
-  spendByCategory,
+  spendByCustomGroup,
   spendByVendor,
 } from '@/lib/ramp-snapshot';
 import RampDashboard from './RampDashboard';
@@ -19,7 +19,7 @@ export default async function RampPage() {
       meta={rampSnapshotMeta}
       transactions={rampTransactions}
       summary={summarize()}
-      categories={spendByCategory()}
+      groups={spendByCustomGroup()}
       vendors={spendByVendor()}
     />
   );

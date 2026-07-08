@@ -6,6 +6,7 @@ import {
   nurturContactEnrolled,
   nurtureImmediateSend,
   nurturResendWebhook,
+  leadScore,
 } from '@/inngest/functions';
 
 export const { GET, POST, PUT } = serve({
@@ -16,5 +17,6 @@ export const { GET, POST, PUT } = serve({
     nurturContactEnrolled,
     nurtureImmediateSend,
     nurturResendWebhook,
+    leadScore,
   ],
 });

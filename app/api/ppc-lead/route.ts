@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createPpcLead, initializePpcLeadsTable } from '@/lib/db';
+import {
+  createPpcLead,
+  initializePpcLeadsTable,
+  initializeLeadTriageTable,
+  upsertLeadTriage,
+  setLeadHubspotContactId,
+} from '@/lib/db';
 import { syncContactToHubSpot } from '@/lib/hubspot';
+import { inngest } from '@/lib/inngest';
 
 let initialized = false;
 
 async function ensureInitialized() {
   if (!initialized) {
     await initializePpcLeadsTable();
+    await initializeLeadTriageTable();
     initialized = true;
   }
 }
@@ -273,6 +281,26 @@ export async function POST(request: NextRequest) {
         utmTerm: utm_term,
       }),
     ]);
+
+    // Add/refresh the unified lead record (dedupes by email across sources)
+    // and link it to the HubSpot contact we just synced.
+    try {
+      await upsertLeadTriage({
+        email,
+        name: `${firstName} ${lastName}`.trim(),
+        company,
+        phone,
+        jobTitle,
+        source: source || 'capterra',
+      });
+      if (hubspotResult.success && hubspotResult.contactId) {
+        await setLeadHubspotContactId(email, hubspotResult.contactId);
+      }
+      // Score the lead asynchronously so the form stays fast.
+      await inngest.send({ name: 'lead/score.requested', data: { email } });
+    } catch (e) {
+      console.error('lead_triage upsert/scoring failed (ppc-lead):', e);
+    }
 
     return NextResponse.json({
       success: true,

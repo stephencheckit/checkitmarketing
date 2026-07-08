@@ -1,0 +1,37 @@
+<div class="mt-10 rounded-2xl bg-white/4 border border-white/10 overflow-hidden">
+  <div class="px-6 lg:px-8 py-5 border-b border-white/10 flex items-center gap-3">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-amber-300" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 17.5v-11"></path></svg>
+    <h3 class="text-base font-semibold text-white">Put a number to it</h3>
+    <span class="ml-auto text-[10px] font-semibold uppercase tracking-widest text-amber-300/80 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1">Illustrative</span>
+  </div>
+
+  <div class="px-6 lg:px-8 py-2">
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Time wasted on one manual temperature check</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">3 min</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Manual checks per site, per day</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">8</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Time wasted off the counter, per site per day</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">24 min</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Peak-time orders that slip away, per day</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">~10</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Average transaction value</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">£5</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5 border-b border-white/6"><span class="text-sm text-slate-300">Lost revenue per site, per day</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">£50</span></div>
+    <div class="flex items-center justify-between gap-4 py-3.5"><span class="text-sm text-slate-300">Per site, per year (around 360 trading days)</span><span class="text-sm lg:text-base font-semibold text-white tabular-nums whitespace-nowrap">£18,000</span></div>
+  </div>
+
+  <div class="px-6 lg:px-8 py-6 bg-amber-500/10 border-t border-amber-500/20">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+      <div>
+        <div class="text-sm font-medium text-amber-100">Across an estate of</div>
+        <div class="text-2xl font-bold text-white tabular-nums"><span id="ck-calc-sites">200</span> sites</div>
+      </div>
+      <div class="sm:text-right">
+        <div class="text-xs uppercase tracking-widest text-amber-200/70 mb-1">Revenue never booked, per year</div>
+        <div id="ck-calc-total" class="text-3xl lg:text-4xl font-bold text-white tabular-nums whitespace-nowrap">£3.6M</div>
+      </div>
+    </div>
+
+    <input id="ck-calc-range" type="range" min="0" max="19" step="1" value="5" class="w-full accent-amber-500 cursor-pointer" aria-label="Number of sites in your estate">
+    <div class="flex justify-between text-[11px] text-amber-200/60 mt-2">
+      <span>10</span>
+      <span>Drag to match your estate</span>
+      <span>41,000</span>
+    </div>
+  </div>
+</div>

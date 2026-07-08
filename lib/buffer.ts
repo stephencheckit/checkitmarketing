@@ -48,16 +48,11 @@ export interface BufferPost {
 }
 
 const CHANNELS_QUERY = `
-  query GetChannels {
-    account {
-      organizations {
-        id
-        channels {
-          id
-          name
-          service
-        }
-      }
+  query GetChannels($orgId: OrganizationId!) {
+    channels(input: { organizationId: $orgId }) {
+      id
+      name
+      service
     }
   }
 `;
@@ -87,12 +82,10 @@ const POSTS_QUERY = `
 `;
 
 export async function getBufferChannels(): Promise<BufferChannel[]> {
-  const data = await bufferGQL<{
-    account: { organizations: Array<{ id: string; channels: BufferChannel[] }> };
-  }>(CHANNELS_QUERY);
-
-  const org = data.account.organizations.find((o) => o.id === BUFFER_ORG_ID);
-  return org?.channels || [];
+  const data = await bufferGQL<{ channels: BufferChannel[] }>(CHANNELS_QUERY, {
+    orgId: BUFFER_ORG_ID,
+  });
+  return data.channels || [];
 }
 
 export async function getBufferPosts(status: 'sent' | 'draft' | 'scheduled', limit = 10): Promise<BufferPost[]> {

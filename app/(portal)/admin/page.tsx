@@ -3,7 +3,7 @@ import { getAllUsers, getAllProgress, getCertificationStats, getLeadStats } from
 import { MODULES } from '@/lib/modules';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus, Handshake, CreditCard } from 'lucide-react';
+import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus, Handshake, CreditCard, BookMarked } from 'lucide-react';
 import AdminAccessCodes from '@/components/AdminAccessCodes';
 
 export default async function AdminPage() {
@@ -86,6 +86,19 @@ export default async function AdminPage() {
             <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">HubSpot</h2>
           </div>
           <p className="text-sm text-muted">View live contacts and deals from HubSpot CRM</p>
+        </Link>
+
+        <Link
+          href="/admin/playbook"
+          className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-teal-500/10">
+              <BookMarked className="w-5 h-5 text-teal-400" />
+            </div>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Sales Playbook</h2>
+          </div>
+          <p className="text-sm text-muted">Verticals, personas, talking points, and Apollo cadences</p>
         </Link>
 
         <Link

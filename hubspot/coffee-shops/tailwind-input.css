@@ -1,0 +1,98 @@
+/* Build input for the standalone HubSpot stylesheet.
+   Compile with: npx @tailwindcss/cli@4 -i tailwind-input.css -o coffee-shops.css --minify
+
+   Preflight is intentionally NOT imported: this stylesheet coexists with the
+   POWER THEME Checkit theme CSS on the rendered page, and a global reset would
+   break the theme header/footer. Instead a reset scoped to .ck-coffee-page is
+   defined below, and utilities are compiled with !important so they win over
+   theme element/descendant selectors. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) important;
+
+@source "./_body.html";
+@source "./calculator.html";
+@source "./template.html";
+
+@theme {
+  --font-sans: "League Spartan", system-ui, sans-serif;
+  --color-surface: #1f2937;
+  --color-surface-elevated: #374151;
+  --color-foreground: #f3f4f6;
+}
+
+/* Primary CTA — matches corporate site buttons (teal #0cc, navy on hover) */
+.btn-gradient {
+  background: #0cc !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(0, 204, 204, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-gradient:hover {
+  background: #020233 !important;
+  box-shadow: 0 6px 20px rgba(2, 2, 51, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------------ */
+/* Scoped preflight-lite: only applies inside the page container.      */
+/* Doubled class raises specificity above theme descendant selectors   */
+/* (e.g. `.body-wrapper h2`); !important utilities still beat these.   */
+/* ------------------------------------------------------------------ */
+.ck-coffee-page {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+.ck-coffee-page.ck-coffee-page *,
+.ck-coffee-page.ck-coffee-page *::before,
+.ck-coffee-page.ck-coffee-page *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: currentColor;
+}
+
+.ck-coffee-page.ck-coffee-page :is(h1, h2, h3, h4, h5, h6, p, figure, blockquote) {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: normal;
+  color: inherit;
+  text-transform: none;
+}
+
+.ck-coffee-page.ck-coffee-page a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ck-coffee-page.ck-coffee-page img,
+.ck-coffee-page.ck-coffee-page svg,
+.ck-coffee-page.ck-coffee-page video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.ck-coffee-page.ck-coffee-page span {
+  font-family: inherit;
+}
+
+.ck-coffee-page.ck-coffee-page input[type="range"] {
+  width: 100%;
+  margin: 0;
+}
+
+/* The theme CSS declares `.hidden{visibility:hidden}` which leaks into
+   Tailwind's `hidden`/`lg:block` responsive toggles (Tailwind only flips
+   `display`). Restore visibility; truly hidden elements still have
+   display:none. */
+.ck-coffee-page.ck-coffee-page .hidden {
+  visibility: visible;
+}

@@ -15,7 +15,9 @@ import type {
   RampSnapshotMeta,
   RampSummary,
   SpendGroup,
+  CustomSpendGroup,
 } from '@/lib/ramp-snapshot';
+import { vendorGroup } from '@/lib/ramp-snapshot';
 
 type Tab = 'overview' | 'vendors' | 'transactions';
 
@@ -33,18 +35,16 @@ export default function RampDashboard({
   meta,
   transactions,
   summary,
-  categories,
+  groups,
   vendors,
 }: {
   meta: RampSnapshotMeta;
   transactions: RampTransaction[];
   summary: RampSummary;
-  categories: SpendGroup[];
+  groups: CustomSpendGroup[];
   vendors: SpendGroup[];
 }) {
   const [tab, setTab] = useState<Tab>('overview');
-  const maxCategory = categories[0]?.total || 1;
-  const maxVendor = vendors[0]?.total || 1;
 
   return (
     <div className="space-y-6">
@@ -87,7 +87,7 @@ export default function RampDashboard({
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-border">
         <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} icon={<Tag className="w-4 h-4" />}>
-          By Category
+          By Group
         </TabButton>
         <TabButton active={tab === 'vendors'} onClick={() => setTab('vendors')} icon={<Store className="w-4 h-4" />}>
           By Vendor ({vendors.length})
@@ -97,21 +97,36 @@ export default function RampDashboard({
         </TabButton>
       </div>
 
-      {/* By Category */}
+      {/* By Group */}
       {tab === 'overview' && (
-        <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
-          {categories.map((c) => {
-            const pct = Math.round((c.total / maxCategory) * 100);
+        <div className="space-y-4">
+          {groups.map((g) => {
+            const pctOfTotal = summary.total > 0 ? Math.round((g.total / summary.total) * 100) : 0;
             return (
-              <div key={c.key}>
+              <div key={g.key} className="bg-surface border border-border rounded-xl p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">{c.key}</span>
+                  <span className="font-semibold text-lg">{g.key}</span>
                   <span className="text-sm text-muted">
-                    {formatCurrency(c.total)} · {c.count} txns
+                    <span className="font-semibold text-foreground">{formatCurrency(g.total)}</span>
+                    {' '}· {pctOfTotal}% of total · {g.count} txns
                   </span>
                 </div>
-                <div className="h-2 bg-background rounded-full overflow-hidden">
-                  <div className="h-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+                <div className="h-2 bg-background rounded-full overflow-hidden mb-4">
+                  <div className="h-full bg-accent transition-all duration-500" style={{ width: `${pctOfTotal}%` }} />
+                </div>
+                <div className="divide-y divide-border">
+                  {g.vendors.map((v) => (
+                    <div key={v.key} className="flex items-center justify-between py-2">
+                      <span className="text-sm flex items-center gap-2">
+                        <Store className="w-3.5 h-3.5 text-muted shrink-0" />
+                        {v.key}
+                      </span>
+                      <span className="text-sm text-muted">
+                        <span className="font-medium text-foreground">{formatCurrency(v.total)}</span>
+                        {' '}· {v.count} txns
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             );
@@ -127,35 +142,23 @@ export default function RampDashboard({
               <thead>
                 <tr className="border-b border-border bg-background/50">
                   <Th>Vendor</Th>
-                  <Th>Category</Th>
+                  <Th>Group</Th>
                   <Th>Spend</Th>
                   <Th>Txns</Th>
-                  <Th>Share</Th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {vendors.map((v) => {
-                  const pct = Math.round((v.total / maxVendor) * 100);
-                  return (
-                    <tr key={v.key} className="hover:bg-background/50">
-                      <td className="p-4 font-medium flex items-center gap-2">
-                        <Store className="w-4 h-4 text-muted shrink-0" />
-                        {v.key}
-                      </td>
-                      <td className="p-4 text-sm text-muted">{v.category || '-'}</td>
-                      <td className="p-4 text-sm font-medium">{formatCurrency(v.total)}</td>
-                      <td className="p-4 text-sm text-muted">{v.count}</td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-background rounded-full overflow-hidden">
-                            <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
-                          </div>
-                          <span className="text-xs text-muted">{pct}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {vendors.map((v) => (
+                  <tr key={v.key} className="hover:bg-background/50">
+                    <td className="p-4 font-medium flex items-center gap-2">
+                      <Store className="w-4 h-4 text-muted shrink-0" />
+                      {v.key}
+                    </td>
+                    <td className="p-4 text-sm text-muted">{vendorGroup(v.key)}</td>
+                    <td className="p-4 text-sm font-medium">{formatCurrency(v.total)}</td>
+                    <td className="p-4 text-sm text-muted">{v.count}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

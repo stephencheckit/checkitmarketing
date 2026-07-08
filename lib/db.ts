@@ -2535,6 +2535,516 @@ export async function getDemoRequestStats() {
 }
 
 // ============================================
+// LEAD TRIAGE (unified, email-keyed) — Phase 0
+// ============================================
+// The app is the system of record. ppc_leads and demo_requests remain the
+// raw intake tables; lead_triage is a lightweight layer that dedupes by email
+// (one row per person) and holds the triage/scoring/HubSpot-sync state.
+// lead_submissions is a read-only union view of both intake tables.
+
+export function normalizeEmail(email: string): string {
+  return (email || '').trim().toLowerCase();
+}
+
+export async function initializeLeadTriageTable() {
+  // The union view depends on both intake tables existing first.
+  await initializePpcLeadsTable();
+  await initializeDemoRequestsTable();
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS lead_triage (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      -- best-known identity (most recent non-null submission wins)
+      name VARCHAR(255),
+      company VARCHAR(255),
+      phone VARCHAR(50),
+      job_title VARCHAR(255),
+      first_source VARCHAR(100),
+      last_source VARCHAR(100),
+      submission_count INTEGER DEFAULT 1,
+      -- triage state
+      status VARCHAR(50) DEFAULT 'new',
+      owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      notes TEXT,
+      followed_up_at TIMESTAMP,
+      -- scoring (populated in Phase 2)
+      score INTEGER,
+      score_band VARCHAR(20),
+      score_rationale TEXT,
+      scored_at TIMESTAMP,
+      -- HubSpot sync (push + two-way pull, Phase 3)
+      hubspot_contact_id VARCHAR(50),
+      hubspot_lifecycle_stage VARCHAR(100),
+      hubspot_deal_stage VARCHAR(100),
+      hubspot_deal_amount NUMERIC,
+      hubspot_deal_is_won BOOLEAN,
+      synced_at TIMESTAMP,
+      -- timestamps
+      first_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_lead_triage_status ON lead_triage(status)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_lead_triage_owner ON lead_triage(owner_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_lead_triage_score_band ON lead_triage(score_band)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_lead_triage_last_seen ON lead_triage(last_seen_at DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_lead_triage_hubspot ON lead_triage(hubspot_contact_id)`;
+
+  // Read-only union of both intake tables, normalized to one shape.
+  // All string columns are cast to text so the UNION types line up.
+  await sql`
+    CREATE OR REPLACE VIEW lead_submissions AS
+      SELECT
+        'ppc'::text AS kind,
+        p.id AS source_id,
+        p.source::text AS source,
+        lower(trim(p.email))::text AS email,
+        (p.first_name || ' ' || p.last_name)::text AS name,
+        p.company::text AS company,
+        p.phone::text AS phone,
+        p.job_title::text AS job_title,
+        p.category_name::text AS industry,
+        p.page_url::text AS source_page,
+        NULL::text AS message,
+        p.listing::text AS listing,
+        p.utm_source::text AS utm_source,
+        p.utm_medium::text AS utm_medium,
+        p.utm_campaign::text AS utm_campaign,
+        p.utm_content::text AS utm_content,
+        p.utm_term::text AS utm_term,
+        p.status::text AS status,
+        p.notes::text AS notes,
+        p.created_at AS created_at
+      FROM ppc_leads p
+      UNION ALL
+      SELECT
+        'demo'::text AS kind,
+        d.id AS source_id,
+        'demo-request'::text AS source,
+        lower(trim(d.email))::text AS email,
+        d.name::text AS name,
+        d.company::text AS company,
+        d.phone::text AS phone,
+        NULL::text AS job_title,
+        d.industry::text AS industry,
+        d.source_page::text AS source_page,
+        d.message::text AS message,
+        NULL::text AS listing,
+        NULL::text AS utm_source,
+        NULL::text AS utm_medium,
+        NULL::text AS utm_campaign,
+        NULL::text AS utm_content,
+        NULL::text AS utm_term,
+        d.status::text AS status,
+        d.notes::text AS notes,
+        d.created_at AS created_at
+      FROM demo_requests d
+  `;
+
+  await backfillLeadTriage();
+}
+
+export type LeadStatus = DemoRequestStatus;
+
+export interface LeadTriage {
+  id: number;
+  email: string;
+  name: string | null;
+  company: string | null;
+  phone: string | null;
+  job_title: string | null;
+  first_source: string | null;
+  last_source: string | null;
+  submission_count: number;
+  status: LeadStatus;
+  owner_id: number | null;
+  notes: string | null;
+  followed_up_at: string | null;
+  score: number | null;
+  score_band: string | null;
+  score_rationale: string | null;
+  scored_at: string | null;
+  hubspot_contact_id: string | null;
+  hubspot_lifecycle_stage: string | null;
+  hubspot_deal_stage: string | null;
+  hubspot_deal_amount: number | null;
+  hubspot_deal_is_won: boolean | null;
+  synced_at: string | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// One-time, idempotent backfill: only runs when lead_triage is empty so it
+// never clobbers triage state that a human has since edited.
+export async function backfillLeadTriage(): Promise<{ inserted: number; skipped: boolean }> {
+  const existing = await sql`SELECT COUNT(*)::int AS count FROM lead_triage`;
+  if ((existing[0]?.count || 0) > 0) {
+    return { inserted: 0, skipped: true };
+  }
+
+  // 1) Create one row per distinct email with best-known identity + counts.
+  await sql`
+    INSERT INTO lead_triage (
+      email, name, company, phone, job_title,
+      first_source, last_source, submission_count,
+      first_seen_at, last_seen_at
+    )
+    SELECT
+      s.email,
+      (array_agg(s.name ORDER BY s.created_at DESC) FILTER (WHERE s.name IS NOT NULL))[1],
+      (array_agg(s.company ORDER BY s.created_at DESC) FILTER (WHERE s.company IS NOT NULL))[1],
+      (array_agg(s.phone ORDER BY s.created_at DESC) FILTER (WHERE s.phone IS NOT NULL))[1],
+      (array_agg(s.job_title ORDER BY s.created_at DESC) FILTER (WHERE s.job_title IS NOT NULL))[1],
+      (array_agg(s.source ORDER BY s.created_at ASC))[1],
+      (array_agg(s.source ORDER BY s.created_at DESC))[1],
+      COUNT(*)::int,
+      MIN(s.created_at),
+      MAX(s.created_at)
+    FROM lead_submissions s
+    WHERE s.email IS NOT NULL AND s.email <> ''
+    GROUP BY s.email
+    ON CONFLICT (email) DO NOTHING
+  `;
+
+  // 2) Overlay richer triage state from demo_requests (had a triage UI).
+  await sql`
+    UPDATE lead_triage lt
+    SET status = sub.status,
+        notes = COALESCE(sub.notes, lt.notes),
+        owner_id = sub.assigned_to,
+        followed_up_at = sub.followed_up_at,
+        updated_at = NOW()
+    FROM (
+      SELECT lower(trim(email)) AS email, status, notes, assigned_to, followed_up_at,
+             ROW_NUMBER() OVER (PARTITION BY lower(trim(email)) ORDER BY updated_at DESC) AS rn
+      FROM demo_requests
+    ) sub
+    WHERE sub.email = lt.email AND sub.rn = 1 AND lt.status = 'new'
+  `;
+
+  // 3) Overlay any non-default status from ppc_leads where still untriaged.
+  await sql`
+    UPDATE lead_triage lt
+    SET status = sub.status,
+        notes = COALESCE(sub.notes, lt.notes),
+        updated_at = NOW()
+    FROM (
+      SELECT lower(trim(email)) AS email, status, notes,
+             ROW_NUMBER() OVER (PARTITION BY lower(trim(email)) ORDER BY created_at DESC) AS rn
+      FROM ppc_leads
+      WHERE status IS NOT NULL AND status <> 'new'
+    ) sub
+    WHERE sub.email = lt.email AND sub.rn = 1 AND lt.status = 'new'
+  `;
+
+  const count = await sql`SELECT COUNT(*)::int AS count FROM lead_triage`;
+  return { inserted: count[0]?.count || 0, skipped: false };
+}
+
+// Upsert a lead on intake: dedupe by email, refresh identity, bump counters.
+// Never overwrites existing triage state (status/owner/notes).
+export async function upsertLeadTriage(input: {
+  email: string;
+  name?: string | null;
+  company?: string | null;
+  phone?: string | null;
+  jobTitle?: string | null;
+  source: string;
+}): Promise<LeadTriage> {
+  const email = normalizeEmail(input.email);
+  const result = await sql`
+    INSERT INTO lead_triage (
+      email, name, company, phone, job_title,
+      first_source, last_source, submission_count, last_seen_at
+    )
+    VALUES (
+      ${email}, ${input.name || null}, ${input.company || null},
+      ${input.phone || null}, ${input.jobTitle || null},
+      ${input.source}, ${input.source}, 1, NOW()
+    )
+    ON CONFLICT (email) DO UPDATE SET
+      name = COALESCE(EXCLUDED.name, lead_triage.name),
+      company = COALESCE(EXCLUDED.company, lead_triage.company),
+      phone = COALESCE(EXCLUDED.phone, lead_triage.phone),
+      job_title = COALESCE(EXCLUDED.job_title, lead_triage.job_title),
+      last_source = EXCLUDED.last_source,
+      submission_count = lead_triage.submission_count + 1,
+      last_seen_at = NOW(),
+      updated_at = NOW()
+    RETURNING *
+  `;
+  return result[0] as LeadTriage;
+}
+
+export async function getLeadTriageByEmail(email: string): Promise<LeadTriage | null> {
+  const result = await sql`
+    SELECT * FROM lead_triage WHERE email = ${normalizeEmail(email)}
+  `;
+  return (result[0] as LeadTriage) || null;
+}
+
+// Store the HubSpot contact id once a lead has been pushed/synced.
+export async function setLeadHubspotContactId(email: string, contactId: string): Promise<void> {
+  await sql`
+    UPDATE lead_triage
+    SET hubspot_contact_id = ${contactId}, synced_at = NOW(), updated_at = NOW()
+    WHERE email = ${normalizeEmail(email)}
+  `;
+}
+
+// ---- Phase 1: triage inbox reads/writes ----
+
+export interface LeadListItem extends LeadTriage {
+  owner_name: string | null;
+}
+
+export interface LeadSubmission {
+  kind: string;
+  source_id: number;
+  source: string;
+  email: string;
+  name: string | null;
+  company: string | null;
+  phone: string | null;
+  job_title: string | null;
+  industry: string | null;
+  source_page: string | null;
+  message: string | null;
+  listing: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  status: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface LeadStats {
+  total: number;
+  byStatus: Record<string, number>;
+  newCount: number;
+  hotCount: number;
+  unsyncedCount: number;
+}
+
+const LEAD_WITH_OWNER = `
+  SELECT lt.*, u.name AS owner_name
+  FROM lead_triage lt
+  LEFT JOIN users u ON u.id = lt.owner_id
+`;
+
+// List leads with optional filters. Sorted hot -> warm -> cold -> unscored,
+// then by score and most-recent activity. Uses parameterized dynamic SQL.
+export async function getLeads(filters: {
+  status?: string;
+  source?: string;
+  owner?: string;
+  band?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ leads: LeadListItem[]; total: number }> {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  let p = 1;
+
+  if (filters.status && filters.status !== 'all') {
+    conditions.push(`lt.status = $${p++}`);
+    params.push(filters.status);
+  }
+  if (filters.source && filters.source !== 'all') {
+    conditions.push(`lt.email IN (SELECT email FROM lead_submissions WHERE source = $${p++})`);
+    params.push(filters.source);
+  }
+  if (filters.band && filters.band !== 'all') {
+    conditions.push(`lt.score_band = $${p++}`);
+    params.push(filters.band);
+  }
+  if (filters.owner) {
+    if (filters.owner === 'unassigned') {
+      conditions.push(`lt.owner_id IS NULL`);
+    } else {
+      const ownerId = parseInt(filters.owner, 10);
+      if (!Number.isNaN(ownerId)) {
+        conditions.push(`lt.owner_id = $${p++}`);
+        params.push(ownerId);
+      }
+    }
+  }
+  if (filters.search) {
+    conditions.push(`(lt.name ILIKE $${p} OR lt.email ILIKE $${p} OR lt.company ILIKE $${p})`);
+    params.push(`%${filters.search}%`);
+    p++;
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const limit = filters.limit || 50;
+  const offset = filters.offset || 0;
+
+  const listSql = `
+    ${LEAD_WITH_OWNER}
+    ${where}
+    ORDER BY
+      CASE lt.score_band WHEN 'hot' THEN 0 WHEN 'warm' THEN 1 WHEN 'cold' THEN 2 ELSE 3 END,
+      lt.score DESC NULLS LAST,
+      lt.last_seen_at DESC
+    LIMIT $${p++} OFFSET $${p++}
+  `;
+  const listParams = [...params, limit, offset];
+  const countSql = `SELECT COUNT(*)::int AS count FROM lead_triage lt ${where}`;
+
+  const leads = (await sql.query(listSql, listParams)) as unknown as LeadListItem[];
+  const countRes = (await sql.query(countSql, params)) as unknown as { count: number }[];
+  return { leads, total: countRes[0]?.count || 0 };
+}
+
+export async function getLeadStats(): Promise<LeadStats> {
+  const byStatusRows = await sql`SELECT status, COUNT(*)::int AS count FROM lead_triage GROUP BY status`;
+  const totalRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage`;
+  const hotRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE score_band = 'hot'`;
+  const unsyncedRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE hubspot_contact_id IS NULL`;
+
+  const byStatus: Record<string, number> = {};
+  for (const r of byStatusRows) byStatus[r.status] = r.count;
+
+  return {
+    total: totalRow[0]?.count || 0,
+    byStatus,
+    newCount: byStatus['new'] || 0,
+    hotCount: hotRow[0]?.count || 0,
+    unsyncedCount: unsyncedRow[0]?.count || 0,
+  };
+}
+
+export async function getLeadDetail(
+  id: number
+): Promise<{ lead: LeadListItem; submissions: LeadSubmission[] } | null> {
+  const rows = await sql`
+    SELECT lt.*, u.name AS owner_name
+    FROM lead_triage lt
+    LEFT JOIN users u ON u.id = lt.owner_id
+    WHERE lt.id = ${id}
+  `;
+  const lead = rows[0] as LeadListItem | undefined;
+  if (!lead) return null;
+
+  const submissions = (await sql`
+    SELECT * FROM lead_submissions WHERE email = ${lead.email} ORDER BY created_at DESC
+  `) as LeadSubmission[];
+
+  return { lead, submissions };
+}
+
+// Update triage state. owner_id may be set to null (unassign), so we build the
+// SET clause dynamically instead of using COALESCE.
+export async function updateLeadTriageState(
+  id: number,
+  updates: {
+    status?: LeadStatus;
+    notes?: string;
+    ownerId?: number | null;
+    followedUpAt?: Date | null;
+  }
+): Promise<LeadListItem | null> {
+  const sets: string[] = [];
+  const params: unknown[] = [];
+  let p = 1;
+
+  if (updates.status !== undefined) {
+    sets.push(`status = $${p++}`);
+    params.push(updates.status);
+  }
+  if (updates.notes !== undefined) {
+    sets.push(`notes = $${p++}`);
+    params.push(updates.notes);
+  }
+  if (updates.ownerId !== undefined) {
+    sets.push(`owner_id = $${p++}`);
+    params.push(updates.ownerId);
+  }
+  if (updates.followedUpAt !== undefined) {
+    sets.push(`followed_up_at = $${p++}`);
+    params.push(updates.followedUpAt);
+  }
+
+  if (sets.length > 0) {
+    sets.push(`updated_at = NOW()`);
+    const q = `UPDATE lead_triage SET ${sets.join(', ')} WHERE id = $${p++}`;
+    params.push(id);
+    await sql.query(q, params);
+  }
+
+  const withOwner = await sql`
+    SELECT lt.*, u.name AS owner_name
+    FROM lead_triage lt
+    LEFT JOIN users u ON u.id = lt.owner_id
+    WHERE lt.id = ${id}
+  `;
+  return (withOwner[0] as LeadListItem) || null;
+}
+
+// ---- Phase 2: scoring reads/writes ----
+
+export async function getLeadSubmissions(email: string): Promise<LeadSubmission[]> {
+  return (await sql`
+    SELECT * FROM lead_submissions
+    WHERE email = ${normalizeEmail(email)}
+    ORDER BY created_at DESC
+  `) as LeadSubmission[];
+}
+
+// Best-effort nurture engagement for a lead's email (used as a scoring signal).
+// Returns zeros if the nurture tables don't exist yet.
+export async function getLeadEngagementCounts(
+  email: string
+): Promise<{ opens: number; clicks: number }> {
+  const rows = await sql`
+    SELECT
+      COUNT(*) FILTER (WHERE ne.event_type = 'opened')::int AS opens,
+      COUNT(*) FILTER (WHERE ne.event_type = 'clicked')::int AS clicks
+    FROM nurture_enrollments e
+    JOIN nurture_sends ns ON ns.enrollment_id = e.id
+    JOIN nurture_events ne ON ne.send_id = ns.id
+    WHERE lower(e.contact_email) = ${normalizeEmail(email)}
+  `;
+  return { opens: rows[0]?.opens || 0, clicks: rows[0]?.clicks || 0 };
+}
+
+export async function setLeadScore(
+  email: string,
+  score: number,
+  band: string,
+  rationale: string
+): Promise<void> {
+  await sql`
+    UPDATE lead_triage
+    SET score = ${score},
+        score_band = ${band},
+        score_rationale = ${rationale},
+        scored_at = NOW(),
+        updated_at = NOW()
+    WHERE email = ${normalizeEmail(email)}
+  `;
+}
+
+// Emails of leads to (re)score. By default only unscored leads; pass all=true
+// to rescore everything (most-recent first).
+export async function getLeadEmailsToScore(limit: number, all = false): Promise<string[]> {
+  const rows = all
+    ? await sql`SELECT email FROM lead_triage ORDER BY last_seen_at DESC LIMIT ${limit}`
+    : await sql`SELECT email FROM lead_triage WHERE score IS NULL ORDER BY last_seen_at DESC LIMIT ${limit}`;
+  return rows.map((r) => r.email as string);
+}
+
+// ============================================
 // GOOGLE ADS DATA OPERATIONS
 // ============================================
 
@@ -4929,31 +5439,5 @@ export async function getBotActivitySummary(daysBack: number = 30) {
     byPage,
     recent,
     byHour,
-  };
-}
-
-export interface LeadStats {
-  total: number;
-  byStatus: Record<string, number>;
-  newCount: number;
-  hotCount: number;
-  unsyncedCount: number;
-}
-
-export async function getLeadStats(): Promise<LeadStats> {
-  const byStatusRows = await sql`SELECT status, COUNT(*)::int AS count FROM lead_triage GROUP BY status`;
-  const totalRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage`;
-  const hotRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE score_band = 'hot'`;
-  const unsyncedRow = await sql`SELECT COUNT(*)::int AS count FROM lead_triage WHERE hubspot_contact_id IS NULL`;
-
-  const byStatus: Record<string, number> = {};
-  for (const r of byStatusRows) byStatus[r.status] = r.count;
-
-  return {
-    total: totalRow[0]?.count || 0,
-    byStatus,
-    newCount: byStatus['new'] || 0,
-    hotCount: hotRow[0]?.count || 0,
-    unsyncedCount: unsyncedRow[0]?.count || 0,
   };
 }

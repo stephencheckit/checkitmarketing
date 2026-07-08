@@ -1,15 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createDemoRequest, getDemoRequests, initializeDemoRequestsTable } from '@/lib/db';
+import {
+  createDemoRequest,
+  getDemoRequests,
+  initializeDemoRequestsTable,
+  initializeLeadTriageTable,
+  upsertLeadTriage,
+  setLeadHubspotContactId,
+  type DemoRequestStatus,
+} from '@/lib/db';
+import { syncContactToHubSpot } from '@/lib/hubspot';
+import { inngest } from '@/lib/inngest';
 
-// Initialize table on first request
+// Initialize tables on first request
 let initialized = false;
 
 async function ensureInitialized() {
   if (!initialized) {
     await initializeDemoRequestsTable();
+    await initializeLeadTriageTable();
     initialized = true;
   }
+}
+
+// Push a demo request to HubSpot as a contact. Demo requests have a single
+// "name" field, so we split it into first/last for HubSpot.
+async function pushDemoRequestToHubSpot(d: {
+  name: string;
+  email: string;
+  company: string;
+  phone?: string;
+  industry?: string;
+  sourcePage?: string;
+}) {
+  const parts = (d.name || '').trim().split(/\s+/);
+  const firstName = parts[0] || d.name || '';
+  const lastName = parts.slice(1).join(' ');
+  return syncContactToHubSpot({
+    firstName,
+    lastName,
+    email: d.email,
+    company: d.company,
+    phone: d.phone,
+    source: 'demo-request',
+    listing: '',
+    categoryName: d.industry || 'Demo Request',
+    pageUrl: d.sourcePage || '',
+  });
 }
 
 // Create Resend client
@@ -198,19 +235,45 @@ export async function POST(request: NextRequest) {
       sourcePage,
     });
 
-    // Send emails if Resend is configured
+    // Add/refresh the unified lead record (dedupes by email across sources).
+    try {
+      await upsertLeadTriage({
+        email,
+        name,
+        company,
+        phone,
+        source: 'demo-request',
+      });
+      // Score the lead asynchronously so the form stays fast.
+      await inngest.send({ name: 'lead/score.requested', data: { email } });
+    } catch (e) {
+      console.error('lead_triage upsert/scoring failed (demo-request):', e);
+    }
+
+    // Send emails + push to HubSpot in parallel
     const resend = getResendClient();
-    if (resend) {
-      await Promise.all([
-        sendThankYouEmail(resend, email, name),
-        sendInternalNotification(resend, { name, email, company, phone, industry, message }),
-        sendSmsAlert(resend, { name, company }),
-      ]);
+    const [, , , hubspotResult] = await Promise.all([
+      resend ? sendThankYouEmail(resend, email, name) : Promise.resolve(false),
+      resend
+        ? sendInternalNotification(resend, { name, email, company, phone, industry, message })
+        : Promise.resolve(false),
+      resend ? sendSmsAlert(resend, { name, company }) : Promise.resolve(false),
+      pushDemoRequestToHubSpot({ name, email, company, phone, industry, sourcePage }),
+    ]);
+
+    // Record the HubSpot contact id on the lead so we have a stable link.
+    if (hubspotResult && hubspotResult.success && hubspotResult.contactId) {
+      try {
+        await setLeadHubspotContactId(email, hubspotResult.contactId);
+      } catch (e) {
+        console.error('Failed to store HubSpot contact id (demo-request):', e);
+      }
     }
 
     return NextResponse.json({
       success: true,
       id: demoRequest.id,
+      hubspot: hubspotResult && hubspotResult.success ? 'synced' : 'skipped',
       message: 'Demo request submitted successfully',
     });
   } catch (error) {
@@ -228,7 +291,7 @@ export async function GET(request: NextRequest) {
     await ensureInitialized();
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') as any;
+    const status = (searchParams.get('status') || undefined) as DemoRequestStatus | undefined;
     const limit = parseInt(searchParams.get('limit') || '100');
     const offset = parseInt(searchParams.get('offset') || '0');
 

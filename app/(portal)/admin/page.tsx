@@ -1,9 +1,9 @@
 import { getSession } from '@/lib/session';
-import { getAllUsers, getAllProgress, getCertificationStats, getDemoRequestStats } from '@/lib/db';
+import { getAllUsers, getAllProgress, getCertificationStats, getLeadStats } from '@/lib/db';
 import { MODULES } from '@/lib/modules';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus } from 'lucide-react';
+import { ShieldCheck, Users, Award, Clock, BookOpen, CheckCircle, MessageSquare, UserPlus, Handshake, CreditCard } from 'lucide-react';
 import AdminAccessCodes from '@/components/AdminAccessCodes';
 
 export default async function AdminPage() {
@@ -22,11 +22,11 @@ export default async function AdminPage() {
   const progressData = await getAllProgress();
   const certStats = await getCertificationStats();
   
-  // Get demo request stats
-  let demoStats = { totalCount: 0, recentCount: 0 };
+  // Get unified lead stats (all sources)
+  let leadStats = { total: 0, newCount: 0 };
   try {
-    demoStats = await getDemoRequestStats();
-  } catch (e) {
+    leadStats = await getLeadStats();
+  } catch {
     // Table might not exist yet
   }
 
@@ -70,9 +70,35 @@ export default async function AdminPage() {
             <div className="p-2 rounded-lg bg-blue-500/10">
               <UserPlus className="w-5 h-5 text-blue-400" />
             </div>
-            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Demo Requests</h2>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Leads</h2>
           </div>
-          <p className="text-sm text-muted">{demoStats.totalCount} total leads • {demoStats.recentCount} this week</p>
+          <p className="text-sm text-muted">{leadStats.total} total leads • {leadStats.newCount} new</p>
+        </Link>
+
+        <Link
+          href="/admin/hubspot"
+          className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-orange-500/10">
+              <Handshake className="w-5 h-5 text-orange-400" />
+            </div>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">HubSpot</h2>
+          </div>
+          <p className="text-sm text-muted">View live contacts and deals from HubSpot CRM</p>
+        </Link>
+
+        <Link
+          href="/admin/ramp"
+          className="bg-surface border border-border rounded-xl p-5 hover:border-accent/50 transition-colors group cursor-pointer"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <CreditCard className="w-5 h-5 text-purple-400" />
+            </div>
+            <h2 className="font-semibold text-foreground group-hover:text-accent transition-colors">Ramp Spend</h2>
+          </div>
+          <p className="text-sm text-muted">GTM spend by category and vendor from Ramp</p>
         </Link>
 
         <div className="bg-surface border border-border rounded-xl p-5">

@@ -12,9 +12,13 @@ import {
   CheckCircle2,
   TrendingUp,
   MapPin,
+  UserPlus,
+  Zap,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'checkit-gtm-planning-v3';
+const STORAGE_KEY = 'checkit-gtm-planning-v4';
+
+type ScenarioId = 'base' | 'upside' | 'conservative' | 'custom';
 
 type Rep = {
   id: string;
@@ -93,7 +97,11 @@ const US_MARKETS: MarketDef[] = [
   },
 ];
 
+const ALL_MARKET_IDS = [...UK_MARKETS, ...US_MARKETS].map((m) => m.id);
+
 type PlanState = {
+  scenario: ScenarioId;
+  includeOpenHire: boolean;
   netNew: number;
   expansion: number;
   renewal: number;
@@ -101,8 +109,12 @@ type PlanState = {
   closeRatePct: number; // opp → close
   avgDealSize: number;
   currentPipeline: number;
+  marketPipeline: Record<string, number>;
   ukMarketPct: Record<string, number>;
   usMarketPct: Record<string, number>;
+  sdrCount: number;
+  meetingsPerSdrPerMonth: number;
+  meetingToOppPct: number;
   reps: Rep[];
 };
 
@@ -113,6 +125,42 @@ function equalPcts(ids: string[]): Record<string, number> {
     out[id] = i === ids.length - 1 ? 100 - each * (ids.length - 1) : each;
   });
   return out;
+}
+
+function distributePipeline(total: number, weights: Record<string, number>): Record<string, number> {
+  const ids = ALL_MARKET_IDS;
+  const weightSum = ids.reduce((s, id) => s + (weights[id] || 0), 0) || ids.length;
+  const out: Record<string, number> = {};
+  let allocated = 0;
+  ids.forEach((id, i) => {
+    if (i === ids.length - 1) {
+      out[id] = Math.max(0, total - allocated);
+    } else {
+      const v = Math.round(total * ((weights[id] || 0) / weightSum));
+      out[id] = v;
+      allocated += v;
+    }
+  });
+  return out;
+}
+
+function buildReps(includeOpen: boolean, targetNewExp: number): Rep[] {
+  const base: Rep[] = [
+    { id: 'jen', name: 'Jen', quota: 0, isOpen: false },
+    { id: 'ae-2', name: 'AE 2', quota: 0, isOpen: false },
+    { id: 'ae-3', name: 'AE 3', quota: 0, isOpen: false },
+    { id: 'open', name: 'Open hire', quota: 0, isOpen: true },
+  ];
+  const active = includeOpen ? base : base.filter((r) => !r.isOpen);
+  const each = Math.round(targetNewExp / active.length);
+  return base.map((r) => {
+    if (!includeOpen && r.isOpen) return { ...r, quota: 0 };
+    const idx = active.findIndex((a) => a.id === r.id);
+    if (idx < 0) return { ...r, quota: 0 };
+    const quota =
+      idx === active.length - 1 ? targetNewExp - each * (active.length - 1) : each;
+    return { ...r, quota };
+  });
 }
 
 /** When one market % changes, rescale the others so the region still sums to 100. */
@@ -139,23 +187,82 @@ function setMarketPct(
   return next;
 }
 
+const DEFAULT_PIPELINE = 1_900_000;
+
 const DEFAULT_STATE: PlanState = {
+  scenario: 'base',
+  includeOpenHire: true,
   netNew: 1_800_000,
   expansion: 600_000,
   renewal: 0,
   ukPct: 50,
   closeRatePct: 20,
   avgDealSize: 50_000,
-  currentPipeline: 1_900_000,
+  currentPipeline: DEFAULT_PIPELINE,
+  marketPipeline: distributePipeline(
+    DEFAULT_PIPELINE,
+    Object.fromEntries(ALL_MARKET_IDS.map((id) => [id, 1]))
+  ),
   ukMarketPct: equalPcts(UK_MARKETS.map((m) => m.id)),
   usMarketPct: equalPcts(US_MARKETS.map((m) => m.id)),
-  reps: [
-    { id: 'jen', name: 'Jen', quota: 600_000, isOpen: false },
-    { id: 'ae-2', name: 'AE 2', quota: 600_000, isOpen: false },
-    { id: 'ae-3', name: 'AE 3', quota: 600_000, isOpen: false },
-    { id: 'open', name: 'Open hire', quota: 600_000, isOpen: true },
-  ],
+  sdrCount: 2,
+  meetingsPerSdrPerMonth: 11,
+  meetingToOppPct: 50,
+  reps: buildReps(true, 2_400_000),
 };
+
+const SCENARIOS: {
+  id: Exclude<ScenarioId, 'custom'>;
+  label: string;
+  blurb: string;
+  patch: Partial<PlanState>;
+}[] = [
+  {
+    id: 'base',
+    label: 'Base',
+    blurb: 'Steve model · £1.8m new',
+    patch: {
+      netNew: 1_800_000,
+      expansion: 600_000,
+      closeRatePct: 20,
+      avgDealSize: 50_000,
+      currentPipeline: 1_900_000,
+      sdrCount: 2,
+      meetingsPerSdrPerMonth: 11,
+      meetingToOppPct: 50,
+    },
+  },
+  {
+    id: 'upside',
+    label: 'Upside',
+    blurb: '£2.2m new · 23% close',
+    patch: {
+      netNew: 2_200_000,
+      expansion: 800_000,
+      closeRatePct: 23,
+      avgDealSize: 55_000,
+      currentPipeline: 1_900_000,
+      sdrCount: 3,
+      meetingsPerSdrPerMonth: 12,
+      meetingToOppPct: 50,
+    },
+  },
+  {
+    id: 'conservative',
+    label: 'Conservative',
+    blurb: '£1.4m new · 15% close',
+    patch: {
+      netNew: 1_400_000,
+      expansion: 500_000,
+      closeRatePct: 15,
+      avgDealSize: 40_000,
+      currentPipeline: 1_900_000,
+      sdrCount: 2,
+      meetingsPerSdrPerMonth: 8,
+      meetingToOppPct: 40,
+    },
+  },
+];
 
 function formatGBP(n: number) {
   return new Intl.NumberFormat('en-GB', {
@@ -365,6 +472,10 @@ export default function GtmPlanningPage() {
             reps: parsed.reps,
             ukMarketPct: { ...DEFAULT_STATE.ukMarketPct, ...parsed.ukMarketPct },
             usMarketPct: { ...DEFAULT_STATE.usMarketPct, ...parsed.usMarketPct },
+            marketPipeline: {
+              ...DEFAULT_STATE.marketPipeline,
+              ...parsed.marketPipeline,
+            },
           });
         }
       }
@@ -379,9 +490,10 @@ export default function GtmPlanningPage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state, hydrated]);
 
+  const activeReps = state.reps.filter((r) => state.includeOpenHire || !r.isOpen);
   const newPlusExpansion = state.netNew + state.expansion;
   const totalArr = newPlusExpansion + state.renewal;
-  const repTotal = state.reps.reduce((s, r) => s + r.quota, 0);
+  const repTotal = activeReps.reduce((s, r) => s + r.quota, 0);
   const repDelta = repTotal - newPlusExpansion;
   const repsBalanced = Math.abs(repDelta) < 1;
 
@@ -397,6 +509,7 @@ export default function GtmPlanningPage() {
     const pct = state.usMarketPct[m.id] ?? 0;
     return { ...m, pct, arr: usArr * (pct / 100) };
   });
+  const allMarketRows = [...ukMarketRows, ...usMarketRows];
 
   const medicalArr =
     ukMarketRows.filter((m) => m.category === 'medical').reduce((s, m) => s + m.arr, 0) +
@@ -407,24 +520,68 @@ export default function GtmPlanningPage() {
 
   const closeRate = Math.max(state.closeRatePct, 1) / 100;
   const coverageMultiple = 100 / Math.max(state.closeRatePct, 1);
+  const pipelineFromMarkets = ALL_MARKET_IDS.reduce(
+    (s, id) => s + (state.marketPipeline[id] || 0),
+    0
+  );
+  const currentPipeline = pipelineFromMarkets;
   const pipelineNeeded = state.netNew * coverageMultiple;
-  const pipelineGap = Math.max(0, pipelineNeeded - state.currentPipeline);
+  const pipelineGap = Math.max(0, pipelineNeeded - currentPipeline);
   const oppsNeeded =
     state.avgDealSize > 0 ? Math.ceil(state.netNew / state.avgDealSize / closeRate) : 0;
 
+  // SDR capacity (Steve model: mtgs → 50% opp → close)
+  const sdrOppsPerYear =
+    state.sdrCount *
+    state.meetingsPerSdrPerMonth *
+    12 *
+    (state.meetingToOppPct / 100);
+  const sdrArrCapacity = sdrOppsPerYear * state.avgDealSize * closeRate;
+  const sdrGap = state.netNew - sdrArrCapacity;
+
+  const markCustom = (prev: PlanState): PlanState =>
+    prev.scenario === 'custom' ? prev : { ...prev, scenario: 'custom' };
+
+  const applyScenario = (id: Exclude<ScenarioId, 'custom'>) => {
+    const scenario = SCENARIOS.find((s) => s.id === id);
+    if (!scenario) return;
+    setState((prev) => {
+      const next: PlanState = {
+        ...prev,
+        ...scenario.patch,
+        scenario: id,
+      };
+      const target = next.netNew + next.expansion;
+      next.reps = buildReps(next.includeOpenHire, target);
+      next.marketPipeline = distributePipeline(
+        next.currentPipeline,
+        Object.fromEntries(ALL_MARKET_IDS.map((mid) => [mid, 1]))
+      );
+      return next;
+    });
+  };
+
+  const toggleOpenHire = () => {
+    setState((prev) => {
+      const includeOpenHire = !prev.includeOpenHire;
+      const target = prev.netNew + prev.expansion;
+      return markCustom({
+        ...prev,
+        includeOpenHire,
+        reps: buildReps(includeOpenHire, target),
+      });
+    });
+  };
+
   const setArrType = (key: 'netNew' | 'expansion' | 'renewal', value: number) => {
     setState((prev) => {
-      const next = { ...prev, [key]: value };
+      const next = markCustom({ ...prev, [key]: value });
       if (key === 'renewal') return next;
 
       const target = next.netNew + next.expansion;
-      const currentRepTotal = prev.reps.reduce((s, r) => s + r.quota, 0) || 1;
       return {
         ...next,
-        reps: prev.reps.map((r) => ({
-          ...r,
-          quota: Math.round((r.quota / currentRepTotal) * target),
-        })),
+        reps: buildReps(next.includeOpenHire, target),
       };
     });
   };
@@ -432,32 +589,48 @@ export default function GtmPlanningPage() {
   const setRepQuota = (id: string, quota: number) => {
     setState((prev) => {
       const reps = prev.reps.map((r) => (r.id === id ? { ...r, quota } : r));
-      const total = reps.reduce((s, r) => s + r.quota, 0);
+      const active = reps.filter((r) => prev.includeOpenHire || !r.isOpen);
+      const total = active.reduce((s, r) => s + r.quota, 0);
       const ratio =
         prev.netNew + prev.expansion > 0
           ? prev.netNew / (prev.netNew + prev.expansion)
           : 0.75;
-      return {
+      return markCustom({
         ...prev,
         reps,
         netNew: Math.round(total * ratio),
         expansion: Math.round(total * (1 - ratio)),
-      };
+      });
     });
   };
 
   const equalizeReps = () => {
-    setState((prev) => {
-      const target = prev.netNew + prev.expansion;
-      const each = Math.round(target / prev.reps.length);
-      return {
+    setState((prev) =>
+      markCustom({
         ...prev,
-        reps: prev.reps.map((r, i) => ({
-          ...r,
-          // absorb rounding on last seat
-          quota: i === prev.reps.length - 1 ? target - each * (prev.reps.length - 1) : each,
-        })),
-      };
+        reps: buildReps(prev.includeOpenHire, prev.netNew + prev.expansion),
+      })
+    );
+  };
+
+  const setMarketPipeline = (id: string, value: number) => {
+    setState((prev) => {
+      const marketPipeline = { ...prev.marketPipeline, [id]: Math.max(0, value) };
+      const sum = ALL_MARKET_IDS.reduce((s, mid) => s + (marketPipeline[mid] || 0), 0);
+      return markCustom({
+        ...prev,
+        marketPipeline,
+        currentPipeline: sum,
+      });
+    });
+  };
+
+  const redistributePipelineByArr = () => {
+    setState((prev) => {
+      const weights = Object.fromEntries(allMarketRows.map((m) => [m.id, m.arr || 1]));
+      const marketPipeline = distributePipeline(pipelineNeeded, weights);
+      const sum = ALL_MARKET_IDS.reduce((s, id) => s + (marketPipeline[id] || 0), 0);
+      return markCustom({ ...prev, marketPipeline, currentPipeline: sum });
     });
   };
 
@@ -468,14 +641,22 @@ export default function GtmPlanningPage() {
 
   const assumptions = useMemo(
     () => [
-      '£1.8m net-new / new-logo ARR target',
+      '£1.8m net-new / new-logo ARR target (base)',
       '£600k expansion from existing customers (historical)',
-      '£600k new + expansion per AE × 4 seats (3 FT + 1 open)',
+      `${activeReps.length} AE seats × ~£600k new+expansion`,
       `Opp→close ${state.closeRatePct}% ≈ ${coverageMultiple.toFixed(1)}:1 coverage`,
-      `Current FY28 qualified pipeline ~${formatCompact(state.currentPipeline)}`,
-      `Target ACV ~${formatCompact(state.avgDealSize)}`,
+      `SDR: ${state.sdrCount} × ${state.meetingsPerSdrPerMonth} mtgs/mo → ${state.meetingToOppPct}% opp`,
+      `Qualified pipeline (manual by beachhead) ~${formatCompact(currentPipeline)}`,
     ],
-    [state.closeRatePct, state.currentPipeline, state.avgDealSize, coverageMultiple]
+    [
+      activeReps.length,
+      state.closeRatePct,
+      coverageMultiple,
+      state.sdrCount,
+      state.meetingsPerSdrPerMonth,
+      state.meetingToOppPct,
+      currentPipeline,
+    ]
   );
 
   return (
@@ -499,6 +680,47 @@ export default function GtmPlanningPage() {
           >
             <RotateCcw className="w-4 h-4" />
             Reset defaults
+          </button>
+        </div>
+
+        {/* Scenarios + hire gate */}
+        <div className="flex flex-col lg:flex-row gap-3 mb-6">
+          <div className="flex-1 flex flex-wrap gap-2">
+            {SCENARIOS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => applyScenario(s.id)}
+                className={`px-4 py-2.5 rounded-xl border text-left transition-colors min-w-[140px] ${
+                  state.scenario === s.id
+                    ? 'bg-accent/15 border-accent text-foreground'
+                    : 'bg-surface border-border text-muted hover:text-foreground'
+                }`}
+              >
+                <div className="text-sm font-semibold">{s.label}</div>
+                <div className="text-[11px] opacity-80">{s.blurb}</div>
+              </button>
+            ))}
+            {state.scenario === 'custom' ? (
+              <div className="px-4 py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 min-w-[140px]">
+                <div className="text-sm font-semibold">Custom</div>
+                <div className="text-[11px]">Sliders adjusted</div>
+              </div>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={toggleOpenHire}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm transition-colors self-start ${
+              state.includeOpenHire
+                ? 'bg-accent/15 border-accent text-foreground'
+                : 'bg-surface border-border text-muted'
+            }`}
+          >
+            <UserPlus className="w-4 h-4" />
+            {state.includeOpenHire
+              ? 'Open hire ON · 4 AEs'
+              : 'Open hire OFF · 3 AEs'}
           </button>
         </div>
 
@@ -584,7 +806,9 @@ export default function GtmPlanningPage() {
                 onClick={equalizeReps}
                 className="text-xs px-3 py-1.5 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
               >
-                Equalize to £{Math.round(newPlusExpansion / 1000)}k each
+                Equalize across {activeReps.length} (
+                {formatCompact(Math.round(newPlusExpansion / Math.max(activeReps.length, 1)))}{' '}
+                each)
               </button>
             </div>
 
@@ -613,28 +837,34 @@ export default function GtmPlanningPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              {state.reps.map((rep) => (
+              {state.reps.map((rep) => {
+                const inactive = rep.isOpen && !state.includeOpenHire;
+                return (
                 <div
                   key={rep.id}
-                  className="rounded-lg border border-border bg-surface-elevated/50 p-4 space-y-3"
+                  className={`rounded-lg border border-border bg-surface-elevated/50 p-4 space-y-3 ${
+                    inactive ? 'opacity-40 pointer-events-none' : ''
+                  }`}
                 >
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       value={rep.name}
                       onChange={(e) =>
-                        setState((prev) => ({
-                          ...prev,
-                          reps: prev.reps.map((r) =>
-                            r.id === rep.id ? { ...r, name: e.target.value } : r
-                          ),
-                        }))
+                        setState((prev) =>
+                          markCustom({
+                            ...prev,
+                            reps: prev.reps.map((r) =>
+                              r.id === rep.id ? { ...r, name: e.target.value } : r
+                            ),
+                          })
+                        )
                       }
                       className="flex-1 bg-transparent text-sm font-medium text-foreground border-b border-transparent focus:border-accent outline-none"
                     />
                     {rep.isOpen ? (
                       <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">
-                        Open
+                        {inactive ? 'Off' : 'Open'}
                       </span>
                     ) : (
                       <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-accent/20 text-accent">
@@ -658,7 +888,8 @@ export default function GtmPlanningPage() {
                       : '—'}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </section>
         </div>
@@ -708,7 +939,9 @@ export default function GtmPlanningPage() {
               min={0}
               max={100}
               step={5}
-              onChange={(v) => setState((p) => ({ ...p, ukPct: clamp(v, 0, 100) }))}
+              onChange={(v) =>
+                setState((p) => markCustom({ ...p, ukPct: clamp(v, 0, 100) }))
+              }
               display={`${state.ukPct}% · ${formatCompact(ukArr)}`}
             />
             <div className="text-sm text-muted flex justify-between">
@@ -735,7 +968,7 @@ export default function GtmPlanningPage() {
               min={5}
               max={40}
               step={1}
-              onChange={(v) => setState((p) => ({ ...p, closeRatePct: v }))}
+              onChange={(v) => setState((p) => markCustom({ ...p, closeRatePct: v }))}
               display={`${state.closeRatePct}% → ${coverageMultiple.toFixed(1)}:1`}
               hint="Steve model: ~20–23% (5:1 coverage)"
             />
@@ -745,20 +978,15 @@ export default function GtmPlanningPage() {
               min={20_000}
               max={100_000}
               step={5_000}
-              onChange={(v) => setState((p) => ({ ...p, avgDealSize: v }))}
+              onChange={(v) => setState((p) => markCustom({ ...p, avgDealSize: v }))}
               display={formatGBP(state.avgDealSize)}
               hint="YTD ~£40–46k · target ~£50k"
             />
-            <SliderRow
-              label="Current qualified pipeline"
-              value={state.currentPipeline}
-              min={0}
-              max={12_000_000}
-              step={100_000}
-              onChange={(v) => setState((p) => ({ ...p, currentPipeline: v }))}
-              display={formatGBP(state.currentPipeline)}
-            />
             <div className="space-y-3 text-sm pt-1 border-t border-border">
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Qualified now (sum of markets)</span>
+                <span className="font-medium tabular-nums">{formatGBP(currentPipeline)}</span>
+              </div>
               <div className="flex justify-between gap-2">
                 <span className="text-muted">Pipeline needed</span>
                 <span className="font-medium tabular-nums">{formatGBP(pipelineNeeded)}</span>
@@ -775,11 +1003,96 @@ export default function GtmPlanningPage() {
               </div>
             </div>
             <p className="text-xs text-muted">
-              Net-new {formatCompact(state.netNew)} ÷ {formatCompact(state.avgDealSize)} ÷{' '}
-              {state.closeRatePct}% close ≈ {oppsNeeded} opportunities.
+              Edit qualified £ by beachhead below. SF live sync later.
             </p>
           </section>
         </div>
+
+        {/* SDR capacity */}
+        <section className="bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-foreground flex items-center gap-2">
+                <Zap className="w-5 h-5 text-accent" />
+                SDR capacity → net-new
+              </h2>
+              <p className="text-xs text-muted mt-1">
+                Meetings/mo × opp conversion × ACV × close rate vs net-new target (Steve model).
+              </p>
+            </div>
+            <div
+              className={`text-sm px-3 py-1.5 rounded-lg border ${
+                sdrGap <= 0
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              }`}
+            >
+              {sdrGap <= 0
+                ? `Capacity covers net-new (+${formatCompact(Math.abs(sdrGap))})`
+                : `Shortfall ${formatCompact(sdrGap)} vs net-new`}
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <SliderRow
+              label="SDR headcount"
+              value={state.sdrCount}
+              min={1}
+              max={8}
+              step={1}
+              onChange={(v) => setState((p) => markCustom({ ...p, sdrCount: v }))}
+              display={`${state.sdrCount}`}
+            />
+            <SliderRow
+              label="Meetings / SDR / month"
+              value={state.meetingsPerSdrPerMonth}
+              min={3}
+              max={15}
+              step={1}
+              onChange={(v) =>
+                setState((p) => markCustom({ ...p, meetingsPerSdrPerMonth: v }))
+              }
+              display={`${state.meetingsPerSdrPerMonth}`}
+              hint="Target 10–12 when stacked"
+            />
+            <SliderRow
+              label="Meeting → opp %"
+              value={state.meetingToOppPct}
+              min={20}
+              max={80}
+              step={5}
+              onChange={(v) => setState((p) => markCustom({ ...p, meetingToOppPct: v }))}
+              display={`${state.meetingToOppPct}%`}
+            />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <div className="rounded-lg bg-surface-elevated p-3">
+              <div className="text-xs text-muted">Opps / year</div>
+              <div className="text-lg font-semibold tabular-nums">
+                {Math.round(sdrOppsPerYear)}
+              </div>
+            </div>
+            <div className="rounded-lg bg-surface-elevated p-3">
+              <div className="text-xs text-muted">ARR capacity</div>
+              <div className="text-lg font-semibold tabular-nums">
+                {formatCompact(sdrArrCapacity)}
+              </div>
+            </div>
+            <div className="rounded-lg bg-surface-elevated p-3">
+              <div className="text-xs text-muted">Net-new target</div>
+              <div className="text-lg font-semibold tabular-nums">
+                {formatCompact(state.netNew)}
+              </div>
+            </div>
+            <div className="rounded-lg bg-surface-elevated p-3">
+              <div className="text-xs text-muted">Coverage of target</div>
+              <div className="text-lg font-semibold tabular-nums">
+                {state.netNew > 0
+                  ? `${Math.round((sdrArrCapacity / state.netNew) * 100)}%`
+                  : '—'}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Beachhead markets — derived from region */}
         <section className="mb-6 space-y-4">
@@ -801,16 +1114,20 @@ export default function GtmPlanningPage() {
               markets={ukMarketRows}
               accentClass="bg-blue-500"
               onPctChange={(id, pct) =>
-                setState((p) => ({
-                  ...p,
-                  ukMarketPct: setMarketPct(p.ukMarketPct, id, pct),
-                }))
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    ukMarketPct: setMarketPct(p.ukMarketPct, id, pct),
+                  })
+                )
               }
               onEqualize={() =>
-                setState((p) => ({
-                  ...p,
-                  ukMarketPct: equalPcts(UK_MARKETS.map((m) => m.id)),
-                }))
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    ukMarketPct: equalPcts(UK_MARKETS.map((m) => m.id)),
+                  })
+                )
               }
             />
             <RegionMarketPanel
@@ -820,18 +1137,115 @@ export default function GtmPlanningPage() {
               markets={usMarketRows}
               accentClass="bg-rose-500"
               onPctChange={(id, pct) =>
-                setState((p) => ({
-                  ...p,
-                  usMarketPct: setMarketPct(p.usMarketPct, id, pct),
-                }))
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    usMarketPct: setMarketPct(p.usMarketPct, id, pct),
+                  })
+                )
               }
               onEqualize={() =>
-                setState((p) => ({
-                  ...p,
-                  usMarketPct: equalPcts(US_MARKETS.map((m) => m.id)),
-                }))
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    usMarketPct: equalPcts(US_MARKETS.map((m) => m.id)),
+                  })
+                )
               }
             />
+          </div>
+        </section>
+
+        {/* Pipeline by beachhead */}
+        <section className="bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-foreground">Pipeline by beachhead</h2>
+              <p className="text-xs text-muted mt-1">
+                Manual qualified pipeline today — replace with SF pull later. Needed =
+                market share of total ARR × pipeline required for net-new.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={redistributePipelineByArr}
+              className="text-xs px-3 py-1.5 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
+            >
+              Fill to needed by ARR mix
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="text-left text-muted border-b border-border">
+                  <th className="py-2 pr-3 font-medium">Market</th>
+                  <th className="py-2 pr-3 font-medium">Beachheads</th>
+                  <th className="py-2 pr-3 font-medium">Plan ARR</th>
+                  <th className="py-2 pr-3 font-medium">Needed pipe</th>
+                  <th className="py-2 pr-3 font-medium">Qualified now</th>
+                  <th className="py-2 font-medium text-right">Gap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allMarketRows.map((row) => {
+                  const share = totalArr > 0 ? row.arr / totalArr : 0;
+                  const needed = pipelineNeeded * share;
+                  const have = state.marketPipeline[row.id] || 0;
+                  const gap = needed - have;
+                  return (
+                    <tr key={row.id} className="border-b border-border/60">
+                      <td className="py-2.5 pr-3 text-foreground">{row.label}</td>
+                      <td className="py-2.5 pr-3 text-muted text-xs">
+                        {row.beachheads.length
+                          ? row.beachheads.map((b) => b.name).join(', ')
+                          : '—'}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">{formatCompact(row.arr)}</td>
+                      <td className="py-2.5 pr-3 tabular-nums text-muted">
+                        {formatCompact(needed)}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <input
+                          type="number"
+                          value={have}
+                          step={50_000}
+                          min={0}
+                          onChange={(e) =>
+                            setMarketPipeline(row.id, parseInt(e.target.value) || 0)
+                          }
+                          className="w-28 px-2 py-1 rounded-md bg-surface-elevated border border-border tabular-nums text-sm"
+                        />
+                      </td>
+                      <td
+                        className={`py-2.5 tabular-nums text-right font-medium ${
+                          gap > 0 ? 'text-amber-400' : 'text-emerald-400'
+                        }`}
+                      >
+                        {gap > 0 ? formatCompact(gap) : `+${formatCompact(Math.abs(gap))}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <td colSpan={3} className="py-3 text-muted">
+                    Total
+                  </td>
+                  <td className="py-3 tabular-nums text-muted">
+                    {formatCompact(pipelineNeeded)}
+                  </td>
+                  <td className="py-3 tabular-nums font-semibold">
+                    {formatCompact(currentPipeline)}
+                  </td>
+                  <td
+                    className={`py-3 tabular-nums font-bold text-right ${
+                      pipelineGap > 0 ? 'text-amber-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {formatCompact(pipelineGap)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 

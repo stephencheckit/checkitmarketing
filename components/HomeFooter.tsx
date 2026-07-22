@@ -7,7 +7,8 @@ import {
   Play,
   LogIn,
   ExternalLink,
-  Apple
+  Apple,
+  LifeBuoy
 } from 'lucide-react';
 
 export default function HomeFooter() {
@@ -23,8 +24,8 @@ export default function HomeFooter() {
               className="h-6 mb-4"
             />
             <p className="text-sm text-muted mb-6 max-w-sm">
-              Purpose-built compliance and monitoring solutions for operational excellence. 
-              Sensors, apps, and cloud analytics working together.
+              Purpose-built compliance and monitoring solutions for predictable operational precision.
+              Smart sensors, mobile apps, and enterprise-grade platform technology working together.
             </p>
             
             {/* App Downloads */}
@@ -72,11 +73,37 @@ export default function HomeFooter() {
           
           {/* More */}
           <div>
-            <h4 className="text-sm font-semibold text-foreground mb-4">More</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-4">About</h4>
             <ul className="space-y-2">
-              <li><Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">Industries</Link></li>
-              <li><Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">Stories</Link></li>
-              <li><Link href="/about" className="text-sm text-muted hover:text-foreground transition-colors">About Us</Link></li>
+              {[
+                'About Us',
+                'Careers',
+                'ESG',
+                'Sustainability',
+                'Certifications',
+                'Contact us',
+              ].map((label) => (
+                <li key={label}>
+                  <span
+                    className="inline-flex items-center gap-2 text-sm text-muted/70 cursor-default"
+                    aria-disabled="true"
+                    title="Coming soon"
+                  >
+                    {label}
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">Soon</span>
+                  </span>
+                </li>
+              ))}
+              <li>
+                <Link href="/industries" className="text-sm text-muted hover:text-foreground transition-colors">
+                  Industries
+                </Link>
+              </li>
+              <li>
+                <Link href="/case-studies" className="text-sm text-muted hover:text-foreground transition-colors">
+                  Stories
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -100,37 +127,37 @@ export default function HomeFooter() {
             <h4 className="text-sm font-semibold text-foreground mb-4">Access</h4>
             <ul className="space-y-2">
               <li>
-                <a 
-                  href="https://app.checkit.net" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                <span
+                  className="inline-flex items-center gap-2 text-sm text-muted/70 cursor-default"
+                  aria-disabled="true"
+                  title="Coming soon"
                 >
                   <ExternalLink className="w-3 h-3" />
                   Platform Login
-                </a>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">Soon</span>
+                </span>
               </li>
               <li>
-                <a 
-                  href="/login" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
-                >
-                  <LogIn className="w-3 h-3" />
-                  GTM Tracker
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="https://www.checkit.net/support/raise-a-ticket" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                <span
+                  className="inline-flex items-center gap-2 text-sm text-muted/70 cursor-default"
+                  aria-disabled="true"
+                  title="Coming soon"
                 >
                   <Headphones className="w-3 h-3" />
                   Submit Support Ticket
-                </a>
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">Soon</span>
+                </span>
+              </li>
+              <li>
+                <span
+                  className="inline-flex items-center gap-2 text-sm text-muted/70 cursor-default"
+                  aria-disabled="true"
+                  title="Coming soon"
+                >
+                  <LifeBuoy className="w-3 h-3" />
+                  Help documentation
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">Soon</span>
+                </span>
               </li>
               <li>
                 <a 
@@ -152,6 +179,17 @@ export default function HomeFooter() {
                 >
                   <Play className="w-3 h-3" />
                   Android App
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="/login" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-muted hover:text-foreground transition-colors"
+                >
+                  <LogIn className="w-3 h-3" />
+                  GTM Tracker
                 </a>
               </li>
             </ul>
@@ -206,12 +244,15 @@ export default function HomeFooter() {
             </a>
           </div>
 
-          <div className="flex items-center gap-6">
-            <a href="https://www.checkit.net/privacy" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <a href="https://www.checkit.net/privacy-policy/" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
               Privacy Policy
             </a>
-            <a href="https://www.checkit.net/terms" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
+            <a href="https://www.checkit.net/terms-of-service" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
               Terms of Service
+            </a>
+            <a href="https://www.checkit.net/hubfs/Modern_Slavery_Statement_-_June_2023.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-muted hover:text-foreground transition-colors">
+              Anti-Slavery Statement
             </a>
           </div>
         </div>

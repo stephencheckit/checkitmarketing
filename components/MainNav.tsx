@@ -100,6 +100,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   // Marketing: Strategy, content, budget
   const marketingItems = [
     { href: '/positioning', label: 'Positioning', icon: Target },
+    { href: '/gtm-planning', label: 'GTM Planning', icon: Briefcase },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
     { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },

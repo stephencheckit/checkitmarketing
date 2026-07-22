@@ -11,9 +11,10 @@ import {
   AlertTriangle,
   CheckCircle2,
   TrendingUp,
+  MapPin,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'checkit-gtm-planning-v2';
+const STORAGE_KEY = 'checkit-gtm-planning-v3';
 
 type Rep = {
   id: string;
@@ -22,27 +23,132 @@ type Rep = {
   isOpen: boolean;
 };
 
+type Beachhead = { name: string; logo?: string };
+type MarketDef = {
+  id: string;
+  label: string;
+  detail?: string;
+  category: 'medical' | 'commercial';
+  beachheads: Beachhead[];
+};
+
+const UK_MARKETS: MarketDef[] = [
+  {
+    id: 'uk-healthcare',
+    label: 'Healthcare / hospitals',
+    detail: 'Pharmacies, pathologies',
+    category: 'medical',
+    beachheads: [{ name: 'NHS', logo: '/logos/nhs.svg' }],
+  },
+  {
+    id: 'uk-forecourts',
+    label: 'Forecourts',
+    category: 'commercial',
+    beachheads: [{ name: 'BP', logo: '/logos/bp.png' }],
+  },
+  {
+    id: 'uk-entertainment',
+    label: 'Entertainment',
+    category: 'commercial',
+    beachheads: [
+      { name: 'P&O Ferries', logo: '/logos/poferries.png' },
+      { name: 'Tenpin', logo: '/logos/tenpin.png' },
+    ],
+  },
+  {
+    id: 'uk-foodservice',
+    label: 'Food service',
+    category: 'commercial',
+    beachheads: [],
+  },
+];
+
+const US_MARKETS: MarketDef[] = [
+  {
+    id: 'us-plasma',
+    label: 'Plasma',
+    category: 'medical',
+    beachheads: [
+      { name: 'Grifols', logo: '/logos/grifols.svg' },
+      { name: 'Octapharma', logo: '/logos/octapharma.svg' },
+    ],
+  },
+  {
+    id: 'us-venues',
+    label: 'Food service (venues)',
+    category: 'commercial',
+    beachheads: [{ name: 'OVG' }],
+  },
+  {
+    id: 'us-senior',
+    label: 'Food service (senior living)',
+    category: 'commercial',
+    beachheads: [{ name: 'Morningstar' }],
+  },
+  {
+    id: 'us-facilities',
+    label: 'Food service (facilities)',
+    category: 'commercial',
+    beachheads: [{ name: 'ISS' }],
+  },
+];
+
 type PlanState = {
   netNew: number;
   expansion: number;
   renewal: number;
-  medicalPct: number;
   ukPct: number;
   closeRatePct: number; // opp → close
   avgDealSize: number;
   currentPipeline: number;
+  ukMarketPct: Record<string, number>;
+  usMarketPct: Record<string, number>;
   reps: Rep[];
 };
+
+function equalPcts(ids: string[]): Record<string, number> {
+  const each = Math.floor(100 / ids.length);
+  const out: Record<string, number> = {};
+  ids.forEach((id, i) => {
+    out[id] = i === ids.length - 1 ? 100 - each * (ids.length - 1) : each;
+  });
+  return out;
+}
+
+/** When one market % changes, rescale the others so the region still sums to 100. */
+function setMarketPct(
+  current: Record<string, number>,
+  id: string,
+  nextVal: number
+): Record<string, number> {
+  const clamped = clamp(nextVal, 0, 100);
+  const others = Object.keys(current).filter((k) => k !== id);
+  const remaining = 100 - clamped;
+  const othersSum = others.reduce((s, k) => s + (current[k] || 0), 0) || others.length;
+  const next: Record<string, number> = { ...current, [id]: clamped };
+  let allocated = 0;
+  others.forEach((k, i) => {
+    if (i === others.length - 1) {
+      next[k] = Math.max(0, remaining - allocated);
+    } else {
+      const v = Math.round(remaining * ((current[k] || 0) / othersSum));
+      next[k] = v;
+      allocated += v;
+    }
+  });
+  return next;
+}
 
 const DEFAULT_STATE: PlanState = {
   netNew: 1_800_000,
   expansion: 600_000,
   renewal: 0,
-  medicalPct: 50,
   ukPct: 50,
   closeRatePct: 20,
   avgDealSize: 50_000,
   currentPipeline: 1_900_000,
+  ukMarketPct: equalPcts(UK_MARKETS.map((m) => m.id)),
+  usMarketPct: equalPcts(US_MARKETS.map((m) => m.id)),
   reps: [
     { id: 'jen', name: 'Jen', quota: 600_000, isOpen: false },
     { id: 'ae-2', name: 'AE 2', quota: 600_000, isOpen: false },
@@ -138,6 +244,111 @@ function StackBar({
   );
 }
 
+function BeachheadChip({ name, logo }: Beachhead) {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-surface border border-border text-xs text-foreground">
+      {logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logo} alt="" className="h-3.5 w-auto max-w-[52px] object-contain" />
+      ) : null}
+      {name}
+    </span>
+  );
+}
+
+function RegionMarketPanel({
+  title,
+  regionArr,
+  regionPct,
+  markets,
+  accentClass,
+  onPctChange,
+  onEqualize,
+}: {
+  title: string;
+  regionArr: number;
+  regionPct: number;
+  markets: (MarketDef & { pct: number; arr: number })[];
+  accentClass: string;
+  onPctChange: (id: string, pct: number) => void;
+  onEqualize: () => void;
+}) {
+  return (
+    <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h3 className="font-semibold text-foreground flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${accentClass}`} />
+            {title}
+          </h3>
+          <p className="text-xs text-muted mt-1">
+            {regionPct}% of total · {formatCompact(regionArr)} — split across beachhead markets
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onEqualize}
+          className="text-xs px-2.5 py-1 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
+        >
+          Equalize
+        </button>
+      </div>
+
+      <StackBar
+        segments={markets.map((m, i) => ({
+          label: m.label,
+          value: m.arr,
+          className: [
+            'bg-violet-500',
+            'bg-sky-500',
+            'bg-amber-500',
+            'bg-emerald-500',
+            'bg-rose-500',
+          ][i % 5],
+        }))}
+      />
+
+      <div className="space-y-4">
+        {markets.map((m) => (
+          <div key={m.id} className="rounded-lg border border-border/70 bg-surface-elevated/40 p-3 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="text-sm font-medium text-foreground">{m.label}</div>
+                {m.detail ? <div className="text-[11px] text-muted">{m.detail}</div> : null}
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  {m.beachheads.length > 0 ? (
+                    m.beachheads.map((b) => <BeachheadChip key={b.name} {...b} />)
+                  ) : (
+                    <span className="text-[11px] text-muted italic">Beachhead TBD</span>
+                  )}
+                </div>
+              </div>
+              <span
+                className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0 ${
+                  m.category === 'medical'
+                    ? 'bg-violet-500/20 text-violet-300'
+                    : 'bg-orange-500/20 text-orange-300'
+                }`}
+              >
+                {m.category}
+              </span>
+            </div>
+            <SliderRow
+              label="Share of region"
+              value={m.pct}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => onPctChange(m.id, v)}
+              display={`${m.pct}% · ${formatCompact(m.arr)}`}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function GtmPlanningPage() {
   const [state, setState] = useState<PlanState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
@@ -148,7 +359,13 @@ export default function GtmPlanningPage() {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<PlanState>;
         if (parsed?.reps?.length === 4) {
-          setState({ ...DEFAULT_STATE, ...parsed, reps: parsed.reps });
+          setState({
+            ...DEFAULT_STATE,
+            ...parsed,
+            reps: parsed.reps,
+            ukMarketPct: { ...DEFAULT_STATE.ukMarketPct, ...parsed.ukMarketPct },
+            usMarketPct: { ...DEFAULT_STATE.usMarketPct, ...parsed.usMarketPct },
+          });
         }
       }
     } catch {
@@ -168,13 +385,25 @@ export default function GtmPlanningPage() {
   const repDelta = repTotal - newPlusExpansion;
   const repsBalanced = Math.abs(repDelta) < 1;
 
-  const commercialPct = 100 - state.medicalPct;
   const usPct = 100 - state.ukPct;
-
-  const medicalArr = totalArr * (state.medicalPct / 100);
-  const commercialArr = totalArr * (commercialPct / 100);
   const ukArr = totalArr * (state.ukPct / 100);
   const usArr = totalArr * (usPct / 100);
+
+  const ukMarketRows = UK_MARKETS.map((m) => {
+    const pct = state.ukMarketPct[m.id] ?? 0;
+    return { ...m, pct, arr: ukArr * (pct / 100) };
+  });
+  const usMarketRows = US_MARKETS.map((m) => {
+    const pct = state.usMarketPct[m.id] ?? 0;
+    return { ...m, pct, arr: usArr * (pct / 100) };
+  });
+
+  const medicalArr =
+    ukMarketRows.filter((m) => m.category === 'medical').reduce((s, m) => s + m.arr, 0) +
+    usMarketRows.filter((m) => m.category === 'medical').reduce((s, m) => s + m.arr, 0);
+  const commercialArr = totalArr - medicalArr;
+  const medicalPct = totalArr > 0 ? Math.round((medicalArr / totalArr) * 100) : 0;
+  const commercialPct = 100 - medicalPct;
 
   const closeRate = Math.max(state.closeRatePct, 1) / 100;
   const coverageMultiple = 100 / Math.max(state.closeRatePct, 1);
@@ -435,28 +664,26 @@ export default function GtmPlanningPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Market */}
+          {/* Medical / commercial — derived from beachheads */}
           <section className="bg-surface border border-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Market split</h2>
+              <h2 className="font-semibold text-foreground">Medical vs commercial</h2>
             </div>
             <p className="text-xs text-muted">
-              Medical: NHS (UK), blood/plasma/tissue (US). Commercial: facilities, food
-              service, senior living.
+              Derived from beachhead markets: medical = UK healthcare + US plasma.
             </p>
-            <SliderRow
-              label="Medical %"
-              value={state.medicalPct}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(v) => setState((p) => ({ ...p, medicalPct: clamp(v, 0, 100) }))}
-              display={`${state.medicalPct}% · ${formatCompact(medicalArr)}`}
-            />
-            <div className="text-sm text-muted flex justify-between">
-              <span>Commercial {commercialPct}%</span>
-              <span className="tabular-nums text-foreground">{formatCompact(commercialArr)}</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-lg bg-violet-500/10 border border-violet-500/20 p-3">
+                <div className="text-xs text-muted">Medical</div>
+                <div className="text-lg font-bold tabular-nums">{medicalPct}%</div>
+                <div className="text-sm text-foreground tabular-nums">{formatCompact(medicalArr)}</div>
+              </div>
+              <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 p-3">
+                <div className="text-xs text-muted">Commercial</div>
+                <div className="text-lg font-bold tabular-nums">{commercialPct}%</div>
+                <div className="text-sm text-foreground tabular-nums">{formatCompact(commercialArr)}</div>
+              </div>
             </div>
             <StackBar
               segments={[
@@ -472,7 +699,9 @@ export default function GtmPlanningPage() {
               <Globe className="w-5 h-5 text-accent" />
               <h2 className="font-semibold text-foreground">Region split</h2>
             </div>
-            <p className="text-xs text-muted">Applied to total ARR for planning balance.</p>
+            <p className="text-xs text-muted">
+              Drives beachhead market £ below. UK/RoW vs US.
+            </p>
             <SliderRow
               label="UK / RoW %"
               value={state.ukPct}
@@ -552,42 +781,98 @@ export default function GtmPlanningPage() {
           </section>
         </div>
 
+        {/* Beachhead markets — derived from region */}
+        <section className="mb-6 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-accent" />
+              Beachhead markets
+            </h2>
+            <p className="text-sm text-muted mt-1">
+              Region ARR flows into specific markets mapped to existing beachhead customers.
+              Market % within each region always sum to 100%.
+            </p>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-6">
+            <RegionMarketPanel
+              title="UK / RoW"
+              regionArr={ukArr}
+              regionPct={state.ukPct}
+              markets={ukMarketRows}
+              accentClass="bg-blue-500"
+              onPctChange={(id, pct) =>
+                setState((p) => ({
+                  ...p,
+                  ukMarketPct: setMarketPct(p.ukMarketPct, id, pct),
+                }))
+              }
+              onEqualize={() =>
+                setState((p) => ({
+                  ...p,
+                  ukMarketPct: equalPcts(UK_MARKETS.map((m) => m.id)),
+                }))
+              }
+            />
+            <RegionMarketPanel
+              title="US"
+              regionArr={usArr}
+              regionPct={usPct}
+              markets={usMarketRows}
+              accentClass="bg-rose-500"
+              onPctChange={(id, pct) =>
+                setState((p) => ({
+                  ...p,
+                  usMarketPct: setMarketPct(p.usMarketPct, id, pct),
+                }))
+              }
+              onEqualize={() =>
+                setState((p) => ({
+                  ...p,
+                  usMarketPct: equalPcts(US_MARKETS.map((m) => m.id)),
+                }))
+              }
+            />
+          </div>
+        </section>
+
         {/* Cross-cut matrix */}
         <section className="bg-surface border border-border rounded-xl p-5 mb-6">
-          <h2 className="font-semibold text-foreground mb-4">Market × region (of total ARR)</h2>
+          <h2 className="font-semibold text-foreground mb-4">Beachhead ARR rollup</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[480px]">
+            <table className="w-full text-sm min-w-[560px]">
               <thead>
                 <tr className="text-left text-muted border-b border-border">
-                  <th className="py-2 pr-4 font-medium"> </th>
-                  <th className="py-2 pr-4 font-medium">UK / RoW ({state.ukPct}%)</th>
-                  <th className="py-2 pr-4 font-medium">US ({usPct}%)</th>
-                  <th className="py-2 font-medium">Total</th>
+                  <th className="py-2 pr-4 font-medium">Market</th>
+                  <th className="py-2 pr-4 font-medium">Region</th>
+                  <th className="py-2 pr-4 font-medium">Beachheads</th>
+                  <th className="py-2 pr-4 font-medium">% of region</th>
+                  <th className="py-2 font-medium text-right">ARR</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { label: `Medical (${state.medicalPct}%)`, m: state.medicalPct },
-                  { label: `Commercial (${commercialPct}%)`, m: commercialPct },
+                  ...ukMarketRows.map((m) => ({ ...m, region: 'UK / RoW' })),
+                  ...usMarketRows.map((m) => ({ ...m, region: 'US' })),
                 ].map((row) => (
-                  <tr key={row.label} className="border-b border-border/60">
-                    <td className="py-3 pr-4 text-muted">{row.label}</td>
-                    <td className="py-3 pr-4 tabular-nums font-medium">
-                      {formatGBP(totalArr * (row.m / 100) * (state.ukPct / 100))}
+                  <tr key={row.id} className="border-b border-border/60">
+                    <td className="py-2.5 pr-4 text-foreground">{row.label}</td>
+                    <td className="py-2.5 pr-4 text-muted">{row.region}</td>
+                    <td className="py-2.5 pr-4 text-muted">
+                      {row.beachheads.length
+                        ? row.beachheads.map((b) => b.name).join(', ')
+                        : '—'}
                     </td>
-                    <td className="py-3 pr-4 tabular-nums font-medium">
-                      {formatGBP(totalArr * (row.m / 100) * (usPct / 100))}
-                    </td>
-                    <td className="py-3 tabular-nums font-semibold">
-                      {formatGBP(totalArr * (row.m / 100))}
+                    <td className="py-2.5 pr-4 tabular-nums">{row.pct}%</td>
+                    <td className="py-2.5 tabular-nums font-medium text-right">
+                      {formatGBP(row.arr)}
                     </td>
                   </tr>
                 ))}
                 <tr>
-                  <td className="py-3 pr-4 text-muted">Total</td>
-                  <td className="py-3 pr-4 tabular-nums font-semibold">{formatGBP(ukArr)}</td>
-                  <td className="py-3 pr-4 tabular-nums font-semibold">{formatGBP(usArr)}</td>
-                  <td className="py-3 tabular-nums font-bold text-accent">
+                  <td colSpan={4} className="py-3 text-muted">
+                    Total
+                  </td>
+                  <td className="py-3 tabular-nums font-bold text-accent text-right">
                     {formatGBP(totalArr)}
                   </td>
                 </tr>

@@ -13,9 +13,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
-const STORAGE_KEY = 'checkit-gtm-planning-v1';
-const PIPELINE_MULTIPLE = 5;
-const CURRENT_QUALIFIED_PIPELINE = 1_900_000;
+const STORAGE_KEY = 'checkit-gtm-planning-v2';
 
 type Rep = {
   id: string;
@@ -30,6 +28,9 @@ type PlanState = {
   renewal: number;
   medicalPct: number;
   ukPct: number;
+  closeRatePct: number; // opp → close
+  avgDealSize: number;
+  currentPipeline: number;
   reps: Rep[];
 };
 
@@ -39,6 +40,9 @@ const DEFAULT_STATE: PlanState = {
   renewal: 0,
   medicalPct: 50,
   ukPct: 50,
+  closeRatePct: 20,
+  avgDealSize: 50_000,
+  currentPipeline: 1_900_000,
   reps: [
     { id: 'jen', name: 'Jen', quota: 600_000, isOpen: false },
     { id: 'ae-2', name: 'AE 2', quota: 600_000, isOpen: false },
@@ -142,8 +146,10 @@ export default function GtmPlanningPage() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as PlanState;
-        if (parsed?.reps?.length === 4) setState({ ...DEFAULT_STATE, ...parsed });
+        const parsed = JSON.parse(raw) as Partial<PlanState>;
+        if (parsed?.reps?.length === 4) {
+          setState({ ...DEFAULT_STATE, ...parsed, reps: parsed.reps });
+        }
       }
     } catch {
       /* ignore */
@@ -170,8 +176,12 @@ export default function GtmPlanningPage() {
   const ukArr = totalArr * (state.ukPct / 100);
   const usArr = totalArr * (usPct / 100);
 
-  const pipelineNeeded = state.netNew * PIPELINE_MULTIPLE;
-  const pipelineGap = Math.max(0, pipelineNeeded - CURRENT_QUALIFIED_PIPELINE);
+  const closeRate = Math.max(state.closeRatePct, 1) / 100;
+  const coverageMultiple = 100 / Math.max(state.closeRatePct, 1);
+  const pipelineNeeded = state.netNew * coverageMultiple;
+  const pipelineGap = Math.max(0, pipelineNeeded - state.currentPipeline);
+  const oppsNeeded =
+    state.avgDealSize > 0 ? Math.ceil(state.netNew / state.avgDealSize / closeRate) : 0;
 
   const setArrType = (key: 'netNew' | 'expansion' | 'renewal', value: number) => {
     setState((prev) => {
@@ -232,11 +242,11 @@ export default function GtmPlanningPage() {
       '£1.8m net-new / new-logo ARR target',
       '£600k expansion from existing customers (historical)',
       '£600k new + expansion per AE × 4 seats (3 FT + 1 open)',
-      '5:1 pipeline coverage on net-new → £9.5m needed',
-      'Current FY28 qualified pipeline ~£1.9m',
-      'Opp→close ~20% · target ACV ~£50k',
+      `Opp→close ${state.closeRatePct}% ≈ ${coverageMultiple.toFixed(1)}:1 coverage`,
+      `Current FY28 qualified pipeline ~${formatCompact(state.currentPipeline)}`,
+      `Target ACV ~${formatCompact(state.avgDealSize)}`,
     ],
-    []
+    [state.closeRatePct, state.currentPipeline, state.avgDealSize, coverageMultiple]
   );
 
   return (
@@ -490,31 +500,54 @@ export default function GtmPlanningPage() {
               <TrendingUp className="w-5 h-5 text-accent" />
               <h2 className="font-semibold text-foreground">Pipeline check</h2>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between gap-2">
-                <span className="text-muted">Coverage multiple</span>
-                <span className="font-medium">{PIPELINE_MULTIPLE}:1</span>
-              </div>
+            <SliderRow
+              label="Opp → close conversion"
+              value={state.closeRatePct}
+              min={5}
+              max={40}
+              step={1}
+              onChange={(v) => setState((p) => ({ ...p, closeRatePct: v }))}
+              display={`${state.closeRatePct}% → ${coverageMultiple.toFixed(1)}:1`}
+              hint="Steve model: ~20–23% (5:1 coverage)"
+            />
+            <SliderRow
+              label="Avg deal size (ACV)"
+              value={state.avgDealSize}
+              min={20_000}
+              max={100_000}
+              step={5_000}
+              onChange={(v) => setState((p) => ({ ...p, avgDealSize: v }))}
+              display={formatGBP(state.avgDealSize)}
+              hint="YTD ~£40–46k · target ~£50k"
+            />
+            <SliderRow
+              label="Current qualified pipeline"
+              value={state.currentPipeline}
+              min={0}
+              max={12_000_000}
+              step={100_000}
+              onChange={(v) => setState((p) => ({ ...p, currentPipeline: v }))}
+              display={formatGBP(state.currentPipeline)}
+            />
+            <div className="space-y-3 text-sm pt-1 border-t border-border">
               <div className="flex justify-between gap-2">
                 <span className="text-muted">Pipeline needed</span>
                 <span className="font-medium tabular-nums">{formatGBP(pipelineNeeded)}</span>
               </div>
               <div className="flex justify-between gap-2">
-                <span className="text-muted">FY28 qualified (now)</span>
-                <span className="font-medium tabular-nums">
-                  {formatGBP(CURRENT_QUALIFIED_PIPELINE)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-2 pt-2 border-t border-border">
                 <span className="text-muted">Gap to fill</span>
                 <span className="font-semibold text-amber-400 tabular-nums">
                   {formatGBP(pipelineGap)}
                 </span>
               </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Opps needed</span>
+                <span className="font-medium tabular-nums">{oppsNeeded}</span>
+              </div>
             </div>
             <p className="text-xs text-muted">
-              At ~£50k ACV and 20% close, net-new {formatCompact(state.netNew)} ≈{' '}
-              {Math.ceil(state.netNew / 50_000 / 0.2)} opportunities needed.
+              Net-new {formatCompact(state.netNew)} ÷ {formatCompact(state.avgDealSize)} ÷{' '}
+              {state.closeRatePct}% close ≈ {oppsNeeded} opportunities.
             </p>
           </section>
         </div>

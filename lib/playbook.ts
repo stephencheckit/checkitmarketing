@@ -12,6 +12,8 @@ export interface Persona {
   role: string; // what they own, in one line
   pains: string[];
   caresAbout: string[]; // what a win looks like for them
+  /** Job titles the BDR should search for in Apollo to find this persona */
+  apolloTitleFilters?: string[];
 }
 
 export interface UseCase {
@@ -33,6 +35,20 @@ export interface Cadence {
   steps: CadenceStep[];
 }
 
+/**
+ * Curated account for an ABM vertical. Pushed into Apollo via
+ * /accounts/bulk_create with append_label_names (see lib/apollo.ts).
+ */
+export interface TargetAccount {
+  name: string;
+  domain: string;
+  segment: string; // vertical-defined bucket (e.g. 'plasma', 'blood', 'opo')
+  tier: 1 | 2 | 3; // 1 = top priority, 3 = fill-in
+  relationship: 'prospect' | 'customer';
+  /** One-line note: footprint + why now. Include 'verify domain' if uncertain. */
+  note: string;
+}
+
 export interface Vertical {
   id: string;
   name: string;
@@ -49,6 +65,10 @@ export interface Vertical {
   talkingPoints: string[];
   objections: { objection: string; response: string }[];
   cadences: Cadence[];
+  /** Optional: curated target accounts (ABM). Pushed to Apollo on demand. */
+  targetAccounts?: TargetAccount[];
+  /** Optional: things the BDR should research per account before outreach */
+  triggers?: string[];
 }
 
 export const PLAYBOOK: Vertical[] = [
@@ -640,139 +660,496 @@ Who owns food safety compliance across stores day-to-day? Happy to speak with th
   // ==========================================================================
   {
     id: 'us-plasma',
-    name: 'US Plasma & Blood Centers',
+    name: 'US Medical Monitoring (Plasma, Blood, Biorepositories, OPOs)',
     region: 'US',
     status: 'active',
     summary:
-      'Continuous monitoring for plasma/blood collection centers, laboratories, and biorepositories. Life-critical cold chain, FDA 21 CFR Part 11 audit trails, highly consolidated market (CSL Plasma, Grifols/Biomat, Octapharma, BioLife run hundreds of centers from a few corporate decisions). ABM play against ~20–30 organizations — needs an Apollo account list built.',
-    apolloAccountLists: [],
-    apolloContactLists: [],
+      'ABM motion against ~60 named US organizations that own the cold chain for irreplaceable biological material: plasma collection networks, community blood centers, biorepositories/reference labs/CROs, and organ procurement organizations. Corporate quality and operations own the decision at the network level, not the site. This is displacement selling — most accounts already have a monitoring vendor (Rees, Sensoscientific, Primex, TempGenius, Sonicu, Vaisala, Elpro, Dickson, Monnit) — so outreach should be trigger-anchored (FDA 483s, network expansion, incumbent renewal, new Quality leadership) rather than generic pitching.',
+    apolloAccountLists: [
+      'US Medical — Target Accounts',
+      'US Medical — Customers (do not sequence)',
+    ],
+    apolloContactLists: [
+      'US Medical — VP Quality',
+      'US Medical — Director Operations',
+      'US Medical — Facilities / Biomed / Metrology',
+      'US Medical — Biorepository / Lab Director',
+    ],
+    triggers: [
+      'FDA 483 observation or Warning Letter in the last 12 months (public on fda.gov)',
+      'Announced new center, lab, or biorepository openings',
+      'M&A, network consolidation, or private equity activity',
+      'New VP/Director of Quality or Operations (LinkedIn job change in last 90 days)',
+      'Monitoring vendor renewal or contract end (ask on discovery)',
+      'Job postings for Quality/Compliance, Facilities, or Biomedical Engineering roles',
+      'Recent CAP, AABB, or ISO accreditation cycle',
+    ],
     personas: [
       {
-        title: 'VP Quality / Regulatory Affairs',
-        role: 'Owns FDA compliance and quality systems across all centers',
+        title: 'VP / Director Quality & Regulatory Affairs',
+        role: 'Owns FDA compliance, validation, and quality systems across the network',
         pains: [
-          'FDA 21 CFR Part 11 requires validated, tamper-proof audit trails — patchwork or manual systems are a finding waiting to happen',
-          'A single undetected freezer failure can destroy irreplaceable, high-value product (plasma units, biospecimens)',
-          'Hundreds of centers means hundreds of local procedures unless monitoring is standardized centrally',
+          '21 CFR Part 11 requires validated, tamper-proof electronic records — patchwork or manual systems are a 483 observation waiting to happen',
+          'A single undetected freezer failure destroys irreplaceable, high-value product (plasma units, biospecimens, tissues)',
+          'Hundreds of centers means hundreds of local SOPs unless monitoring is standardized centrally',
           'Calibration and maintenance evidence across the network is a constant audit burden',
         ],
         caresAbout: [
-          'Enterprise-wide compliance from one system, one validation',
+          'Enterprise-wide compliance from one validated system',
           'Zero unexplained excursions with 24/7 alarm management',
-          'Vendor takes the hardware/calibration risk, not internal teams',
+          'Vendor takes hardware, calibration, and validation risk, not internal QA',
+        ],
+        apolloTitleFilters: [
+          'VP Quality',
+          'Vice President Quality',
+          'Director Quality',
+          'Senior Director Quality',
+          'VP Regulatory Affairs',
+          'Director Regulatory Affairs',
+          'Director Quality Assurance',
+          'Head of Quality',
+          'Chief Quality Officer',
         ],
       },
       {
-        title: 'Director of Operations / Facilities (network-wide)',
-        role: 'Runs center operations, equipment, and expansion across the network',
+        title: 'VP / Director Operations (network)',
+        role: 'Runs center/lab operations, equipment, and expansion across the network',
         pains: [
-          'Center staff turnover — monitoring can\u2019t depend on local diligence',
-          'New center openings need monitoring live on day one, on schedule',
-          'Corporate IT doesn\u2019t want hundreds of sites\u2019 sensors on the network',
+          'Center staff turnover — monitoring cannot depend on local diligence',
+          'New center openings need monitoring live on day one, on schedule, no punch list',
+          'Corporate IT does not want hundreds of sites\u2019 sensors on the corporate network',
+          'Capex per site kills the rollout math; procurement wants opex predictability',
         ],
         caresAbout: [
           'Predictable multi-site rollout with vendor-owned installation',
           'No IT dependency — monitoring independent of corporate infrastructure',
           'Subscription pricing, no capex per center',
         ],
+        apolloTitleFilters: [
+          'VP Operations',
+          'Vice President Operations',
+          'Director Operations',
+          'Senior Director Operations',
+          'Director Center Operations',
+          'Director Network Operations',
+          'COO',
+          'Chief Operating Officer',
+        ],
+      },
+      {
+        title: 'Facilities / Biomedical Engineering / Metrology',
+        role: 'Keeps freezers, fridges, LN2, incubators, and calibration programs running',
+        pains: [
+          'Alarm fatigue and false positives from legacy monitoring',
+          'Owning calibration in-house is expensive and hard to staff',
+          'Local IT will not allow another agent or VLAN change per site',
+          'Vendor SLAs on hardware replacement are the difference between a save and a loss',
+        ],
+        caresAbout: [
+          'Sensors on a dedicated wireless mesh — no IT ticket per site',
+          'Annual on-site NIST-traceable calibration included, not billed separately',
+          'One number to call, one vendor accountable, hardware failure is theirs',
+        ],
+        apolloTitleFilters: [
+          'Director Facilities',
+          'Facilities Manager',
+          'Director Biomedical Engineering',
+          'Biomed Manager',
+          'Metrology Manager',
+          'Director Metrology',
+          'Calibration Manager',
+          'Director Engineering',
+        ],
+      },
+      {
+        title: 'Biorepository / Laboratory Director',
+        role: 'Scientific and operational owner of a biorepository or reference lab',
+        pains: [
+          'Irreplaceable specimens: one ULT or LN2 excursion is a scientific and financial loss',
+          'Sponsor/client audits require continuous evidence, not spot checks',
+          'CAP, CLIA, and ISO 20387 (biobanking) all want documented environmental control',
+          'Chain-of-custody and data integrity questions from every new sponsor',
+        ],
+        caresAbout: [
+          'Continuous, tamper-evident environmental record per specimen location',
+          'Sponsor-ready reports without a scramble',
+          'One platform across ULT, LN2, fridge, incubator, and ambient rooms',
+        ],
+        apolloTitleFilters: [
+          'Director Biorepository',
+          'Biorepository Manager',
+          'Laboratory Director',
+          'Director Laboratory Operations',
+          'Director Biobank',
+          'Biobank Manager',
+          'Director Specimen Management',
+        ],
       },
     ],
     useCases: [
-      { name: 'Freezer/fridge continuous monitoring', detail: 'Plasma freezers, refrigerators, incubators monitored 24/7 with alarm management' },
-      { name: 'FDA 21 CFR Part 11 audit trails', detail: 'Compliant, validated records with long-term data integrity' },
-      { name: 'Annual on-site calibration', detail: 'Checkit\u2019s own engineers handle calibration with full traceability' },
-      { name: 'Enterprise dashboards', detail: 'Every center visible from corporate quality — one standard nationwide' },
-      { name: 'Asset Intelligence', detail: 'Machine learning flags underperforming assets before they fail' },
+      { name: 'Freezer / fridge / ULT / LN2 continuous monitoring', detail: 'Every temperature-critical asset monitored 24/7 with alarm escalation until acknowledged' },
+      { name: '21 CFR Part 11 electronic records', detail: 'Validated, tamper-evident audit trails with long-term data integrity' },
+      { name: 'NIST-traceable annual on-site calibration', detail: 'Checkit\u2019s own US-based engineers handle calibration; traceability documentation included' },
+      { name: 'Enterprise dashboards', detail: 'Every center or lab visible from corporate quality — one standard nationwide' },
+      { name: 'Asset Intelligence', detail: 'Machine learning flags underperforming freezers before they fail' },
+      { name: 'Sponsor / accreditor evidence packs', detail: 'CAP, CLIA, AABB, ISO 17025, ISO 20387 documentation on demand' },
     ],
     proofPoints: [
-      '800+ successful US installations, including Grifols, NAMSA, Quest Diagnostics, and the Center for Organ Recovery & Education',
+      '800+ successful US installations, including Grifols, Quest Diagnostics, NAMSA, and the Center for Organ Recovery & Education',
       'In-house engineers across the continental US — 50 years combined installation experience; guaranteed installation schedules',
       'Dedicated wireless mesh network — sensors never touch corporate IT',
-      'Full subscription: hardware, warranty, annual on-site calibration, and support included; hardware failure risk sits with Checkit',
-      '24x7x365 support and alarm management',
+      'Full subscription: hardware, warranty, annual NIST-traceable calibration, and 24x7 alarm management included; hardware failure risk sits with Checkit',
+      'Multi-site specialists — the same validated system across every site in the network',
     ],
     talkingPoints: [
-      'Lead with proof: we already run monitoring at scale for Grifols and Quest — this is our home turf, not an experiment.',
-      'The Part 11 angle: validated audit trails and data integrity are built in, not bolted on.',
-      'The subscription flips the risk: no capex per center, hardware failure is Checkit\u2019s problem, and calibration is included — that\u2019s a procurement story corporate finance likes.',
-      'This is an ABM motion: ~20–30 target organizations control the market. Research each account\u2019s expansion plans and recent FDA inspection history before outreach.',
+      'Lead with proof: Grifols, Quest, NAMSA, CORE — we already run monitoring at scale for the biggest names in the US market, this is not an experiment.',
+      'Displacement is the reality. Ask what they have, ask what they wish it did, log the incumbent. Do not pitch until you know who you are replacing.',
+      'The Part 11 angle: validated electronic records and data integrity are built in, not bolted on — the compliance story sells to VP Quality without a demo.',
+      'The subscription flips the risk: no capex per site, hardware failure is Checkit\u2019s problem, calibration is included — a procurement story that finance likes.',
+      'This is a ~60-account ABM motion. Research each account\u2019s recent FDA inspection history, expansion plans, and quality leadership before outreach. Volume prospecting is the wrong tool here.',
     ],
     objections: [
       {
         objection: 'We have a monitoring vendor already.',
-        response: 'Most do — the question is whether it\u2019s one validated system across every center or an inherited patchwork, and who carries the hardware and calibration burden. Our subscription moves that risk to us, and switching is an installation project we own end to end.',
+        response: 'Most do. The question is whether it is one validated system across every site or an inherited patchwork, and who carries the hardware and calibration burden. Our subscription moves that risk to us, and switching is an installation project we own end to end.',
       },
       {
         objection: 'Corporate IT review will take a year.',
         response: 'Our sensors run on a dedicated wireless mesh and never touch your corporate network — that typically removes the heaviest part of the IT security review.',
       },
       {
-        objection: 'We\u2019re opening centers too fast to add a project.',
-        response: 'That\u2019s the case for us: we guarantee installation schedules with our own engineers, so monitoring is live when the center opens — not retrofitted after.',
+        objection: 'We are opening centers too fast to add a project.',
+        response: 'That is the case for us: we guarantee installation schedules with our own US engineers, so monitoring is live when the center opens — not retrofitted after.',
+      },
+      {
+        objection: 'We just passed our last audit.',
+        response: 'Good — that is the moment to look, not after the next 483. Our customers switched between audit cycles specifically so the next inspection had no monitoring findings to defend.',
+      },
+      {
+        objection: 'We validated our current system, revalidating is too much work.',
+        response: 'We bring the validation package and our engineers do the on-site work, so the burden on your QA team is much lower than teams expect. Happy to walk you through what a validated cutover looks like at a plasma or lab reference.',
       },
     ],
     cadences: [
+      // ----------------------------------------------------------------------
       {
-        name: 'Playbook — US Plasma — VP Quality',
-        persona: 'VP Quality / Regulatory Affairs',
+        name: 'US Medical \u2014 VP Quality',
+        persona: 'VP / Director Quality & Regulatory Affairs',
         steps: [
           {
             waitDays: 0,
             channel: 'email',
-            subject: 'Monitoring across {{account.name}} centers — one validated system',
+            subject: 'Monitoring across {{account.name}} — one validated system',
             body: `Hi {{first_name}},
 
 Checkit runs continuous environmental monitoring for some of the largest plasma and laboratory operators in the US — Grifols, Quest Diagnostics, NAMSA — with 800+ installations nationwide.
 
-For a network like {{account.name}}, that means one validated system across every center: 24/7 alarm management, FDA 21 CFR Part 11 audit trails, and annual on-site calibration by our own engineers, all on a single subscription with no capex per center.
+For a network like {{account.name}}, that means one validated system across every site: 24/7 alarm management, 21 CFR Part 11 electronic records, and annual NIST-traceable on-site calibration by our own engineers, on a single subscription with no capex per site.
 
-Worth a short call to compare against how your centers handle monitoring today?
+Worth a short call to compare against how {{account.name}} handles monitoring today?
 
 {{sender_first_name}}`,
           },
           {
             waitDays: 3,
             channel: 'email',
-            subject: 'Re: Monitoring across {{account.name}} centers',
+            subject: 'Re: Monitoring across {{account.name}}',
             body: `Hi {{first_name}},
 
 Quick follow-up with the risk math: one undetected freezer failure destroys irreplaceable product, and one weak audit trail is a 483 observation waiting for the next inspection.
 
-Two things our plasma customers value most:
-1. Sensors run on a dedicated wireless mesh — nothing touches your corporate network, which simplifies IT review dramatically.
-2. Hardware failure risk sits with us — the subscription includes hardware, warranty, calibration, and 24/7 support.
+Two things our medical customers value most:
+1. Sensors run on a dedicated wireless mesh — nothing touches your corporate network, which shortens IT security review dramatically.
+2. Hardware failure risk sits with us — the subscription includes hardware, warranty, calibration, and 24/7 alarm management.
 
 Happy to share a short overview or reference details.
 
 {{sender_first_name}}`,
           },
           {
-            waitDays: 5,
+            waitDays: 2,
+            channel: 'linkedin',
+            subject: 'Connect + short note',
+            body: `Connection request note:
+
+Hi {{first_name}} — I lead US medical monitoring for Checkit; we run continuous monitoring for Grifols, Quest, and NAMSA. Sending a note over on email about {{account.name}} — would value your view even if the timing is not right. {{sender_first_name}}`,
+          },
+          {
+            waitDays: 2,
+            channel: 'call',
+            subject: 'Call — VP Quality',
+            body: `Opening:
+"Hi {{first_name}}, this is {{sender_first_name}} from Checkit — quick call, not a pitch. We run continuous environmental monitoring at Grifols, Quest Diagnostics, and NAMSA, and I wanted to see how {{account.name}} handles monitoring across its sites today."
+
+Discovery to run if they engage:
+- Who owns monitoring at the corporate level vs the site?
+- Which vendor is in place today, and how long is left on the contract?
+- Any findings on monitoring or data integrity in the last two audits?
+- Are you opening or acquiring sites this year?
+
+Ask for the meeting, not the demo:
+"Would a 20-minute working session with me and one of our regulatory engineers make sense — we can compare notes against how Grifols and Quest handle Part 11 at network scale."`,
+          },
+          {
+            waitDays: 3,
             channel: 'email',
-            subject: 'New center openings',
+            subject: 'How Grifols standardized monitoring across their US network',
             body: `Hi {{first_name}},
 
-One more angle: if {{account.name}} is opening centers this year, monitoring should be live on opening day — not retrofitted after.
+Short one. Grifols runs Checkit across a large US footprint because a single vendor, one validated system, and included calibration is easier to defend to FDA than a patchwork built up over years of expansion.
 
-We employ our own engineers across the continental US and guarantee installation schedules. Networks use us specifically because rollout is predictable at scale.
-
-If there's someone on your team closer to center operations or facilities, happy to speak with them instead.
+If any of that applies at {{account.name}} — network standardization, calibration burden, audit prep — happy to make an intro to their team or share the reference details in writing.
 
 {{sender_first_name}}`,
           },
           {
-            waitDays: 5,
+            waitDays: 4,
             channel: 'email',
             subject: 'Closing the loop',
             body: `Hi {{first_name}},
 
-Last note from me. When monitoring comes under review — an inspection finding, a vendor renewal, or an expansion push — we're easy to find, and we can share plasma-specific references.
+Last note from me. When monitoring comes under review at {{account.name}} — an inspection finding, a vendor renewal, or an expansion push — we are easy to find, and we can share medical-specific references.
 
 {{sender_first_name}}`,
           },
         ],
       },
+      // ----------------------------------------------------------------------
+      {
+        name: 'US Medical \u2014 Director Operations',
+        persona: 'VP / Director Operations (network)',
+        steps: [
+          {
+            waitDays: 0,
+            channel: 'email',
+            subject: 'Monitoring at every {{account.name}} site, live on day one',
+            body: `Hi {{first_name}},
+
+Checkit installs and runs continuous monitoring for large US medical networks — Grifols, Quest Diagnostics, NAMSA, CORE — with 800+ US installations.
+
+For an operator opening or acquiring sites, that means monitoring live on opening day, no site-by-site vendor variation, and no capex per center: our own US engineers handle install, calibration, and hardware replacement under a single subscription.
+
+Worth a short call on how {{account.name}} handles site rollout today?
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 3,
+            channel: 'email',
+            subject: 'Re: Monitoring at every {{account.name}} site',
+            body: `Hi {{first_name}},
+
+Following up with the operational math:
+
+- Sensors run on a dedicated wireless mesh — no site-by-site IT ticket, no VLAN change, no agent on your network.
+- Hardware, warranty, calibration, and 24/7 alarm management are one subscription line — no capex per site, predictable per-site opex for finance.
+- We employ our own US engineers and guarantee installation schedules, so monitoring is live when the site opens, not retrofitted after.
+
+Happy to share how Grifols and NAMSA run this at scale.
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 2,
+            channel: 'linkedin',
+            subject: 'Connect + short note',
+            body: `Connection request note:
+
+Hi {{first_name}} — Checkit runs multi-site monitoring for Grifols, Quest, NAMSA and CORE. Curious how {{account.name}} handles site rollout and monitoring standardization today. {{sender_first_name}}`,
+          },
+          {
+            waitDays: 2,
+            channel: 'call',
+            subject: 'Call — Director Operations',
+            body: `Opening:
+"Hi {{first_name}}, this is {{sender_first_name}} from Checkit. Quick call — we run continuous monitoring for Grifols, Quest, NAMSA and CORE, and I wanted to see how {{account.name}} handles monitoring across its sites."
+
+Discovery:
+- How many sites, and how many opening in the next 12 months?
+- Who installs and calibrates monitoring today — internal or vendor?
+- Is monitoring standardized across the network or site-specific?
+- What is the current vendor and when is renewal?
+
+Ask:
+"Would 20 minutes with me and one of our rollout engineers be useful — I can share exactly how we sequence installs across networks the size of {{account.name}}."`,
+          },
+          {
+            waitDays: 3,
+            channel: 'email',
+            subject: 'Rollout playbook from a similar network',
+            body: `Hi {{first_name}},
+
+Short one. Multi-site medical operators use us for one reason above all: predictable rollout. Our own US engineers own install, calibration, and hardware SLA — so opening 5, 20, or 100 sites this year does not add project management load to your team.
+
+If any of that resonates for {{account.name}}, happy to walk through what a rollout schedule looks like.
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 4,
+            channel: 'email',
+            subject: 'Closing the loop',
+            body: `Hi {{first_name}},
+
+Last note. When {{account.name}} is next reviewing monitoring vendors — at renewal, ahead of an opening wave, or during a network standardization push — we are easy to find.
+
+{{sender_first_name}}`,
+          },
+        ],
+      },
+      // ----------------------------------------------------------------------
+      {
+        name: 'US Medical \u2014 Biorepository / Lab Director',
+        persona: 'Biorepository / Laboratory Director',
+        steps: [
+          {
+            waitDays: 0,
+            channel: 'email',
+            subject: 'Environmental record for every specimen location at {{account.name}}',
+            body: `Hi {{first_name}},
+
+Checkit runs continuous environmental monitoring for US biorepositories, reference labs, and CROs — including Quest Diagnostics and NAMSA, with 800+ US installations.
+
+For a biorepository, that means a tamper-evident, continuous environmental record per ULT, LN2, fridge, incubator, and ambient room — sponsor-ready without a scramble, and aligned to 21 CFR Part 11, CAP, and ISO 20387 expectations.
+
+Worth 20 minutes to compare against what {{account.name}} has in place today?
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 3,
+            channel: 'email',
+            subject: 'Re: Environmental record for every specimen location',
+            body: `Hi {{first_name}},
+
+Following up. Three things biorepository directors tell us matter most:
+
+1. One platform across ULT, LN2, fridge, incubator, and ambient — no separate systems per asset type.
+2. Sponsor and accreditor evidence available on demand, not built by hand for each audit.
+3. Sensors on a dedicated wireless mesh — no IT ticket per specimen room, no VLAN change.
+
+Included in the subscription: hardware, annual NIST-traceable calibration by our own engineers, and 24/7 alarm management.
+
+Happy to share a short overview or an intro to a comparable reference.
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 2,
+            channel: 'linkedin',
+            subject: 'Connect + short note',
+            body: `Connection request note:
+
+Hi {{first_name}} — we run environmental monitoring for large US biorepositories and reference labs (Quest, NAMSA). Sending a short note about {{account.name}} on email — would value your view. {{sender_first_name}}`,
+          },
+          {
+            waitDays: 2,
+            channel: 'call',
+            subject: 'Call — Biorepository / Lab Director',
+            body: `Opening:
+"Hi {{first_name}}, {{sender_first_name}} from Checkit — we monitor environmental conditions for Quest, NAMSA, and a number of biorepositories. I wanted to ask how {{account.name}} handles continuous environmental evidence for specimen storage today."
+
+Discovery:
+- Asset mix: how many ULT, LN2, fridge, incubator, ambient rooms?
+- Current monitoring vendor and how it handles sponsor audits.
+- Any specimen losses in the last 24 months and root cause.
+- CAP, CLIA, or ISO 20387 cycle coming up?
+
+Ask:
+"Would it make sense to compare what your current system produces at audit against what our biorepository customers hand over — 20 minutes, screen-share."`,
+          },
+          {
+            waitDays: 3,
+            channel: 'email',
+            subject: 'How a similar biorepository handles sponsor audits',
+            body: `Hi {{first_name}},
+
+Short one. Our biorepository customers stopped building audit packs by hand — the platform assembles per-asset environmental history, alarm response, and calibration evidence, ready to hand to a sponsor or CAP inspector.
+
+If audit prep is a real cost at {{account.name}}, happy to walk through what that looks like.
+
+{{sender_first_name}}`,
+          },
+          {
+            waitDays: 4,
+            channel: 'email',
+            subject: 'Closing the loop',
+            body: `Hi {{first_name}},
+
+Last note. If {{account.name}} is looking at monitoring — new sponsor requirements, an expansion, or a specimen loss investigation — we are easy to find.
+
+{{sender_first_name}}`,
+          },
+        ],
+      },
+    ],
+    targetAccounts: [
+      // Plasma collection networks --------------------------------------------
+      { name: 'CSL Plasma', domain: 'cslplasma.com', segment: 'plasma', tier: 1, relationship: 'prospect', note: 'Largest US plasma collector, ~300+ centers; corporate quality/ops decision.' },
+      { name: 'Grifols', domain: 'grifols.com', segment: 'plasma', tier: 1, relationship: 'customer', note: 'Customer — expansion + reference. Do not cold-sequence.' },
+      { name: 'Biomat USA (Grifols)', domain: 'grifolsplasma.com', segment: 'plasma', tier: 1, relationship: 'customer', note: 'Grifols US plasma brand. Customer relationship — verify domain during push.' },
+      { name: 'Octapharma Plasma', domain: 'octapharmaplasma.com', segment: 'plasma', tier: 1, relationship: 'customer', note: 'Customer — expansion + reference. Do not cold-sequence.' },
+      { name: 'BioLife Plasma Services (Takeda)', domain: 'biolifeplasma.com', segment: 'plasma', tier: 1, relationship: 'prospect', note: 'Takeda subsidiary, ~200+ US centers; corporate decision at Takeda BioLife HQ.' },
+      { name: 'KEDPLASMA (Kedrion)', domain: 'kedplasma.com', segment: 'plasma', tier: 2, relationship: 'prospect', note: 'Kedrion US plasma arm, ~30 centers.' },
+      { name: 'ImmunoTek Bio Centers', domain: 'immunotek.com', segment: 'plasma', tier: 2, relationship: 'prospect', note: 'US-owned plasma developer/operator; active expansion.' },
+      { name: 'BPL Plasma', domain: 'bplplasma.com', segment: 'plasma', tier: 2, relationship: 'prospect', note: 'Bio Products Laboratory US collection arm.' },
+      { name: 'ADMA BioCenters', domain: 'admabiocenters.com', segment: 'plasma', tier: 2, relationship: 'prospect', note: 'ADMA Biologics collection network.' },
+      { name: 'GCAM Plasma', domain: 'gcamplasma.com', segment: 'plasma', tier: 3, relationship: 'prospect', note: 'Verify domain during push; small independent collector.' },
+      { name: 'Olgam Life', domain: 'olgamlife.com', segment: 'plasma', tier: 3, relationship: 'prospect', note: 'NYC-area collector; verify domain during push.' },
+      { name: 'Freedom Plasma', domain: 'freedomplasma.com', segment: 'plasma', tier: 3, relationship: 'prospect', note: 'Regional collector; verify domain during push.' },
+
+      // Community blood centers ----------------------------------------------
+      { name: 'American Red Cross Biomedical Services', domain: 'redcrossblood.org', segment: 'blood', tier: 1, relationship: 'prospect', note: 'Largest US blood supplier; multi-region operations.' },
+      { name: 'Vitalant', domain: 'vitalant.org', segment: 'blood', tier: 1, relationship: 'prospect', note: 'One of the largest independent blood centers, multi-state.' },
+      { name: 'OneBlood', domain: 'oneblood.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'Southeast US, multi-state.' },
+      { name: 'New York Blood Center Enterprises', domain: 'nybc.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'NYBCe covers NY/NJ + acquired centers.' },
+      { name: 'Versiti', domain: 'versiti.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'Blood + research organization, multi-state.' },
+      { name: 'LifeSouth Community Blood Centers', domain: 'lifesouth.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'Southeast US, multi-state.' },
+      { name: 'Bloodworks Northwest', domain: 'bloodworksnw.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'PNW; research + collection.' },
+      { name: 'Gulf Coast Regional Blood Center', domain: 'giveblood.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'Houston region; verify domain during push.' },
+      { name: 'Carter BloodCare', domain: 'carterbloodcare.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'North Texas.' },
+      { name: 'ImpactLife', domain: 'bloodcenter.org', segment: 'blood', tier: 2, relationship: 'prospect', note: 'Formerly Mississippi Valley Regional Blood Center; verify domain during push.' },
+      { name: 'San Diego Blood Bank', domain: 'sandiegobloodbank.org', segment: 'blood', tier: 3, relationship: 'prospect', note: 'Southern CA regional.' },
+      { name: 'Stanford Blood Center', domain: 'stanfordbloodcenter.org', segment: 'blood', tier: 3, relationship: 'prospect', note: 'Stanford-affiliated.' },
+      { name: 'Hoxworth Blood Center', domain: 'hoxworth.org', segment: 'blood', tier: 3, relationship: 'prospect', note: 'University of Cincinnati blood center.' },
+      { name: 'LifeServe Blood Center', domain: 'lifeservebloodcenter.org', segment: 'blood', tier: 3, relationship: 'prospect', note: 'Iowa/Nebraska/SD regional.' },
+      { name: 'Blood Assurance', domain: 'bloodassurance.org', segment: 'blood', tier: 3, relationship: 'prospect', note: 'TN/GA/AL/VA/KY/NC regional.' },
+
+      // Biorepositories / reference labs / CROs ------------------------------
+      { name: 'BioIVT', domain: 'bioivt.com', segment: 'biorepository', tier: 1, relationship: 'prospect', note: 'Live RFP response in repo (rfp/); highest-intent account.' },
+      { name: 'Quest Diagnostics', domain: 'questdiagnostics.com', segment: 'biorepository', tier: 1, relationship: 'customer', note: 'Customer — expansion + reference. Do not cold-sequence.' },
+      { name: 'NAMSA', domain: 'namsa.com', segment: 'biorepository', tier: 1, relationship: 'customer', note: 'Customer — expansion + reference. Do not cold-sequence.' },
+      { name: 'Labcorp', domain: 'labcorp.com', segment: 'biorepository', tier: 1, relationship: 'prospect', note: 'Reference lab giant; expansion via BioReference acquisition.' },
+      { name: 'Charles River Laboratories', domain: 'criver.com', segment: 'biorepository', tier: 1, relationship: 'prospect', note: 'Global CRO with US biorepository footprint.' },
+      { name: 'Precision for Medicine', domain: 'precisionformedicine.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Specimen management + CRO services.' },
+      { name: 'Discovery Life Sciences', domain: 'dls.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Specimen + genomics provider; verify domain during push (also discoverylifesciences.com).' },
+      { name: 'Sanguine Biosciences', domain: 'sanguinebio.com', segment: 'biorepository', tier: 3, relationship: 'prospect', note: 'Distributed specimen collection.' },
+      { name: 'Coriell Institute for Medical Research', domain: 'coriell.org', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Biobanking + cell repositories.' },
+      { name: 'ATCC', domain: 'atcc.org', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Global biological resource center.' },
+      { name: 'Infinity BiologiX (IBX)', domain: 'infinitybiologix.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'RUCDR spinout; large biorepository operations.' },
+      { name: 'Fisher BioServices (Thermo Fisher)', domain: 'fisherbioservices.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Cold chain + biorepository services arm.' },
+      { name: 'Eurofins US', domain: 'eurofinsus.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'US reference labs + CRO footprint; verify best domain during push.' },
+      { name: 'ARUP Laboratories', domain: 'aruplab.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'National reference lab, Utah HQ.' },
+      { name: 'Mayo Clinic Laboratories', domain: 'mayocliniclabs.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Reference lab arm of Mayo Clinic.' },
+      { name: 'BioReference Laboratories', domain: 'bioreference.com', segment: 'biorepository', tier: 3, relationship: 'prospect', note: 'Acquired by Labcorp — status may be shifting; verify decision authority.' },
+      { name: 'Sonic Healthcare USA', domain: 'sonichealthcareusa.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'US arm of Sonic Healthcare; multiple lab brands.' },
+      { name: 'Azenta Life Sciences', domain: 'azenta.com', segment: 'biorepository', tier: 2, relationship: 'prospect', note: 'Sample management + cold chain (Brooks Life Sciences legacy).' },
+
+      // Organ procurement organizations --------------------------------------
+      { name: 'Center for Organ Recovery & Education (CORE)', domain: 'core.org', segment: 'opo', tier: 1, relationship: 'customer', note: 'Customer — reference. Do not cold-sequence; verify domain during push.' },
+      { name: 'Gift of Life Donor Program', domain: 'donors1.org', segment: 'opo', tier: 2, relationship: 'prospect', note: 'Philadelphia-region OPO; largest by volume historically.' },
+      { name: 'LifeGift', domain: 'lifegift.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Texas OPO.' },
+      { name: 'Donor Network West', domain: 'donornetworkwest.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Northern CA + NV OPO.' },
+      { name: 'OneLegacy', domain: 'onelegacy.org', segment: 'opo', tier: 2, relationship: 'prospect', note: 'Largest OPO by population served (Los Angeles).' },
+      { name: 'LifeNet Health', domain: 'lifenethealth.org', segment: 'opo', tier: 2, relationship: 'prospect', note: 'OPO + tissue bank; large biorepository footprint.' },
+      { name: 'Mid-America Transplant', domain: 'midamericatransplant.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'St Louis-based OPO.' },
+      { name: 'Gift of Hope', domain: 'giftofhope.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Illinois/Indiana OPO.' },
+      { name: 'Donor Alliance', domain: 'donoralliance.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Colorado + Wyoming OPO.' },
+      { name: 'New England Donor Services', domain: 'neds.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'New England multi-state OPO.' },
+      { name: 'LiveOnNY', domain: 'liveonny.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'NYC-metro OPO.' },
+      { name: 'Southwest Transplant Alliance', domain: 'organ.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Texas OPO; verify domain during push.' },
+      { name: 'Indiana Donor Network', domain: 'indianadonornetwork.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'Indiana OPO.' },
+      { name: 'LifeCenter Northwest', domain: 'lcnw.org', segment: 'opo', tier: 3, relationship: 'prospect', note: 'PNW OPO.' },
     ],
   },
 

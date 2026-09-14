@@ -541,7 +541,7 @@ Our platform provides:
 ✓ Continuous 24/7 monitoring (not just spot checks)
 ✓ Complete audit trails with timestamps
 ✓ Automated excursion documentation
-✓ ISO 17025 / UKAS accredited calibration
+✓ NIST-traceable annual on-site calibration by our own US engineers (ISO 17025)
 
 Happy to do a demo or send over compliance documentation if helpful.
 
@@ -566,7 +566,7 @@ We work with plasma centers and labs that need continuous monitoring to meet FDA
       valueProps: [
         'Continuous 24/7 monitoring that proves compliance around the clock',
         'Automatic excursion documentation with timestamps, alerts, and corrective action trails',
-        'ISO 17025 / UKAS accredited calibration included - meets the highest regulatory standards',
+        'NIST-traceable annual on-site calibration included (ISO 17025) - handled by our own US engineers, meets FDA and AABB expectations',
         'Complete audit trails that satisfy FDA, AABB, CAP, and other regulatory requirements'
       ],
       objectionHandlers: [
@@ -576,7 +576,7 @@ We work with plasma centers and labs that need continuous monitoring to meet FDA
         },
         {
           objection: 'We need to validate any new system',
-          response: 'Absolutely - validation is critical. We provide full validation documentation and our calibration is ISO 17025 / UKAS accredited. We\'ve been through this process with many regulated facilities.'
+          response: 'Absolutely - validation is critical. We provide full validation documentation and our calibration is NIST-traceable (ISO 17025), performed by our own US engineers. We\'ve been through this with Grifols, Quest Diagnostics, and NAMSA.'
         },
         {
           objection: 'This would be a big change',

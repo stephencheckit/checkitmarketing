@@ -107,6 +107,80 @@ export async function getAccountsForLabel(
 }
 
 // ---------------------------------------------------------------------------
+// Account creation — bulk create with append_label_names to drop accounts
+// into a named Apollo list (creating the list if missing).
+//
+// Requires the API key to have accounts/create scope (or master key). A
+// regular key returns 403 API_INACCESSIBLE, mirrored via needsPermission.
+
+export interface AccountInput {
+  name: string;
+  domain: string;
+}
+
+export interface BulkCreateAccountsResult {
+  success: boolean;
+  /** Newly created accounts across all batches */
+  createdCount: number;
+  /** Existing accounts matched by dedupe (domain/org_id/name) across batches */
+  existingCount: number;
+  /** Number of 100-account batches successfully processed */
+  batchesProcessed: number;
+  error?: string;
+  /** True when the failure is the key lacking accounts/create permission */
+  needsPermission?: boolean;
+}
+
+export async function bulkCreateAccounts(
+  accounts: AccountInput[],
+  labelNames: string[]
+): Promise<BulkCreateAccountsResult> {
+  let createdCount = 0;
+  let existingCount = 0;
+  let batchesProcessed = 0;
+
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < accounts.length; i += BATCH_SIZE) {
+    const batch = accounts.slice(i, i + BATCH_SIZE);
+    const res = await apolloFetch('/accounts/bulk_create', {
+      method: 'POST',
+      body: {
+        accounts: batch.map((a) => ({ name: a.name, domain: a.domain })),
+        append_label_names: labelNames,
+        run_dedupe: true,
+      },
+    });
+
+    if (!res.ok) {
+      const needsPermission = res.status === 403;
+      return {
+        success: false,
+        createdCount,
+        existingCount,
+        batchesProcessed,
+        error: res.error,
+        needsPermission,
+      };
+    }
+
+    const data = res.data as {
+      created_accounts?: unknown[];
+      existing_accounts?: unknown[];
+    };
+    createdCount += Array.isArray(data.created_accounts) ? data.created_accounts.length : 0;
+    existingCount += Array.isArray(data.existing_accounts) ? data.existing_accounts.length : 0;
+    batchesProcessed++;
+  }
+
+  return {
+    success: true,
+    createdCount,
+    existingCount,
+    batchesProcessed,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Sequences (emailer campaigns)
 
 export interface ApolloSequence {

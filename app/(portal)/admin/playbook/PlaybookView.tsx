@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { Vertical, Cadence } from '@/lib/playbook';
+import type { Vertical, Cadence, TargetAccount } from '@/lib/playbook';
 import {
   BookOpen,
   Building2,
@@ -19,6 +19,9 @@ import {
   ExternalLink,
   AlertTriangle,
   CheckCircle2,
+  Download,
+  Radar,
+  Filter,
 } from 'lucide-react';
 
 interface ApolloAccountList {
@@ -115,6 +118,24 @@ export default function PlaybookView({
       <div className="bg-surface border border-border rounded-xl p-5">
         <p className="text-sm text-foreground/90 leading-relaxed">{vertical.summary}</p>
       </div>
+
+      {/* Curated target accounts (ABM) — shown when the vertical carries a
+          hand-built list (e.g. US Medical). This is the source of truth; the
+          Apollo section below confirms what was actually pushed. */}
+      {vertical.targetAccounts && vertical.targetAccounts.length > 0 && (
+        <Section
+          icon={<Building2 className="w-5 h-5 text-blue-400" />}
+          title="Curated Target Accounts (ABM)"
+        >
+          <TargetAccountsBlock
+            accounts={vertical.targetAccounts}
+            verticalId={vertical.id}
+            apolloAccountLists={vertical.apolloAccountLists}
+            isAdmin={isAdmin}
+            onPushed={() => loadApollo(vertical.id)}
+          />
+        </Section>
+      )}
 
       {/* Target accounts from Apollo */}
       <Section icon={<Building2 className="w-5 h-5 text-blue-400" />} title="Target Accounts (Apollo)">
@@ -214,6 +235,15 @@ export default function PlaybookView({
                   </li>
                 ))}
               </ul>
+              {p.apolloTitleFilters && p.apolloTitleFilters.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs font-medium text-muted uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                    <Filter className="w-3 h-3" />
+                    Apollo title filters
+                  </p>
+                  <TitleFiltersRow filters={p.apolloTitleFilters} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -254,6 +284,23 @@ export default function PlaybookView({
           ))}
         </ul>
       </Section>
+
+      {/* Triggers to research per account before outreach */}
+      {vertical.triggers && vertical.triggers.length > 0 && (
+        <Section
+          icon={<Radar className="w-5 h-5 text-amber-400" />}
+          title="Triggers to research before outreach"
+        >
+          <ul className="space-y-2.5">
+            {vertical.triggers.map((t, i) => (
+              <li key={i} className="text-sm text-foreground/85 flex gap-2">
+                <span className="text-amber-400/60 shrink-0">•</span>
+                {t}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {/* Objections */}
       <Section icon={<ShieldQuestion className="w-5 h-5 text-orange-400" />} title="Objection Handling">
@@ -308,6 +355,191 @@ function Section({
         {title}
       </h2>
       {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Curated target accounts (ABM) — hand-built list, grouped by segment, with
+// push-to-Apollo and CSV export controls for admins.
+
+function TargetAccountsBlock({
+  accounts,
+  verticalId,
+  apolloAccountLists,
+  isAdmin,
+  onPushed,
+}: {
+  accounts: TargetAccount[];
+  verticalId: string;
+  apolloAccountLists: string[];
+  isAdmin: boolean;
+  onPushed: () => void;
+}) {
+  const [pushing, setPushing] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
+  const [pushResult, setPushResult] = useState<{
+    prospects: { list: string; created: number; existing: number; attempted: number } | null;
+    customers: { list: string; created: number; existing: number; attempted: number } | null;
+  } | null>(null);
+
+  const prospectCount = accounts.filter((a) => a.relationship === 'prospect').length;
+  const customerCount = accounts.filter((a) => a.relationship === 'customer').length;
+
+  const bySegment = accounts.reduce<Record<string, TargetAccount[]>>((acc, a) => {
+    (acc[a.segment] ||= []).push(a);
+    return acc;
+  }, {});
+
+  const push = async () => {
+    setPushing(true);
+    setPushError(null);
+    setPushResult(null);
+    try {
+      const res = await fetch('/api/playbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pushAccounts', verticalId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPushError(data.error || 'Push failed');
+      } else {
+        setPushResult({ prospects: data.prospects ?? null, customers: data.customers ?? null });
+        onPushed();
+      }
+    } catch {
+      setPushError('Push failed — network error');
+    } finally {
+      setPushing(false);
+    }
+  };
+
+  const csvHref = `/api/playbook?vertical=${encodeURIComponent(verticalId)}&format=csv`;
+
+  return (
+    <div className="space-y-4">
+      {/* Header + controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-muted">
+          <span className="text-foreground font-medium">{accounts.length}</span> curated accounts
+          {' · '}
+          <span className="text-foreground">{prospectCount}</span> prospects
+          {customerCount > 0 && (
+            <>
+              {' · '}
+              <span className="text-foreground">{customerCount}</span> customers (no cold sequences)
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href={csvHref}
+            className="inline-flex items-center gap-1.5 text-xs bg-background border border-border text-foreground/80 px-3 py-1.5 rounded-lg hover:border-accent/40 hover:text-foreground transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" /> Download CSV
+          </a>
+          {isAdmin && apolloAccountLists.length > 0 && (
+            <button
+              onClick={push}
+              disabled={pushing}
+              className="inline-flex items-center gap-1.5 text-xs bg-accent/15 text-accent px-3 py-1.5 rounded-lg hover:bg-accent/25 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {pushing ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Send className="w-3.5 h-3.5" />
+              )}
+              Push to Apollo
+            </button>
+          )}
+        </div>
+      </div>
+
+      {pushError && (
+        <div className="flex items-start gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg p-3">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{pushError}</span>
+        </div>
+      )}
+
+      {pushResult && (
+        <div className="flex items-start gap-2 text-xs text-success bg-success/10 rounded-lg p-3">
+          <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+          <div className="space-y-1">
+            {pushResult.prospects && (
+              <div>
+                <span className="font-medium">{pushResult.prospects.list}</span> ·{' '}
+                {pushResult.prospects.created} created, {pushResult.prospects.existing} already
+                existed of {pushResult.prospects.attempted} attempted
+              </div>
+            )}
+            {pushResult.customers && (
+              <div>
+                <span className="font-medium">{pushResult.customers.list}</span> ·{' '}
+                {pushResult.customers.created} created, {pushResult.customers.existing} already
+                existed of {pushResult.customers.attempted} attempted
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Accounts grouped by segment */}
+      <div className="space-y-4">
+        {Object.entries(bySegment).map(([segment, list]) => (
+          <div key={segment}>
+            <p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+              {segment} <span className="opacity-60">({list.length})</span>
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {list.map((a) => (
+                <span
+                  key={a.name}
+                  className={`inline-flex items-center gap-1.5 text-xs border rounded-md px-2 py-1 ${
+                    a.relationship === 'customer'
+                      ? 'bg-success/10 border-success/30 text-success'
+                      : 'bg-background border-border text-foreground/80'
+                  }`}
+                  title={`${a.domain}\nTier ${a.tier} · ${a.relationship}\n${a.note}`}
+                >
+                  {a.name}
+                  <span className="opacity-60 text-[10px]">T{a.tier}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// One-click copy per title so the BDR can paste into Apollo's title filter.
+function TitleFiltersRow({ filters }: { filters: string[] }) {
+  const [copied, setCopied] = useState<string | null>(null);
+  const copy = async (v: string) => {
+    await navigator.clipboard.writeText(v);
+    setCopied(v);
+    setTimeout(() => setCopied(null), 1200);
+  };
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {filters.map((f) => (
+        <button
+          key={f}
+          onClick={() => copy(f)}
+          className="inline-flex items-center gap-1 text-xs bg-background border border-border rounded px-2 py-0.5 text-foreground/80 hover:border-accent/40 hover:text-foreground transition-colors cursor-pointer"
+          title="Copy"
+        >
+          {f}
+          {copied === f ? (
+            <Check className="w-3 h-3 text-success" />
+          ) : (
+            <Copy className="w-3 h-3 opacity-40" />
+          )}
+        </button>
+      ))}
     </div>
   );
 }

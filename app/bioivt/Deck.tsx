@@ -231,7 +231,7 @@ const slides: Slide[] = [
     id: 'cover',
     nav: 'Cover',
     variant: 'cover',
-    bg: '/bg-abstract-shift.png',
+    bg: '/hero-globe-poster.png',
     title: 'Checkit Solution Overview',
     subtitle: 'CAM+ · Continuous Automated Monitoring for BioIVT · September 3, 2026',
   },
@@ -296,9 +296,11 @@ const slides: Slide[] = [
             {[
               { src: '/logos/grifols.svg', alt: 'Grifols' },
               { src: '/logos/octapharma.svg', alt: 'Octapharma' },
+              { src: '/decks/bioivt/kedrion.jpg', alt: 'Kedrion Biopharma' },
+              { src: '/decks/bioivt/quest.png', alt: 'Quest Diagnostics' },
+              { src: '/decks/bioivt/globus-medical.png', alt: 'Globus Medical' },
+              { src: '/decks/bioivt/namsa.svg', alt: 'NAMSA' },
               { src: '/logos/nhs.svg', alt: 'NHS' },
-              // Kedrion, Quest, Globus Medical, NAMSA logos to be restored once
-              // asset files are placed in /public/decks/bioivt/.
             ].map((l) => (
               <div key={l.alt} className="flex h-16 items-center justify-center rounded-xl border border-[#020233]/10 bg-white px-5 py-3 shadow-sm">
                 <Image src={l.src} alt={l.alt} width={240} height={64} className="h-full w-full object-contain" />

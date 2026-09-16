@@ -12,6 +12,9 @@
   --surface: #1f2937;
   --surface-elevated: #374151;
   --surface-hover: #4b5563;
+  --navy: #0f172a;
+  --teal: #14b8a6;
+  --coral: #fb7185;
   --border: #374151;
   --border-accent: rgba(59, 130, 246, 0.35);
   --muted: #9ca3af;
@@ -30,6 +33,9 @@
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-surface-hover: var(--surface-hover);
+  --color-navy: var(--navy);
+  --color-teal: var(--teal);
+  --color-coral: var(--coral);
   --color-border: var(--border);
   --color-border-accent: var(--border-accent);
   --color-muted: var(--muted);

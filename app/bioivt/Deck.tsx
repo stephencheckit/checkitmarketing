@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import HeroVideo from '@/components/HeroVideo';
+// import HeroVideo from '@/components/HeroVideo'; // restore when /public/hero-globe.mp4 is back
 import {
   ChevronLeft,
   ChevronRight,
@@ -231,7 +231,7 @@ const slides: Slide[] = [
     id: 'cover',
     nav: 'Cover',
     variant: 'cover',
-    bg: '/hero-globe-poster.jpg',
+    bg: '/bg-abstract-shift.png',
     title: 'Checkit Solution Overview',
     subtitle: 'CAM+ · Continuous Automated Monitoring for BioIVT · September 3, 2026',
   },
@@ -294,30 +294,19 @@ const slides: Slide[] = [
           <div className={`text-sm uppercase tracking-[0.2em] ${TEAL_TEXT}`}>Trusted by</div>
           <div className="mt-4 grid grid-cols-2 gap-3">
             {[
-              { src: '/decks/bioivt/grifols.svg', alt: 'Grifols' },
-              { src: '/decks/bioivt/octapharma.svg', alt: 'Octapharma' },
-              { src: '/decks/bioivt/kedrion.png', alt: 'Kedrion Biopharma' },
-              { src: '/decks/bioivt/quest.png', alt: 'Quest Diagnostics' },
-              { src: '/decks/bioivt/globus-medical.png', alt: 'Globus Medical' },
-              { src: '/decks/bioivt/namsa.png', alt: 'NAMSA' },
+              { src: '/logos/grifols.svg', alt: 'Grifols' },
+              { src: '/logos/octapharma.svg', alt: 'Octapharma' },
               { src: '/logos/nhs.svg', alt: 'NHS' },
+              // Kedrion, Quest, Globus Medical, NAMSA logos to be restored once
+              // asset files are placed in /public/decks/bioivt/.
             ].map((l) => (
               <div key={l.alt} className="flex h-16 items-center justify-center rounded-xl border border-[#020233]/10 bg-white px-5 py-3 shadow-sm">
                 <Image src={l.src} alt={l.alt} width={240} height={64} className="h-full w-full object-contain" />
               </div>
             ))}
           </div>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            {[
-              { src: '/decks/bioivt/iso-9001.png', alt: 'ISO 9001' },
-              { src: '/decks/bioivt/iso-17025.png', alt: 'ISO 17025' },
-              { src: '/decks/bioivt/cert-iso-27001.png', alt: 'ISO 27001 certified' },
-            ].map((c) => (
-              <div key={c.alt} className="flex h-20 w-20 items-center justify-center rounded-full border border-[#020233]/10 bg-white p-2.5 shadow-sm">
-                <Image src={c.src} alt={c.alt} width={120} height={120} className="h-full w-full object-contain" />
-              </div>
-            ))}
-          </div>
+          {/* ISO 9001 / ISO 17025 / ISO 27001 cert badges hidden until asset
+              files are placed in /public/decks/bioivt/. */}
         </div>
       </div>
     ),
@@ -326,7 +315,7 @@ const slides: Slide[] = [
     id: 'solution-divider',
     nav: 'Solution overview',
     variant: 'divider',
-    bg: '/bg-abstract-how.jpg',
+    bg: '/bg-abstract-how.png',
     title: 'Solution overview',
     subtitle: 'CAM+ · Resilient from sensor to enterprise view',
   },
@@ -611,7 +600,7 @@ const slides: Slide[] = [
     id: 'questions',
     nav: 'Questions',
     variant: 'divider',
-    bg: '/bg-abstract-value.jpg',
+    bg: '/bg-abstract-value.png',
     title: 'Additional questions?',
     subtitle: 'Thank you.',
   },
@@ -622,7 +611,7 @@ const slides: Slide[] = [
     nav: 'Appendix',
     appendix: true,
     variant: 'divider',
-    bg: '/bg-abstract-shift.jpg',
+    bg: '/bg-abstract-shift.png',
     title: 'Appendix',
     subtitle: 'Supporting detail from the RFP response',
   },
@@ -1178,11 +1167,10 @@ export default function BioIvtDeck() {
         >
           {slide.bg && (
             <>
-              {slide.variant === 'cover' ? (
-                <HeroVideo src="/hero-globe.mp4" poster={slide.bg} />
-              ) : (
-                <Image src={slide.bg} alt="" fill priority className="object-cover" />
-              )}
+              {/* Cover slide uses same <Image> as other slides until
+                  /public/hero-globe.mp4 is restored. When it is, replace this
+                  with a `slide.variant === 'cover' ? <HeroVideo src="/hero-globe.mp4" poster={slide.bg} /> : <Image ... />` ternary. */}
+              <Image src={slide.bg} alt="" fill priority className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-br from-[#020233]/90 via-[#020233]/75 to-[#020233]/60" />
             </>
           )}

@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Customer/account exports — contain per-account revenue. Loaded into Neon
+# via scripts/import-customer-accounts.ts rather than committed.
+*.xlsx
+*.xls

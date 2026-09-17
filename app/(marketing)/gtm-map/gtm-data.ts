@@ -1,36 +1,29 @@
-// GTM map content — the single place to edit the map.
+// GTM map content.
 //
-// Corporate figures are FY26 actuals (year ended 31 Jan 2026) from Checkit plc's
-// published annual report, so they can be quoted externally:
+// Markets/segments come from lib/gtm-markets.ts, which the GTM planner also
+// reads — edit a market there and both pages follow. This file owns only what
+// is specific to the map: corporate figures, the rep roster, coverage links,
+// demand channels, and layout.
+//
+// Corporate figures are FY26 actuals (year ended 31 Jan 2026) from Checkit
+// plc's published annual report, so they can be quoted externally:
 //   Total revenue £13.7m (FY25 £14.1m) · ARR £14.3m · recurring 96% of revenue
 //   By geography: UK £9.6m · Americas £3.5m · Rest of World £0.6m
 //
-// Coverage, segments and channels are internal and not published anywhere —
-// they come from how the team is actually organised today.
+// Coverage and channels are internal and not published anywhere.
 
 import type { Edge, Node } from '@xyflow/react';
+import {
+  GTM_MARKETS,
+  marketsByRegion,
+  segmentNodeId,
+  type GtmMarket,
+  type Pillar,
+} from '@/lib/gtm-markets';
 
-export type Pillar = 'medical' | 'commercial' | 'operational';
+export type { Pillar } from '@/lib/gtm-markets';
 
-// Layout is hand-positioned rather than auto-laid-out so the picture stays
-// stable and readable — this is a briefing diagram, not a generated graph.
-const UK_COL = [120, 370, 620];
-const US_COL = [1120, 1370, 1620, 1870];
-
-// Row spacing accounts for the tallest card in each row (the corporate and
-// region cards are much taller than the rest), so edges stay short and no card
-// crowds the row below it.
-const ROW = {
-  corp: 0,
-  region: 220,
-  product: 400,
-  rep: 560,
-  segment: 740,
-  umbrella: 940,
-  channel: 1110,
-};
-
-// Reported figures are sterling — that is the Group's presentation currency.
+// Reported figures are sterling — the Group's presentation currency.
 // Values are £m so the USD toggle can convert them.
 export const FY26 = {
   totalRevenueM: 13.7,
@@ -52,20 +45,74 @@ export const FY26 = {
 export const USD_PER_GBP = 1.27;
 export const USD_RATE_AS_OF = 'Sept 2026';
 
-export const nodes: Node[] = [
-  {
-    id: 'corp',
-    type: 'corp',
-    position: { x: 925, y: ROW.corp },
-    data: {},
-    draggable: false,
-  },
+// ---------------------------------------------------------------------------
+// Layout
+//
+// Positions are computed rather than hand-written so that adding a market in
+// lib/gtm-markets.ts cannot silently overlap two cards. The widest row in each
+// region sets that region's width.
 
-  // --- Regions -------------------------------------------------------------
+const CARD_W = 200;
+const STEP = 250;
+const REGION_GAP = 180;
+const WIDE_CARD_W = 340;
+const REGION_CARD_W = 260;
+
+const UK_X0 = 120;
+
+const UK_PRODUCTS = ['CAM+', 'CAM', 'CWM'] as const;
+
+const UK_REPS = ['rep-meg', 'rep-tom', 'rep-april'] as const;
+const US_REPS = ['rep-jen', 'rep-bryan', 'rep-open', 'rep-jordan'] as const;
+
+const ukMarkets = marketsByRegion('uk');
+const usMarkets = marketsByRegion('us');
+
+const ukSlots = Math.max(ukMarkets.length, UK_PRODUCTS.length, UK_REPS.length);
+const usSlots = Math.max(usMarkets.length, UK_PRODUCTS.length, US_REPS.length);
+
+const US_X0 = UK_X0 + ukSlots * STEP + REGION_GAP;
+
+const ukSpanEnd = UK_X0 + (ukSlots - 1) * STEP + CARD_W;
+const usSpanEnd = US_X0 + (usSlots - 1) * STEP + CARD_W;
+
+/** Left edge that centres a card of `width` over a span. */
+function centre(from: number, to: number, width: number) {
+  return Math.round((from + to) / 2 - width / 2);
+}
+
+const ROW = {
+  corp: 0,
+  region: 220,
+  product: 400,
+  rep: 560,
+  segment: 740,
+  // Segment cards grow with the number of Apollo lists attached, so the rows
+  // below sit clear of the tallest one.
+  umbrella: 1000,
+  channel: 1170,
+};
+
+const col = (x0: number, index: number) => x0 + index * STEP;
+
+// ---------------------------------------------------------------------------
+// Nodes
+
+const CANVAS_CENTRE_X = centre(UK_X0, usSpanEnd, WIDE_CARD_W);
+
+const corpNode: Node = {
+  id: 'corp',
+  type: 'corp',
+  position: { x: CANVAS_CENTRE_X, y: ROW.corp },
+  data: {},
+  draggable: false,
+};
+
+const regionNodes: Node[] = [
   {
     id: 'region-uk',
     type: 'region',
-    position: { x: 340, y: ROW.region },
+    position: { x: centre(UK_X0, ukSpanEnd, REGION_CARD_W), y: ROW.region },
     data: {
       label: 'UK & Ireland',
       revenueM: FY26.ukM,
@@ -79,7 +126,7 @@ export const nodes: Node[] = [
   {
     id: 'region-us',
     type: 'region',
-    position: { x: 1465, y: ROW.region },
+    position: { x: centre(US_X0, usSpanEnd, REGION_CARD_W), y: ROW.region },
     data: {
       label: 'Americas (US)',
       revenueM: FY26.americasM,
@@ -90,299 +137,165 @@ export const nodes: Node[] = [
       tone: 'us',
     },
   },
+];
 
-  // --- Products per region -------------------------------------------------
-  {
-    id: 'uk-cam-plus',
-    type: 'product',
-    position: { x: UK_COL[0], y: ROW.product },
-    data: {
-      code: 'CAM+',
-      label: 'Medical monitoring',
-      pillar: 'medical',
-      note: 'Sensor-based, regulated',
-    },
-  },
-  {
-    id: 'uk-cam',
-    type: 'product',
-    position: { x: UK_COL[1], y: ROW.product },
-    data: {
-      code: 'CAM',
-      label: 'Commercial monitoring',
-      pillar: 'commercial',
-      note: 'Food safety, sensor-based',
-    },
-  },
-  {
-    id: 'uk-cwm',
-    type: 'product',
-    position: { x: UK_COL[2], y: ROW.product },
-    data: {
-      code: 'CWM',
-      label: 'Operational monitoring',
-      pillar: 'operational',
-      note: 'Workflow — often no sensors',
-    },
-  },
-  {
-    id: 'us-cam-plus',
-    type: 'product',
-    position: { x: US_COL[0], y: ROW.product },
-    data: {
-      code: 'CAM+',
-      label: 'Medical monitoring',
-      pillar: 'medical',
-      note: 'Sensor-based, regulated',
-    },
-  },
-  {
-    id: 'us-cam',
-    type: 'product',
-    position: { x: US_COL[1], y: ROW.product },
-    data: {
-      code: 'CAM',
-      label: 'Commercial monitoring',
-      pillar: 'commercial',
-      note: 'Food safety, sensor-based',
-    },
-  },
-  {
-    id: 'us-cwm',
-    type: 'product',
-    position: { x: US_COL[2], y: ROW.product },
-    data: {
-      code: 'CWM',
-      label: 'Operational monitoring',
-      pillar: 'operational',
-      note: 'Workflow — often no sensors',
-    },
-  },
+const PRODUCT_DATA: Record<
+  (typeof UK_PRODUCTS)[number],
+  { label: string; pillar: Pillar; note: string }
+> = {
+  'CAM+': { label: 'Medical monitoring', pillar: 'medical', note: 'Sensor-based, regulated' },
+  CAM: { label: 'Commercial monitoring', pillar: 'commercial', note: 'Food safety, sensor-based' },
+  CWM: { label: 'Operational monitoring', pillar: 'operational', note: 'Workflow — often no sensors' },
+};
 
-  // --- Coverage ------------------------------------------------------------
-  // Order within the row is deliberate: each BDR sits next to the AEs they
-  // support, so the support links stay short and never cross another card.
-  {
-    id: 'rep-meg',
-    type: 'rep',
-    position: { x: UK_COL[0], y: ROW.rep },
-    data: {
-      name: 'Meg',
-      role: 'Account exec',
-      scope: 'CAM+ · NHS hospitals',
-      pillar: 'medical',
-      tone: 'uk',
-    },
-  },
-  {
-    id: 'rep-tom',
-    type: 'rep',
-    position: { x: UK_COL[1], y: ROW.rep },
-    data: {
-      name: 'Tom',
-      role: 'BDR',
-      scope: 'Supports Meg + April · splits CAM+ / CAM',
-      pillar: 'commercial',
-      tone: 'uk',
-      isBdr: true,
-    },
-  },
-  {
-    id: 'rep-april',
-    type: 'rep',
-    position: { x: UK_COL[2], y: ROW.rep },
-    data: {
-      name: 'April',
-      role: 'Account exec',
-      scope: 'CAM + CWM · multi-site ops',
-      pillar: 'commercial',
-      tone: 'uk',
-    },
-  },
-  {
-    id: 'rep-jen',
-    type: 'rep',
-    position: { x: US_COL[0], y: ROW.rep },
-    data: {
-      name: 'Jen',
-      role: 'Account exec',
-      scope: 'CAM+ · primarily account mgmt',
-      pillar: 'medical',
-      tone: 'us',
-    },
-  },
-  {
-    id: 'rep-bryan',
-    type: 'rep',
-    position: { x: US_COL[1], y: ROW.rep },
-    data: {
-      name: 'Bryan',
-      role: 'BDR',
-      scope: 'Supports Jen · CAM+',
-      pillar: 'medical',
-      tone: 'us',
-      isBdr: true,
-    },
-  },
-  {
-    id: 'rep-open',
-    type: 'rep',
-    position: { x: US_COL[2], y: ROW.rep },
-    data: {
-      name: 'Open headcount',
-      role: 'Unfilled',
-      scope: 'CAM / CWM commercial + operational',
-      pillar: 'commercial',
-      tone: 'us',
-      isOpen: true,
-      noBdr: true,
-    },
-  },
-  {
-    id: 'rep-jordan',
-    type: 'rep',
-    position: { x: US_COL[3], y: ROW.rep },
-    data: {
-      name: 'Jordan',
-      role: 'BDR + account mgmt',
-      scope: 'Hybrid · prospects his own CAM accounts',
-      pillar: 'commercial',
-      tone: 'us',
-      isBdr: true,
-    },
-  },
+function productNodes(region: 'uk' | 'us', x0: number): Node[] {
+  return UK_PRODUCTS.map((code, i) => ({
+    id: `${region}-${code === 'CAM+' ? 'cam-plus' : code.toLowerCase()}`,
+    type: 'product',
+    position: { x: col(x0, i), y: ROW.product },
+    data: { code, ...PRODUCT_DATA[code] },
+  }));
+}
 
-  // --- Target segments -----------------------------------------------------
-  {
-    id: 'seg-nhs',
-    type: 'segment',
-    position: { x: UK_COL[0], y: ROW.segment },
-    data: {
-      label: 'NHS hospitals',
-      pillar: 'medical',
-      detail: 'Pharmacy and pathology demand',
-      accounts: ['NHS trusts'],
-    },
+const REP_DATA: Record<string, Record<string, unknown>> = {
+  'rep-meg': {
+    name: 'Meg',
+    role: 'Account exec',
+    scope: 'CAM+ · NHS hospitals',
+    pillar: 'medical',
+    tone: 'uk',
   },
-  {
-    id: 'seg-forecourts',
-    type: 'segment',
-    position: { x: UK_COL[1], y: ROW.segment },
-    data: {
-      label: 'Forecourts & convenience',
-      pillar: 'commercial',
-      detail: 'Multi-site operators',
-      accounts: ['BP'],
-    },
+  'rep-tom': {
+    name: 'Tom',
+    role: 'BDR',
+    scope: 'Supports Meg + April · splits CAM+ / CAM',
+    pillar: 'commercial',
+    tone: 'uk',
+    isBdr: true,
   },
-  {
-    id: 'seg-uk-food',
-    type: 'segment',
-    position: { x: UK_COL[2], y: ROW.segment },
-    data: {
-      label: 'Food service & FM',
-      pillar: 'commercial',
-      detail: 'Coffee shops, food-to-go, facilities mgmt',
-      accounts: [],
-    },
+  'rep-april': {
+    name: 'April',
+    role: 'Account exec',
+    scope: 'CAM + CWM · multi-site ops',
+    pillar: 'commercial',
+    tone: 'uk',
   },
-  {
-    id: 'seg-us-medical',
-    type: 'segment',
-    position: { x: US_COL[0], y: ROW.segment },
-    data: {
-      label: 'Medical & plasma',
-      pillar: 'medical',
-      detail: 'Installed base — expansion led',
-      accounts: [],
-    },
+  'rep-jen': {
+    name: 'Jen',
+    role: 'Account exec',
+    scope: 'CAM+ · primarily account mgmt',
+    pillar: 'medical',
+    tone: 'us',
   },
-  {
-    id: 'seg-senior',
-    type: 'segment',
-    position: { x: US_COL[1], y: ROW.segment },
-    data: {
-      label: 'Senior living',
-      pillar: 'commercial',
-      detail: 'Food safety across facilities',
-      accounts: [],
-    },
+  'rep-bryan': {
+    name: 'Bryan',
+    role: 'BDR',
+    scope: 'Supports Jen · CAM+',
+    pillar: 'medical',
+    tone: 'us',
+    isBdr: true,
   },
-  {
-    id: 'seg-catering',
-    type: 'segment',
-    position: { x: US_COL[2], y: ROW.segment },
-    data: {
-      label: 'Contract catering & FM',
-      pillar: 'commercial',
-      detail: 'Outsourced food service at scale',
-      accounts: ['ISS', 'Compass'],
-    },
+  'rep-open': {
+    name: 'Open headcount',
+    role: 'Unfilled',
+    scope: 'CAM / CWM commercial + operational',
+    pillar: 'commercial',
+    tone: 'us',
+    isOpen: true,
+    noBdr: true,
   },
-  {
-    id: 'seg-venues',
-    type: 'segment',
-    position: { x: US_COL[3], y: ROW.segment },
-    data: {
-      label: 'Venues & entertainment',
-      pillar: 'commercial',
-      detail: 'Stadiums, arenas, attractions',
-      accounts: ['OVG', 'Guggenheim'],
-    },
+  'rep-jordan': {
+    name: 'Jordan',
+    role: 'BDR + account mgmt',
+    scope: 'Hybrid · prospects his own CAM accounts',
+    pillar: 'commercial',
+    tone: 'us',
+    isBdr: true,
   },
+};
 
-  // --- Positioning ---------------------------------------------------------
-  {
-    id: 'umbrella',
-    type: 'umbrella',
-    position: { x: 890, y: ROW.umbrella },
-    data: {},
-  },
+// Order within the row is deliberate: each BDR sits next to the AEs they
+// support, so the support links stay short and never cross another card.
+function repNodes(ids: readonly string[], x0: number): Node[] {
+  return ids.map((id, i) => ({
+    id,
+    type: 'rep',
+    position: { x: col(x0, i), y: ROW.rep },
+    data: REP_DATA[id],
+  }));
+}
 
-  // --- Demand channels -----------------------------------------------------
+function segmentNodes(markets: GtmMarket[], x0: number): Node[] {
+  return markets.map((m, i) => ({
+    id: segmentNodeId(m.id),
+    type: 'segment',
+    position: { x: col(x0, i), y: ROW.segment },
+    data: {
+      label: m.label,
+      pillar: m.pillar,
+      detail: m.detail ?? '',
+      accounts: m.beachheads.map((b) => b.name),
+    },
+  }));
+}
+
+const CHANNELS: Record<string, unknown>[] = [
   {
     id: 'ch-apollo',
-    type: 'channel',
-    position: { x: 620, y: ROW.channel },
-    data: {
-      label: 'Apollo',
-      kind: 'Target account lists',
-      detail: 'Lists built per segment, handed to BDRs',
-      primary: true,
-    },
+    label: 'Apollo',
+    kind: 'Target account lists',
+    detail: 'Lists built per market, handed to BDRs',
+    primary: true,
   },
   {
     id: 'ch-linkedin',
-    type: 'channel',
-    position: { x: 870, y: ROW.channel },
-    data: {
-      label: 'LinkedIn Ads',
-      kind: 'Paid social',
-      detail: 'Persona targeting by segment',
-    },
+    label: 'LinkedIn Ads',
+    kind: 'Paid social',
+    detail: 'Persona targeting by segment',
   },
-  {
-    id: 'ch-google',
-    type: 'channel',
-    position: { x: 1120, y: ROW.channel },
-    data: {
-      label: 'Google Ads',
-      kind: 'Paid search',
-      detail: 'Intent capture',
-    },
-  },
+  { id: 'ch-google', label: 'Google Ads', kind: 'Paid search', detail: 'Intent capture' },
   {
     id: 'ch-chatgpt',
-    type: 'channel',
-    position: { x: 1370, y: ROW.channel },
-    data: {
-      label: 'ChatGPT Ads',
-      kind: 'Paid AI search',
-      detail: 'New channel — unproven',
-      isNew: true,
-    },
+    label: 'ChatGPT Ads',
+    kind: 'Paid AI search',
+    detail: 'New channel — unproven',
+    isNew: true,
   },
 ];
+
+const channelSpan = (CHANNELS.length - 1) * STEP + CARD_W;
+const CHANNEL_X0 = centre(UK_X0, usSpanEnd, channelSpan);
+
+const channelNodes: Node[] = CHANNELS.map((c, i) => {
+  const { id, ...data } = c as { id: string } & Record<string, unknown>;
+  return {
+    id,
+    type: 'channel',
+    position: { x: col(CHANNEL_X0, i), y: ROW.channel },
+    data,
+  };
+});
+
+export const nodes: Node[] = [
+  corpNode,
+  ...regionNodes,
+  ...productNodes('uk', UK_X0),
+  ...productNodes('us', US_X0),
+  ...repNodes(UK_REPS, UK_X0),
+  ...repNodes(US_REPS, US_X0),
+  ...segmentNodes(ukMarkets, UK_X0),
+  ...segmentNodes(usMarkets, US_X0),
+  {
+    id: 'umbrella',
+    type: 'umbrella',
+    position: { x: CANVAS_CENTRE_X, y: ROW.umbrella },
+    data: {},
+  },
+  ...channelNodes,
+];
+
+// ---------------------------------------------------------------------------
+// Edges
 
 const PILLAR_STROKE: Record<Pillar, string> = {
   medical: '#a78bfa',
@@ -440,6 +353,51 @@ function supportEdge(id: string, bdr: string, ae: string, side: 'left' | 'right'
 const T = 'target-top';
 const S = 'source-bottom';
 
+/**
+ * Who works each market. `support` is the BDR feeding the AE — note that
+ * April carries four UK markets with BDR cover on only two of them, which the
+ * map shows rather than smooths over.
+ */
+const COVERAGE: Record<string, { primary: string[]; support: string[] }> = {
+  'uk-healthcare': { primary: ['rep-meg'], support: ['rep-tom'] },
+  'uk-forecourts': { primary: ['rep-april'], support: [] },
+  'uk-entertainment': { primary: ['rep-april'], support: [] },
+  'uk-foodservice': { primary: ['rep-april'], support: ['rep-tom'] },
+  'uk-water': { primary: ['rep-april'], support: [] },
+  'us-medical': { primary: ['rep-jen'], support: ['rep-bryan'] },
+  'us-venues': { primary: ['rep-open'], support: ['rep-jordan'] },
+  'us-senior': { primary: ['rep-open'], support: [] },
+  'us-facilities': { primary: ['rep-open'], support: ['rep-jordan'] },
+};
+
+/** Which product each rep carries, per region. */
+const PRODUCT_COVERAGE: { product: string; rep: string; pillar: Pillar; dashed?: boolean }[] = [
+  { product: 'uk-cam-plus', rep: 'rep-meg', pillar: 'medical' },
+  { product: 'uk-cam-plus', rep: 'rep-tom', pillar: 'medical', dashed: true },
+  { product: 'uk-cam', rep: 'rep-april', pillar: 'commercial' },
+  { product: 'uk-cam', rep: 'rep-tom', pillar: 'commercial', dashed: true },
+  { product: 'uk-cwm', rep: 'rep-april', pillar: 'operational' },
+  { product: 'us-cam-plus', rep: 'rep-jen', pillar: 'medical' },
+  { product: 'us-cam-plus', rep: 'rep-bryan', pillar: 'medical', dashed: true },
+  { product: 'us-cam', rep: 'rep-open', pillar: 'commercial' },
+  { product: 'us-cam', rep: 'rep-jordan', pillar: 'commercial', dashed: true },
+  { product: 'us-cwm', rep: 'rep-open', pillar: 'operational' },
+];
+
+const coverageEdges: Edge[] = GTM_MARKETS.flatMap((m) => {
+  const cover = COVERAGE[m.id];
+  if (!cover) return [];
+  const seg = segmentNodeId(m.id);
+  return [
+    ...cover.primary.map((rep) =>
+      edge(`e-${rep}-${m.id}`, rep, seg, m.pillar, { sourceHandle: S })
+    ),
+    ...cover.support.map((rep) =>
+      edge(`e-${rep}-${m.id}`, rep, seg, m.pillar, { sourceHandle: S, dashed: true })
+    ),
+  ];
+});
+
 export const edges: Edge[] = [
   // Corporate → regions
   edge('e-corp-uk', 'corp', 'region-uk', 'commercial'),
@@ -454,61 +412,28 @@ export const edges: Edge[] = [
   edge('e-us-cwm', 'region-us', 'us-cwm', 'operational'),
 
   // Products → who carries them
-  edge('e-ukcamplus-meg', 'uk-cam-plus', 'rep-meg', 'medical', { targetHandle: T }),
-  edge('e-ukcamplus-tom', 'uk-cam-plus', 'rep-tom', 'medical', { dashed: true, targetHandle: T }),
-  edge('e-ukcam-april', 'uk-cam', 'rep-april', 'commercial', { targetHandle: T }),
-  edge('e-ukcam-tom', 'uk-cam', 'rep-tom', 'commercial', { dashed: true, targetHandle: T }),
-  edge('e-ukcwm-april', 'uk-cwm', 'rep-april', 'operational', { targetHandle: T }),
-  edge('e-uscamplus-jen', 'us-cam-plus', 'rep-jen', 'medical', { targetHandle: T }),
-  edge('e-uscamplus-bryan', 'us-cam-plus', 'rep-bryan', 'medical', {
-    dashed: true,
-    targetHandle: T,
-  }),
-  edge('e-uscam-open', 'us-cam', 'rep-open', 'commercial', { targetHandle: T }),
-  edge('e-uscam-jordan', 'us-cam', 'rep-jordan', 'commercial', {
-    dashed: true,
-    targetHandle: T,
-  }),
-  edge('e-uscwm-open', 'us-cwm', 'rep-open', 'operational', { targetHandle: T }),
+  ...PRODUCT_COVERAGE.map((p) =>
+    edge(`e-${p.product}-${p.rep}`, p.product, p.rep, p.pillar, {
+      targetHandle: T,
+      dashed: p.dashed,
+    })
+  ),
 
   // BDR → AE support. Tom covers both UK AEs; Bryan covers Jen.
   supportEdge('e-tom-supports-meg', 'rep-tom', 'rep-meg', 'left'),
   supportEdge('e-tom-supports-april', 'rep-tom', 'rep-april', 'right'),
   supportEdge('e-bryan-supports-jen', 'rep-bryan', 'rep-jen', 'left'),
 
-  // Coverage → segments
-  edge('e-meg-nhs', 'rep-meg', 'seg-nhs', 'medical', { sourceHandle: S }),
-  edge('e-tom-nhs', 'rep-tom', 'seg-nhs', 'medical', { dashed: true, sourceHandle: S }),
-  edge('e-april-forecourts', 'rep-april', 'seg-forecourts', 'commercial', { sourceHandle: S }),
-  edge('e-april-food', 'rep-april', 'seg-uk-food', 'commercial', { sourceHandle: S }),
-  edge('e-tom-food', 'rep-tom', 'seg-uk-food', 'commercial', { dashed: true, sourceHandle: S }),
-  edge('e-jen-medical', 'rep-jen', 'seg-us-medical', 'medical', { sourceHandle: S }),
-  edge('e-bryan-medical', 'rep-bryan', 'seg-us-medical', 'medical', {
-    dashed: true,
-    sourceHandle: S,
-  }),
-  edge('e-open-senior', 'rep-open', 'seg-senior', 'commercial', { sourceHandle: S }),
-  edge('e-open-catering', 'rep-open', 'seg-catering', 'commercial', { sourceHandle: S }),
-  edge('e-jordan-catering', 'rep-jordan', 'seg-catering', 'commercial', {
-    dashed: true,
-    sourceHandle: S,
-  }),
-  edge('e-jordan-venues', 'rep-jordan', 'seg-venues', 'commercial', {
-    dashed: true,
-    sourceHandle: S,
-  }),
-  edge('e-open-venues', 'rep-open', 'seg-venues', 'commercial', { sourceHandle: S }),
+  // Coverage → markets
+  ...coverageEdges,
 
-  // Commercial segments roll up under the facilities-management umbrella
-  edge('e-ukfood-umbrella', 'seg-uk-food', 'umbrella', 'commercial'),
-  edge('e-forecourts-umbrella', 'seg-forecourts', 'umbrella', 'commercial'),
-  edge('e-senior-umbrella', 'seg-senior', 'umbrella', 'commercial'),
-  edge('e-catering-umbrella', 'seg-catering', 'umbrella', 'commercial'),
-  edge('e-venues-umbrella', 'seg-venues', 'umbrella', 'commercial'),
+  // Non-medical markets roll up under the facilities-management umbrella
+  ...GTM_MARKETS.filter((m) => m.pillar !== 'medical').map((m) =>
+    edge(`e-${m.id}-umbrella`, segmentNodeId(m.id), 'umbrella', m.pillar)
+  ),
 
   // Umbrella positioning drives the channel plan
-  edge('e-umbrella-apollo', 'umbrella', 'ch-apollo', 'commercial'),
-  edge('e-umbrella-linkedin', 'umbrella', 'ch-linkedin', 'commercial'),
-  edge('e-umbrella-google', 'umbrella', 'ch-google', 'commercial'),
-  edge('e-umbrella-chatgpt', 'umbrella', 'ch-chatgpt', 'commercial'),
+  ...CHANNELS.map((c) =>
+    edge(`e-umbrella-${c.id}`, 'umbrella', c.id as string, 'commercial')
+  ),
 ];

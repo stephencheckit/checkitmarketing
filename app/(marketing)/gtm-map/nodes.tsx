@@ -14,6 +14,13 @@ import {
 } from 'lucide-react';
 import { FY26, type Pillar } from './gtm-data';
 import { useMoneyM } from './currency';
+import { useSegmentLists } from './apollo-context';
+import {
+  BUCKET_COLOR,
+  BUCKET_LABEL,
+  bucketStages,
+  type ApolloListSummary,
+} from '@/lib/apollo-lists';
 
 const PILLAR_RING: Record<Pillar, string> = {
   medical: 'border-violet-500/50',
@@ -213,13 +220,46 @@ export function RepNode({ data }: NodeProps) {
   );
 }
 
-export function SegmentNode({ data }: NodeProps) {
+/** Stacked stage mix across a segment's Apollo lists. */
+function StageBar({ lists }: { lists: ApolloListSummary[] }) {
+  const { accounts, buckets } = bucketStages(lists);
+  if (accounts === 0) return null;
+
+  return (
+    <>
+      <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-surface-elevated">
+        {buckets.map(({ bucket, count }) => (
+          <div
+            key={bucket}
+            className={BUCKET_COLOR[bucket]}
+            style={{ width: `${(count / accounts) * 100}%` }}
+            title={`${BUCKET_LABEL[bucket]}: ${count}`}
+          />
+        ))}
+      </div>
+      <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+        {buckets.map(({ bucket, count }) => (
+          <span key={bucket} className="flex items-center gap-1 text-[9px] text-muted">
+            <span className={`h-1.5 w-1.5 rounded-full ${BUCKET_COLOR[bucket]}`} />
+            {BUCKET_LABEL[bucket]} {count}
+          </span>
+        ))}
+      </div>
+    </>
+  );
+}
+
+export function SegmentNode({ id, data }: NodeProps) {
   const d = data as {
     label: string;
     pillar: Pillar;
     detail: string;
     accounts: string[];
   };
+  const { status, lists } = useSegmentLists(id);
+  const totalAccounts = lists.reduce((sum, l) => sum + l.accounts, 0);
+  const anyTruncated = lists.some((l) => l.truncated);
+
   return (
     <div className={`w-[200px] rounded-lg border bg-surface px-3 py-2.5 ${PILLAR_RING[d.pillar]}`}>
       <Ports />
@@ -242,6 +282,44 @@ export function SegmentNode({ data }: NodeProps) {
           <span className="text-[9px] italic text-muted">Beachhead TBD</span>
         )}
       </div>
+
+      {status !== 'off' ? (
+        <div className="mt-2 border-t border-border pt-2">
+          {status === 'loading' ? (
+            <div className="text-[9px] italic text-muted">Loading Apollo…</div>
+          ) : status === 'error' ? (
+            <div className="text-[9px] text-rose-300">Apollo unavailable</div>
+          ) : lists.length === 0 ? (
+            <div className="text-[9px] italic text-amber-300">No Apollo account list</div>
+          ) : (
+            <>
+              <div className="flex items-baseline justify-between gap-1">
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-[#00cccc]">
+                  Apollo
+                </span>
+                <span className="text-[10px] tabular-nums text-foreground">
+                  {totalAccounts.toLocaleString()} acct
+                  {anyTruncated ? '+' : ''} · {lists.length} list
+                  {lists.length === 1 ? '' : 's'}
+                </span>
+              </div>
+              <StageBar lists={lists} />
+              <ul className="mt-1.5 space-y-0.5">
+                {lists.map((l) => (
+                  <li key={l.id} className="flex items-baseline justify-between gap-1.5">
+                    <span className="truncate text-[9px] text-foreground/80" title={l.name}>
+                      {l.name}
+                    </span>
+                    <span className="shrink-0 text-[9px] tabular-nums text-muted">
+                      {l.accounts.toLocaleString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

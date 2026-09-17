@@ -17,8 +17,18 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react';
+import { GTM_MARKETS } from '@/lib/gtm-markets';
+import {
+  bucketStages,
+  groupListsByMarket,
+  useApolloLists,
+  type StageMix,
+} from '@/lib/apollo-lists';
 
-const STORAGE_KEY = 'checkit-gtm-planning-v5';
+// Bumped to v6 when markets moved to lib/gtm-markets.ts: a saved v5 plan
+// carries the old market ids (and no UK water market), and restoring it would
+// quietly reinstate the list the map no longer agrees with.
+const STORAGE_KEY = 'checkit-gtm-planning-v6';
 
 type ScenarioId = 'base' | 'upside' | 'conservative' | 'custom';
 type Category = 'medical' | 'commercial';
@@ -145,75 +155,19 @@ function buildReps(includeOpen: boolean, targetNewExp: number): Rep[] {
   });
 }
 
+// Markets are defined once in lib/gtm-markets.ts and shared with the GTM map,
+// so the two pages cannot drift apart again. `pillar` and `apolloLists` are
+// dropped here — the planner only needs the revenue category.
 function seedMarkets(): Market[] {
-  const medical: Omit<Market, 'focusPct'>[] = [
-    {
-      id: 'uk-healthcare',
-      label: 'Healthcare / hospitals',
-      detail: 'Pharmacies, pathologies',
-      category: 'medical',
-      region: 'uk',
-      beachheads: [{ name: 'NHS', logo: '/logos/nhs.svg' }],
-    },
-    {
-      id: 'us-plasma',
-      label: 'Plasma',
-      category: 'medical',
-      region: 'us',
-      beachheads: [
-        { name: 'Grifols', logo: '/logos/grifols.svg' },
-        { name: 'Octapharma', logo: '/logos/octapharma.svg' },
-      ],
-    },
-  ];
-  const commercial: Omit<Market, 'focusPct'>[] = [
-    {
-      id: 'uk-forecourts',
-      label: 'Forecourts',
-      category: 'commercial',
-      region: 'uk',
-      beachheads: [{ name: 'BP', logo: '/logos/bp.png' }],
-    },
-    {
-      id: 'uk-entertainment',
-      label: 'Entertainment',
-      category: 'commercial',
-      region: 'uk',
-      beachheads: [
-        { name: 'P&O Ferries', logo: '/logos/poferries.png' },
-        { name: 'Tenpin', logo: '/logos/tenpin.png' },
-      ],
-    },
-    {
-      id: 'uk-foodservice',
-      label: 'Food service',
-      category: 'commercial',
-      region: 'uk',
-      beachheads: [],
-    },
-    {
-      id: 'us-venues',
-      label: 'Food service (venues)',
-      category: 'commercial',
-      region: 'us',
-      beachheads: [{ name: 'OVG' }],
-    },
-    {
-      id: 'us-senior',
-      label: 'Food service (senior living)',
-      category: 'commercial',
-      region: 'us',
-      beachheads: [{ name: 'Morningstar' }],
-    },
-    {
-      id: 'us-facilities',
-      label: 'Food service (facilities)',
-      category: 'commercial',
-      region: 'us',
-      beachheads: [{ name: 'ISS' }],
-    },
-  ];
-  const withZero = [...medical, ...commercial].map((m) => ({ ...m, focusPct: 0 }));
+  const withZero: Market[] = GTM_MARKETS.map((m) => ({
+    id: m.id,
+    label: m.label,
+    detail: m.detail,
+    category: m.category,
+    region: m.region,
+    beachheads: m.beachheads,
+    focusPct: 0,
+  }));
   return equalFocus(equalFocus(withZero, 'medical'), 'commercial');
 }
 
@@ -582,9 +536,104 @@ function CategoryFocusPanel({
   );
 }
 
+/**
+ * Turns a market's pipeline target into the conversion rate it implies against
+ * the accounts Apollo actually holds. A market needing more opportunities than
+ * it has prospectable accounts is not a plan, and this is where that shows.
+ */
+function ApolloCapacityCells({
+  mix,
+  status,
+  pipelineNeeded,
+  avgDealSize,
+}: {
+  mix: StageMix | undefined;
+  status: 'off' | 'loading' | 'ready' | 'error';
+  pipelineNeeded: number;
+  avgDealSize: number;
+}) {
+  if (status === 'loading') {
+    return (
+      <>
+        <td className="py-2.5 pr-3 text-xs italic text-muted">…</td>
+        <td className="py-2.5 pr-3" />
+      </>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <>
+        <td className="py-2.5 pr-3 text-xs text-rose-300">n/a</td>
+        <td className="py-2.5 pr-3" />
+      </>
+    );
+  }
+
+  if (!mix || mix.accounts === 0) {
+    return (
+      <>
+        <td className="py-2.5 pr-3 text-xs italic text-amber-300" title="No Apollo account list">
+          no list
+        </td>
+        <td className="py-2.5 pr-3" />
+      </>
+    );
+  }
+
+  const oppsNeeded = avgDealSize > 0 ? pipelineNeeded / avgDealSize : 0;
+  const required = mix.prospectable > 0 ? oppsNeeded / mix.prospectable : Infinity;
+
+  // Benchmarks are deliberately coarse: outbound account-to-opportunity rates
+  // in the low single digits are normal, so anything needing more than ~15% of
+  // a list to convert is flagged.
+  const tone =
+    required <= 0.05
+      ? 'text-emerald-400'
+      : required <= 0.15
+        ? 'text-amber-400'
+        : 'text-rose-400';
+
+  return (
+    <>
+      <td className="py-2.5 pr-3 tabular-nums">
+        <span className="text-foreground">{mix.prospectable.toLocaleString()}</span>
+        {mix.clients > 0 ? (
+          <span
+            className="ml-1.5 text-[10px] text-muted"
+            title={`${mix.clients} current clients excluded`}
+          >
+            −{mix.clients}
+          </span>
+        ) : null}
+      </td>
+      <td className={`py-2.5 pr-3 tabular-nums font-medium ${tone}`}>
+        {Number.isFinite(required)
+          ? `${(required * 100).toFixed(required < 0.1 ? 1 : 0)}%`
+          : '∞'}
+        <span className="ml-1 text-[10px] font-normal text-muted">
+          {Math.ceil(oppsNeeded)} opp
+        </span>
+      </td>
+    </>
+  );
+}
+
 export default function GtmPlanningPage() {
   const [state, setState] = useState<PlanState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
+
+  // Apollo tells us how many accounts actually exist per market, which turns
+  // the pipeline target from an assertion into something testable.
+  const apollo = useApolloLists(true);
+  const apolloByMarket = useMemo(() => {
+    const grouped = groupListsByMarket(apollo.lists);
+    const out: Record<string, StageMix> = {};
+    for (const [marketId, lists] of Object.entries(grouped)) {
+      out[marketId] = bucketStages(lists);
+    }
+    return out;
+  }, [apollo.lists]);
 
   useEffect(() => {
     try {
@@ -1341,6 +1390,15 @@ export default function GtmPlanningPage() {
                   <th className="py-2 pr-3 font-medium">Region</th>
                   <th className="py-2 pr-3 font-medium">Plan ARR</th>
                   <th className="py-2 pr-3 font-medium">Needed</th>
+                  <th className="py-2 pr-3 font-medium" title="Apollo accounts excluding current clients and do-not-prospect">
+                    Prospectable
+                  </th>
+                  <th
+                    className="py-2 pr-3 font-medium"
+                    title="Share of prospectable accounts that must become opportunities to hit the needed pipeline"
+                  >
+                    Conv. req.
+                  </th>
                   <th className="py-2 pr-3 font-medium">Qualified</th>
                   <th className="py-2 font-medium text-right">Gap</th>
                 </tr>
@@ -1362,6 +1420,12 @@ export default function GtmPlanningPage() {
                       <td className="py-2.5 pr-3 tabular-nums text-muted">
                         {formatCompact(needed)}
                       </td>
+                      <ApolloCapacityCells
+                        mix={apolloByMarket[row.id]}
+                        status={apollo.status}
+                        pipelineNeeded={needed}
+                        avgDealSize={state.avgDealSize}
+                      />
                       <td className="py-2.5 pr-3">
                         <input
                           type="number"
@@ -1394,6 +1458,14 @@ export default function GtmPlanningPage() {
                   <td className="py-3 tabular-nums text-muted">
                     {formatCompact(pipelineNeeded)}
                   </td>
+                  <td className="py-3 tabular-nums text-muted">
+                    {apollo.status === 'ready'
+                      ? Object.values(apolloByMarket)
+                          .reduce((s, m) => s + m.prospectable, 0)
+                          .toLocaleString()
+                      : '—'}
+                  </td>
+                  <td className="py-3" />
                   <td className="py-3 tabular-nums font-semibold">
                     {formatCompact(currentPipeline)}
                   </td>

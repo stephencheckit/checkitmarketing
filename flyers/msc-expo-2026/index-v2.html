@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Checkit CAM+ Medical Monitoring — MSC Expo 2026 one-pager (v2)</title>
+<style>
+  @page { size: 8.5in 11in; margin: 0; }
+  @page a4 { size: 210mm 297mm; margin: 0; }
+
+  :root {
+    --navy: #020233;
+    --teal: #00cccc;
+    --teal-dark: #009999;
+    --teal-tint: #e6fafa;
+    --ink: #111827;
+    --ink-2: #4b5563;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --paper: #f5f7fa;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #9ca3af; }
+  body {
+    font-family: "League Spartan", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page {
+    width: 8.5in; height: 11in; margin: 0 auto; background: var(--white);
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  body.a4 .page { width: 210mm; height: 297mm; page: a4; }
+  @media print { html, body { background: none; } .page { margin: 0; } }
+
+  .hero, .outcomes, .cta { flex-shrink: 0; }
+
+  /* ───── Hero ───── */
+  .hero {
+    background: var(--navy); color: var(--white);
+    padding: 0.3in 0.55in 0.34in; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -1.4in; top: -1.8in; width: 4.6in; height: 4.6in; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0,204,204,0.3), rgba(0,204,204,0));
+  }
+  .hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3in; position: relative; z-index: 1; }
+  .hero-top img { height: 0.36in; width: auto; display: block; }
+  .event-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(255,255,255,0.28); border-radius: 999px; padding: 6px 12px 5px;
+    font-size: 9.5pt; font-weight: 500; color: rgba(255,255,255,0.92); background: rgba(255,255,255,0.06);
+  }
+  .event-pill b { color: var(--teal); font-weight: 700; }
+  .event-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.45); }
+  .eyebrow { color: var(--teal); font-weight: 700; font-size: 9pt; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; position: relative; z-index: 1; }
+  h1 { font-size: 31pt; line-height: 1.0; font-weight: 700; letter-spacing: -0.02em; max-width: 6.6in; position: relative; z-index: 1; }
+  h1 span { color: var(--teal); }
+  .lede { font-size: 11pt; line-height: 1.38; color: rgba(255,255,255,0.8); max-width: 6in; margin-top: 12px; position: relative; z-index: 1; }
+
+  /* ───── Needs → value ───── */
+  .body { flex: 1; min-height: 0; padding: 0.28in 0.55in 0.2in; display: flex; flex-direction: column; }
+  .kicker { font-size: 9pt; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--teal-dark); margin-bottom: 14px; }
+
+  .needs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.18in 0.3in; }
+  .need { border-top: 2px solid var(--line); padding-top: 12px; position: relative; }
+  .need::before { content: ""; position: absolute; top: -2px; left: 0; width: 0.5in; height: 2px; background: var(--teal); }
+  .need .q { font-size: 12.5pt; font-weight: 700; line-height: 1.2; color: var(--navy); margin-bottom: 7px; letter-spacing: -0.01em; }
+  .need .a { font-size: 9.4pt; line-height: 1.4; color: var(--ink-2); }
+  .need .a b { color: var(--ink); font-weight: 700; }
+
+  /* ───── Coverage ───── */
+  .cover { margin-top: auto; padding-top: 0.18in; }
+  .cover .kicker { margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px 5px 8px; font-size: 9.2pt; font-weight: 600; color: var(--ink);
+  }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); display: inline-block; }
+
+  /* ───── Outcomes strip ───── */
+  .outcomes {
+    margin: 0 0.55in; border-radius: 12px; background: var(--paper);
+    display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; align-items: start;
+    padding: 0.16in 0.28in;
+    margin-bottom: 0.22in;
+  }
+  .outcomes .lead { padding-right: 0.25in; border-right: 1px solid var(--line); align-self: stretch; }
+  .outcomes .lead .t { font-size: 11.5pt; font-weight: 700; line-height: 1.2; color: var(--navy); }
+  .outcomes .lead .s { font-size: 8.4pt; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+  .o { padding-left: 0.25in; }
+  .o .v { font-size: 20pt; font-weight: 700; color: var(--navy); letter-spacing: -0.02em; line-height: 1; }
+  .o .l { font-size: 8.6pt; color: var(--ink-2); margin-top: 5px; line-height: 1.3; }
+
+  /* ───── Quote ───── */
+  .quote { margin: 0 0.55in 0.26in; display: grid; grid-template-columns: 0.42in 1fr; gap: 12px; align-items: start; }
+  .quote .mark { font-size: 44pt; line-height: 0.7; color: var(--teal); font-weight: 700; margin-top: 4px; }
+  .quote p { font-size: 11pt; line-height: 1.38; color: var(--ink); font-weight: 500; letter-spacing: -0.005em; }
+  .quote .by { font-size: 8.8pt; color: var(--muted); margin-top: 7px; }
+  .quote .by b { color: var(--navy); }
+
+  /* ───── CTA ───── */
+  .cta {
+    background: var(--navy); color: var(--white);
+    padding: 0.24in 0.55in 0.3in;
+    display: grid; grid-template-columns: 1fr auto 1in; gap: 0.3in; align-items: center; position: relative;
+  }
+  .cta::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--teal); }
+  .cta .h { font-size: 15.5pt; font-weight: 700; line-height: 1.1; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .cta .h span { color: var(--teal); }
+  .cta .s { font-size: 9.2pt; color: rgba(255,255,255,0.78); line-height: 1.4; max-width: 3.7in; }
+  .cta .s b { color: #fff; font-weight: 600; }
+  .contact { border-left: 1px solid rgba(255,255,255,0.18); padding-left: 0.3in; min-width: 2.2in; }
+  .contact .name { font-size: 12pt; font-weight: 700; line-height: 1.1; }
+  .contact .role { font-size: 8.8pt; color: var(--teal); font-weight: 600; margin: 3px 0 8px; }
+  .contact .row { font-size: 9pt; color: rgba(255,255,255,0.85); line-height: 1.55; }
+  .contact .row .ph { color: rgba(255,255,255,0.5); font-style: italic; }
+  .qr img { width: 1in; height: 1in; display: block; border-radius: 6px; background: #fff; padding: 4px; }
+  .qr .c { font-size: 7pt; color: rgba(255,255,255,0.6); margin-top: 4px; line-height: 1.2; text-align: center; }
+  .legal { position: absolute; left: 0.55in; right: 0.55in; bottom: 0.08in; font-size: 6.6pt; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; }
+</style>
+</head>
+<body class="letter">
+<div class="page">
+
+  <header class="hero">
+    <div class="hero-top">
+      <img src="../../public/checkit-logo-horizontal-standard-rgb-white.svg" alt="Checkit" />
+      <div class="event-pill"><b>MSC Expo 2026</b><span class="dot"></span>The Convention Centre, Dublin<span class="dot"></span>15 October</div>
+    </div>
+    <div class="eyebrow">CAM+ · Medical monitoring</div>
+    <h1>Nothing in your fridges, freezers or labs goes unwatched. <span>Ever.</span></h1>
+    <p class="lede">Continuous monitoring for hospital laboratories, blood banks and pharmacies — so the people responsible for temperature-critical stock can stop worrying.</p>
+  </header>
+
+  <main class="body">
+    <div class="kicker">What you need · What Checkit gives you</div>
+    <div class="needs">
+      <div class="need">
+        <div class="q">A freezer fails at 2am on a bank holiday.</div>
+        <div class="a"><b>Someone gets a phone call.</b> Alarms escalate by call, SMS and email until a named person accepts — long before the stock is lost.</div>
+      </div>
+      <div class="need">
+        <div class="q">An inspector asks for six months of records.</div>
+        <div class="a"><b>They're already there.</b> Every reading, alarm and action is logged automatically and tamper-proof. One click to a report, signed off.</div>
+      </div>
+      <div class="need">
+        <div class="q">Skilled staff are doing clipboard checks.</div>
+        <div class="a"><b>Manual checks go to zero.</b> No twice-daily rounds, no transcription, no chasing missing logs. Time goes back to patients and science.</div>
+      </div>
+      <div class="need">
+        <div class="q">Every site does it differently.</div>
+        <div class="a"><b>One system, every site.</b> The same sensors, screens and records across a whole network — with live visibility for the people accountable for it.</div>
+      </div>
+    </div>
+
+    <div class="cover">
+      <div class="kicker">Covers everything that has a safe range</div>
+      <div class="chips">
+        <span class="chip"><i></i>Fridges &amp; freezers</span>
+        <span class="chip"><i></i>ULT &amp; LN₂ cryogenic</span>
+        <span class="chip"><i></i>Blood bank</span>
+        <span class="chip"><i></i>Incubators</span>
+        <span class="chip"><i></i>Room temperature &amp; humidity</span>
+        <span class="chip"><i></i>Door contacts</span>
+        <span class="chip"><i></i>O₂ · CO₂ · pressure</span>
+        <span class="chip"><i></i>Power &amp; equipment faults</span>
+      </div>
+    </div>
+  </main>
+
+  <section class="outcomes">
+    <div class="lead">
+      <div class="t">What it's worth, every year</div>
+      <div class="s">Across Checkit's NHS customer base. 60+ trusts, 300+ sites.</div>
+    </div>
+    <div class="o"><div class="v">£2.6m</div><div class="l">less stock lost to excursions</div></div>
+    <div class="o"><div class="v">£3.7m</div><div class="l">of staff time back on the ward and bench</div></div>
+    <div class="o"><div class="v">£840k</div><div class="l">saved in audit preparation</div></div>
+  </section>
+
+  <section class="quote">
+    <div class="mark">“</div>
+    <div>
+      <p>Checkit replaced a very painful and highly inefficient process and helped bring us into the digital era. They’ve saved us countless hours, and it’s far more accurate.</p>
+      <div class="by"><b>Joseph Ranne</b>, Project Manager — Octapharma</div>
+    </div>
+  </section>
+
+  <footer class="cta">
+    <div>
+      <div class="h">Come and talk to us at <span>MSC&nbsp;Expo&nbsp;2026</span></div>
+      <div class="s">Tell us how many fridges and freezers you have. We'll tell you what monitoring them properly looks like, what it costs, and how fast it goes in. <b>Proud sponsor of the MSC 2026 Laboratory Cup.</b></div>
+    </div>
+    <div class="contact">
+      <div class="name">Meghan O’Donnell</div>
+      <div class="role">Enterprise Technology Partner, Checkit</div>
+      <div class="row"><span class="ph">[email TBC]</span></div>
+      <div class="row"><span class="ph">[mobile TBC]</span></div>
+      <div class="row">checkit.net/solutions/medical-monitoring</div>
+    </div>
+    <div class="qr">
+      <img src="qr-medical-monitoring.svg" alt="QR code — checkit.net medical monitoring" />
+      <div class="c">Scan to learn more</div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Checkit Ltd. CAM+ is a Checkit product.</span>
+      <span>Checkit · Cambridge, UK · checkit.net</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

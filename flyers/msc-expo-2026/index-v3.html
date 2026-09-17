@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Checkit CAM+ Medical Monitoring one-pager (v3)</title>
+<style>
+  /* Print sizing: trim 8.5x11 (A4 210x297) with 0.125in / 3mm bleed on all sides.
+     Full-page = 8.75x11.25in (216x303mm). Backgrounds run to the page edge; the
+     printer trims 0.125in / 3mm off each side back to the trim size. */
+  @page { size: 8.75in 11.25in; margin: 0; }
+  @page a4 { size: 216mm 303mm; margin: 0; }
+
+  :root {
+    --bleed: 0.125in;
+    --pad: calc(0.55in + var(--bleed));
+    --navy: #020233;
+    --teal: #00cccc;
+    --teal-dark: #009999;
+    --teal-tint: #e6fafa;
+    --ink: #111827;
+    --ink-2: #4b5563;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --paper: #f5f7fa;
+    --white: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #9ca3af; }
+  body {
+    font-family: "League Spartan", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .page {
+    width: 8.75in; height: 11.25in; margin: 0 auto; background: var(--white);
+    display: flex; flex-direction: column; overflow: hidden; position: relative;
+  }
+  body.a4 { --bleed: 3mm; }
+  body.a4 .page { width: 216mm; height: 303mm; page: a4; }
+  @media print { html, body { background: none; } .page { margin: 0; } }
+
+  .hero, .stats, .cta { flex-shrink: 0; }
+
+  /* ───── Hero ───── */
+  .hero {
+    background: var(--navy); color: var(--white);
+    padding: calc(0.32in + var(--bleed)) var(--pad) 0.34in; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ""; position: absolute; right: -1.4in; top: -1.8in; width: 4.6in; height: 4.6in; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0,204,204,0.3), rgba(0,204,204,0));
+  }
+  .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--teal); }
+  .hero-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.3in; position: relative; z-index: 1; }
+  .hero-top img { height: 0.37in; width: auto; display: block; }
+  .event-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid rgba(255,255,255,0.28); border-radius: 999px; padding: 6px 12px 5px;
+    font-size: 9.5pt; font-weight: 500; color: rgba(255,255,255,0.92); background: rgba(255,255,255,0.06);
+  }
+  .event-pill b { color: var(--teal); font-weight: 700; }
+  .event-pill .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.45); }
+  .hero-body { position: relative; z-index: 1; }
+  .eyebrow { color: var(--teal); font-weight: 700; font-size: 9pt; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 9px; }
+  h1 { font-size: 30pt; line-height: 1.02; font-weight: 700; letter-spacing: -0.015em; margin-bottom: 11px; }
+  h1 span { color: var(--teal); }
+  .lede { font-size: 10.8pt; line-height: 1.4; color: rgba(255,255,255,0.82); max-width: 5.7in; }
+  .sponsor { border: 1px solid rgba(0,204,204,0.45); background: rgba(0,204,204,0.08); border-radius: 10px; padding: 12px 14px 11px; }
+  .sponsor .lbl { font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); font-weight: 700; margin-bottom: 4px; }
+  .sponsor .ttl { font-size: 12pt; font-weight: 700; line-height: 1.15; }
+
+  /* ───── Stats ───── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); padding: 0 var(--pad); }
+  .stat { padding: 0.2in 0.14in 0.19in 0; border-right: 1px solid var(--line); }
+  .stat + .stat { padding-left: 0.22in; }
+  .stat:last-child { border-right: 0; }
+  .stat .v { font-size: 21pt; font-weight: 700; color: var(--navy); letter-spacing: -0.02em; line-height: 1; }
+  .stat .v small { font-size: 11pt; font-weight: 600; color: var(--teal-dark); margin-left: 2px; }
+  .stat .l { font-size: 8.7pt; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+
+  /* ───── Body ───── */
+  .body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 2.55in; gap: 0.42in; padding: 0.36in var(--pad) 0.32in; }
+  .main { display: flex; flex-direction: column; min-height: 0; justify-content: space-between; }
+  h2 { font-size: 9pt; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--teal-dark); margin-bottom: 13px; display: flex; align-items: center; gap: 8px; }
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+  .flow::before { content: ""; position: absolute; left: 0.32in; right: 0.32in; top: 0.23in; height: 2px; background: linear-gradient(90deg, var(--teal), var(--navy)); opacity: 0.35; }
+  .step { position: relative; padding-right: 11px; }
+  .step .n {
+    width: 0.46in; height: 0.46in; border-radius: 50%; background: var(--navy);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+    border: 3px solid var(--white); box-shadow: 0 0 0 1.5px var(--teal); position: relative; z-index: 1;
+  }
+  .step .n svg { width: 19px; height: 19px; stroke: var(--teal); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .step .t { font-size: 10.5pt; font-weight: 700; margin-bottom: 3px; line-height: 1.15; }
+  .step .d { font-size: 8.8pt; line-height: 1.36; color: var(--ink-2); }
+
+  .mon { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; }
+  .mon .item { display: flex; gap: 10px; align-items: center; font-size: 10.2pt; font-weight: 600; color: var(--ink); }
+  .mon .item i { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%; background: var(--teal); display: inline-block; }
+
+  .quote { background: var(--paper); border-left: 3px solid var(--teal); padding: 14px 16px 13px; border-radius: 0 10px 10px 0; }
+  .quote p { font-size: 10.4pt; line-height: 1.4; font-weight: 500; }
+  .quote .by { font-size: 8.5pt; color: var(--muted); margin-top: 7px; }
+  .quote .by b { color: var(--navy); }
+
+  .side { display: flex; flex-direction: column; gap: 0.24in; }
+  .card { background: var(--paper); border-radius: 12px; padding: 15px 16px 14px; display: flex; flex-direction: column; }
+  .card.fill { flex: 1; justify-content: center; }
+  .card h2 { margin-bottom: 11px; }
+  .checks { list-style: none; }
+  .checks li { display: flex; gap: 10px; align-items: flex-start; font-size: 9.2pt; line-height: 1.34; color: var(--ink-2); padding: 5px 0; }
+  .checks li svg { flex: 0 0 auto; width: 12px; height: 12px; margin-top: 2px; stroke: var(--teal-dark); fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .checks li b { color: var(--ink); }
+
+  .proof { display: grid; grid-template-columns: 1fr 1fr; gap: 0.18in 10px; }
+  .proof .v { font-size: 25pt; font-weight: 700; color: var(--navy); line-height: 1; letter-spacing: -0.02em; }
+  .proof .l { font-size: 8.6pt; color: var(--muted); line-height: 1.28; margin-top: 5px; }
+
+  /* ───── CTA ───── */
+  .cta {
+    background: var(--navy); color: var(--white);
+    padding: 0.34in var(--pad) calc(0.36in + var(--bleed));
+    display: grid; grid-template-columns: 1fr auto; gap: 0.5in; align-items: center; position: relative;
+  }
+  .cta::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: var(--teal); }
+  .cta .h { font-size: 14.5pt; font-weight: 700; line-height: 1.16; margin-bottom: 7px; letter-spacing: -0.005em; }
+  .cta .s { font-size: 9.6pt; color: rgba(255,255,255,0.8); line-height: 1.42; max-width: 4.6in; }
+  .cta .url { font-size: 9.4pt; color: var(--teal); font-weight: 600; margin-top: 9px; }
+  .qr { text-align: center; }
+  .qr img { width: 1.05in; height: 1.05in; display: block; border-radius: 6px; background: #fff; padding: 5px; }
+  .qr .c { font-size: 7.5pt; color: rgba(255,255,255,0.65); margin-top: 6px; line-height: 1.2; }
+  .legal { position: absolute; left: var(--pad); right: var(--pad); bottom: calc(0.12in + var(--bleed)); font-size: 6.8pt; color: rgba(255,255,255,0.4); display: flex; justify-content: space-between; }
+</style>
+</head>
+<body class="letter">
+<div class="page">
+
+  <header class="hero">
+    <div class="hero-top">
+      <img src="../../public/checkit-logo-horizontal-standard-rgb-white.svg" alt="Checkit" />
+    </div>
+    <div class="hero-body">
+      <div>
+        <div class="eyebrow">CAM+ · Connected Automated Monitoring</div>
+        <h1>Certainty for every sample, every dose, <span>every site.</span></h1>
+        <p class="lede">24/7 automated monitoring for hospital laboratories, blood banks and pharmacies, with alarms that reach a person and records that are always inspection-ready.</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><div class="v">24/7</div><div class="l">Monitoring and alarm response</div></div>
+    <div class="stat"><div class="v">±0.3<small>°C</small></div><div class="l">Accuracy, traceable calibration</div></div>
+    <div class="stat"><div class="v">−200<small>to +200°C</small></div><div class="l">LN₂ cryogenic to incubators</div></div>
+    <div class="stat"><div class="v">5<small>yr</small></div><div class="l">Sensor battery life</div></div>
+  </section>
+
+  <main class="body">
+    <div class="main">
+      <section class="block">
+      <h2>How it works</h2>
+      <div class="flow">
+        <div class="step">
+          <div class="n"><svg viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg></div>
+          <div class="t">Sense</div>
+          <div class="d">Wireless sensors fitted in minutes</div>
+        </div>
+        <div class="step">
+          <div class="n"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h6M7 13h10"/></svg></div>
+          <div class="t">Record</div>
+          <div class="d">Every reading logged, tamper-proof</div>
+        </div>
+        <div class="step">
+          <div class="n"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+          <div class="t">Alarm</div>
+          <div class="d">Call, SMS and email until someone accepts</div>
+        </div>
+        <div class="step">
+          <div class="n"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="t">Prove</div>
+          <div class="d">One-click reports and signed incident audits</div>
+        </div>
+      </div>
+      </section>
+
+      <section class="block">
+      <h2>What you can monitor</h2>
+      <div class="mon">
+        <div class="item"><i></i>Fridges &amp; freezers</div>
+        <div class="item"><i></i>ULT &amp; LN₂ cryogenic storage</div>
+        <div class="item"><i></i>Blood bank refrigeration</div>
+        <div class="item"><i></i>Incubators</div>
+        <div class="item"><i></i>Room temperature &amp; humidity</div>
+        <div class="item"><i></i>Door contacts</div>
+        <div class="item"><i></i>O₂, CO₂ &amp; differential pressure</div>
+        <div class="item"><i></i>Power &amp; equipment faults</div>
+      </div>
+      </section>
+
+      <div class="quote">
+        <p>“Checkit replaced a very painful and highly inefficient process and helped bring us into the digital era. They’ve saved us countless hours, and it’s far more accurate.”</p>
+        <div class="by"><b>Joseph Ranne</b>, Project Manager, Octapharma</div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="card">
+        <h2>Built for regulated labs</h2>
+        <ul class="checks">
+          <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>Tamper-proof records</b>: no transcription or backfilling</span></li>
+          <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>21 CFR Part 11</b> ready, with optional eSignature</span></li>
+          <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>Supports GMP, MHRA &amp; CQC</b> requirements</span></li>
+          <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>ISO 17025 traceable calibration</b>, certificates in your portal</span></li>
+          <li><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span><b>ISO 27001</b> certified cloud platform</span></li>
+        </ul>
+      </div>
+
+      <div class="card fill">
+        <h2>Proven at scale</h2>
+        <div class="proof">
+          <div><div class="v">60+</div><div class="l">NHS trusts</div></div>
+          <div><div class="v">300+</div><div class="l">healthcare sites</div></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="cta">
+    <div>
+      <div class="h">Connected Automated Monitoring for medical cold chains</div>
+      <div class="s">CAM+ protects temperature-critical stock across hospital laboratories, blood banks and pharmacies.</div>
+      <div class="url">checkit.net/solutions/medical-monitoring</div>
+    </div>
+    <div class="qr">
+      <img src="qr-medical-monitoring.svg" alt="QR code for checkit.net medical monitoring" />
+      <div class="c">Scan to learn more</div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Checkit Ltd. CAM+ is a Checkit product.</span>
+      <span>Checkit · Cambridge, UK · checkit.net</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

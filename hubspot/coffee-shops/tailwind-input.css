@@ -21,6 +21,18 @@
   --color-foreground: #f3f4f6;
 }
 
+/* Bring the checkit.net theme header/nav/footer into brand-consistent
+   League Spartan on these microsite pages. The POWER THEME Checkit base
+   derives every font from --ff-base (body) and --ff-accent (headings). This
+   coded template doesn't inherit the site's updated League Spartan font
+   setting, so the theme header/nav falls back to the old Poppins/Inter.
+   Overriding the two source variables cascades League Spartan across the
+   header, nav, buttons, and footer to match the rest of checkit.net. */
+:root {
+  --ff-base: "League Spartan", Arial, sans-serif !important;
+  --ff-accent: "League Spartan", Arial, sans-serif !important;
+}
+
 /* Primary CTA — matches corporate site buttons (teal #0cc, navy on hover) */
 .btn-gradient {
   background: #0cc !important;

@@ -34,6 +34,7 @@ import {
   Swords,
   MousePointerClick,
   Mail,
+  Network,
 } from 'lucide-react';
 
 // Reddit icon component
@@ -101,6 +102,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   const marketingItems = [
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/gtm-planning', label: 'GTM Planning', icon: Briefcase },
+    { href: '/gtm-map', label: 'GTM Map', icon: Network },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
     { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },

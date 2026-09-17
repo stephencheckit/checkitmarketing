@@ -21,7 +21,7 @@ export default function DemoRequestButton({
 
   const baseStyles = "inline-flex items-center gap-2 px-6 py-3 font-medium rounded-lg transition-all cursor-pointer";
   const variantStyles = variant === 'primary' 
-    ? "btn-gradient text-white"
+    ? "btn-gradient"
     : "bg-surface-elevated text-foreground hover:bg-surface";
 
   return (

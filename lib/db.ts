@@ -5441,3 +5441,449 @@ export async function getBotActivitySummary(daysBack: number = 30) {
     byHour,
   };
 }
+
+// ============================================
+// BDR ACCOUNT PROSPECTING (Apollo-sourced)
+// ============================================
+//
+// Apollo holds the current owner and stage of an account but keeps no usable
+// history of when either changed (its activity log holds only a few hundred
+// records workspace-wide). These tables record the two things Apollo cannot
+// answer later: which accounts were handed to which BDR for which period, and
+// what each account's state was on each day of that period.
+//
+// Snapshots are append-only per day, so history accrues from first sync
+// onward — it cannot be backfilled.
+
+export interface ProspectingSprint {
+  id: number;
+  name: string;
+  apollo_label_id: string;
+  apollo_label_name: string | null;
+  starts_on: string;
+  ends_on: string;
+  status: string;
+  created_at: string;
+}
+
+export interface ProspectingAssignment {
+  id: number;
+  sprint_id: number;
+  apollo_account_id: string;
+  account_name: string;
+  domain: string | null;
+  hubspot_company_id: string | null;
+  assigned_owner_id: string | null;
+  assigned_owner_name: string | null;
+  disposition: string | null;
+  disposition_note: string | null;
+  created_at: string;
+}
+
+export async function initializeProspectingTables() {
+  // A sprint is "this Apollo list, handed to BDRs, for this window".
+  await sql`
+    CREATE TABLE IF NOT EXISTS prospecting_sprints (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      apollo_label_id TEXT NOT NULL,
+      apollo_label_name TEXT,
+      starts_on DATE NOT NULL,
+      ends_on DATE NOT NULL,
+      status TEXT DEFAULT 'active',
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `;
+
+  // The roster handed over. assigned_owner_* is the intended BDR at handover;
+  // the snapshot's owner_id is who Apollo says owns it now, so drift between
+  // the two is visible.
+  //
+  // disposition is the one field a human sets — reserved for accounts a BDR
+  // consciously drops, since that reason exists nowhere else. Everything else
+  // is derived from Apollo.
+  await sql`
+    CREATE TABLE IF NOT EXISTS prospecting_assignments (
+      id SERIAL PRIMARY KEY,
+      sprint_id INTEGER REFERENCES prospecting_sprints(id) ON DELETE CASCADE,
+      apollo_account_id TEXT NOT NULL,
+      account_name TEXT NOT NULL,
+      domain TEXT,
+      hubspot_company_id TEXT,
+      assigned_owner_id TEXT,
+      assigned_owner_name TEXT,
+      disposition TEXT,
+      disposition_note TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(sprint_id, apollo_account_id)
+    )
+  `;
+
+  // One row per account per day. This is the history layer.
+  await sql`
+    CREATE TABLE IF NOT EXISTS prospecting_account_snapshots (
+      id SERIAL PRIMARY KEY,
+      sprint_id INTEGER REFERENCES prospecting_sprints(id) ON DELETE CASCADE,
+      apollo_account_id TEXT NOT NULL,
+      snapshot_date DATE NOT NULL,
+      account_stage_id TEXT,
+      account_stage_name TEXT,
+      account_stage_category TEXT,
+      owner_id TEXT,
+      owner_name TEXT,
+      num_contacts INTEGER DEFAULT 0,
+      contacts_active INTEGER DEFAULT 0,
+      contacts_finished INTEGER DEFAULT 0,
+      contacts_paused INTEGER DEFAULT 0,
+      contacts_bounced INTEGER DEFAULT 0,
+      contacts_not_sent INTEGER DEFAULT 0,
+      sequence_count INTEGER DEFAULT 0,
+      last_activity_date TIMESTAMPTZ,
+      synced_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(sprint_id, apollo_account_id, snapshot_date)
+    )
+  `;
+
+  // Personas actually worked, captured per day alongside the account snapshot.
+  await sql`
+    CREATE TABLE IF NOT EXISTS prospecting_persona_snapshots (
+      id SERIAL PRIMARY KEY,
+      sprint_id INTEGER REFERENCES prospecting_sprints(id) ON DELETE CASCADE,
+      apollo_account_id TEXT NOT NULL,
+      snapshot_date DATE NOT NULL,
+      apollo_contact_id TEXT NOT NULL,
+      contact_name TEXT,
+      title TEXT,
+      owner_id TEXT,
+      in_sequence BOOLEAN DEFAULT FALSE,
+      last_activity_date TIMESTAMPTZ,
+      UNIQUE(sprint_id, apollo_contact_id, snapshot_date)
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS prospecting_sync_log (
+      id SERIAL PRIMARY KEY,
+      sprint_id INTEGER,
+      status TEXT DEFAULT 'running',
+      accounts_synced INTEGER DEFAULT 0,
+      contacts_synced INTEGER DEFAULT 0,
+      started_at TIMESTAMPTZ DEFAULT NOW(),
+      completed_at TIMESTAMPTZ,
+      error_message TEXT
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_prospecting_assign_sprint ON prospecting_assignments(sprint_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_prospecting_snap_sprint_date ON prospecting_account_snapshots(sprint_id, snapshot_date DESC)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_prospecting_snap_account ON prospecting_account_snapshots(apollo_account_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_prospecting_persona_sprint_date ON prospecting_persona_snapshots(sprint_id, snapshot_date DESC)`;
+}
+
+// --- Sprints ---------------------------------------------------------------
+
+export async function createProspectingSprint(data: {
+  name: string;
+  apolloLabelId: string;
+  apolloLabelName?: string | null;
+  startsOn: string;
+  endsOn: string;
+}) {
+  const result = await sql`
+    INSERT INTO prospecting_sprints (name, apollo_label_id, apollo_label_name, starts_on, ends_on)
+    VALUES (${data.name}, ${data.apolloLabelId}, ${data.apolloLabelName || null}, ${data.startsOn}, ${data.endsOn})
+    RETURNING *
+  `;
+  return result[0] as ProspectingSprint;
+}
+
+export async function getProspectingSprints(status?: string) {
+  const result = status
+    ? await sql`SELECT * FROM prospecting_sprints WHERE status = ${status} ORDER BY starts_on DESC`
+    : await sql`SELECT * FROM prospecting_sprints ORDER BY starts_on DESC`;
+  return result as ProspectingSprint[];
+}
+
+export async function getProspectingSprint(id: number) {
+  const result = await sql`SELECT * FROM prospecting_sprints WHERE id = ${id}`;
+  return (result[0] as ProspectingSprint) || null;
+}
+
+export async function updateProspectingSprintStatus(id: number, status: string) {
+  const result = await sql`
+    UPDATE prospecting_sprints SET status = ${status} WHERE id = ${id} RETURNING *
+  `;
+  return (result[0] as ProspectingSprint) || null;
+}
+
+// --- Assignments -----------------------------------------------------------
+
+export async function upsertProspectingAssignment(data: {
+  sprintId: number;
+  apolloAccountId: string;
+  accountName: string;
+  domain?: string | null;
+  hubspotCompanyId?: string | null;
+  assignedOwnerId?: string | null;
+  assignedOwnerName?: string | null;
+}) {
+  const result = await sql`
+    INSERT INTO prospecting_assignments (
+      sprint_id, apollo_account_id, account_name, domain,
+      hubspot_company_id, assigned_owner_id, assigned_owner_name
+    ) VALUES (
+      ${data.sprintId}, ${data.apolloAccountId}, ${data.accountName}, ${data.domain || null},
+      ${data.hubspotCompanyId || null}, ${data.assignedOwnerId || null}, ${data.assignedOwnerName || null}
+    )
+    ON CONFLICT (sprint_id, apollo_account_id) DO UPDATE SET
+      account_name = ${data.accountName},
+      domain = COALESCE(${data.domain || null}, prospecting_assignments.domain),
+      hubspot_company_id = COALESCE(${data.hubspotCompanyId || null}, prospecting_assignments.hubspot_company_id)
+    RETURNING *
+  `;
+  return result[0] as ProspectingAssignment;
+}
+
+export async function getProspectingAssignments(sprintId: number) {
+  const result = await sql`
+    SELECT * FROM prospecting_assignments WHERE sprint_id = ${sprintId} ORDER BY account_name
+  `;
+  return result as ProspectingAssignment[];
+}
+
+export async function setProspectingDisposition(
+  sprintId: number,
+  apolloAccountId: string,
+  disposition: string | null,
+  note?: string | null
+) {
+  const result = await sql`
+    UPDATE prospecting_assignments
+    SET disposition = ${disposition}, disposition_note = ${note || null}
+    WHERE sprint_id = ${sprintId} AND apollo_account_id = ${apolloAccountId}
+    RETURNING *
+  `;
+  return (result[0] as ProspectingAssignment) || null;
+}
+
+// --- Snapshots -------------------------------------------------------------
+
+export async function upsertAccountSnapshot(data: {
+  sprintId: number;
+  apolloAccountId: string;
+  snapshotDate: string;
+  accountStageId?: string | null;
+  accountStageName?: string | null;
+  accountStageCategory?: string | null;
+  ownerId?: string | null;
+  ownerName?: string | null;
+  numContacts: number;
+  contactsActive: number;
+  contactsFinished: number;
+  contactsPaused: number;
+  contactsBounced: number;
+  contactsNotSent: number;
+  sequenceCount: number;
+  lastActivityDate?: string | null;
+}) {
+  await sql`
+    INSERT INTO prospecting_account_snapshots (
+      sprint_id, apollo_account_id, snapshot_date,
+      account_stage_id, account_stage_name, account_stage_category,
+      owner_id, owner_name, num_contacts,
+      contacts_active, contacts_finished, contacts_paused, contacts_bounced, contacts_not_sent,
+      sequence_count, last_activity_date
+    ) VALUES (
+      ${data.sprintId}, ${data.apolloAccountId}, ${data.snapshotDate},
+      ${data.accountStageId || null}, ${data.accountStageName || null}, ${data.accountStageCategory || null},
+      ${data.ownerId || null}, ${data.ownerName || null}, ${data.numContacts},
+      ${data.contactsActive}, ${data.contactsFinished}, ${data.contactsPaused},
+      ${data.contactsBounced}, ${data.contactsNotSent},
+      ${data.sequenceCount}, ${data.lastActivityDate || null}
+    )
+    ON CONFLICT (sprint_id, apollo_account_id, snapshot_date) DO UPDATE SET
+      account_stage_id = ${data.accountStageId || null},
+      account_stage_name = ${data.accountStageName || null},
+      account_stage_category = ${data.accountStageCategory || null},
+      owner_id = ${data.ownerId || null},
+      owner_name = ${data.ownerName || null},
+      num_contacts = ${data.numContacts},
+      contacts_active = ${data.contactsActive},
+      contacts_finished = ${data.contactsFinished},
+      contacts_paused = ${data.contactsPaused},
+      contacts_bounced = ${data.contactsBounced},
+      contacts_not_sent = ${data.contactsNotSent},
+      sequence_count = ${data.sequenceCount},
+      last_activity_date = ${data.lastActivityDate || null},
+      synced_at = NOW()
+  `;
+}
+
+export async function upsertPersonaSnapshot(data: {
+  sprintId: number;
+  apolloAccountId: string;
+  snapshotDate: string;
+  apolloContactId: string;
+  contactName?: string | null;
+  title?: string | null;
+  ownerId?: string | null;
+  inSequence: boolean;
+  lastActivityDate?: string | null;
+}) {
+  await sql`
+    INSERT INTO prospecting_persona_snapshots (
+      sprint_id, apollo_account_id, snapshot_date, apollo_contact_id,
+      contact_name, title, owner_id, in_sequence, last_activity_date
+    ) VALUES (
+      ${data.sprintId}, ${data.apolloAccountId}, ${data.snapshotDate}, ${data.apolloContactId},
+      ${data.contactName || null}, ${data.title || null}, ${data.ownerId || null},
+      ${data.inSequence}, ${data.lastActivityDate || null}
+    )
+    ON CONFLICT (sprint_id, apollo_contact_id, snapshot_date) DO UPDATE SET
+      title = ${data.title || null},
+      owner_id = ${data.ownerId || null},
+      in_sequence = ${data.inSequence},
+      last_activity_date = ${data.lastActivityDate || null}
+  `;
+}
+
+// --- Sync log --------------------------------------------------------------
+
+export async function startProspectingSync(sprintId: number | null) {
+  const result = await sql`
+    INSERT INTO prospecting_sync_log (sprint_id) VALUES (${sprintId}) RETURNING id
+  `;
+  return result[0] as { id: number };
+}
+
+export async function finishProspectingSync(
+  id: number,
+  data: { status: string; accountsSynced?: number; contactsSynced?: number; errorMessage?: string | null }
+) {
+  await sql`
+    UPDATE prospecting_sync_log
+    SET status = ${data.status},
+        accounts_synced = ${data.accountsSynced || 0},
+        contacts_synced = ${data.contactsSynced || 0},
+        completed_at = NOW(),
+        error_message = ${data.errorMessage || null}
+    WHERE id = ${id}
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Customer accounts (installed base)
+//
+// Sourced from a spreadsheet export of the customer base, not from Apollo or
+// HubSpot. Kept in the database rather than committed because it carries
+// per-account revenue.
+//
+// ARR is stored in USD, as exported. Anything displayed alongside the
+// published sterling figures has to be converted.
+
+export interface CustomerAccount {
+  id: number;
+  source_name: string;
+  company_name: string | null;
+  domain: string | null;
+  /**
+   * `domain` from the export is unreliable as a join key — several large
+   * accounts carry a LinkedIn careers domain (John Lewis is "jlpjobs.com").
+   * This column holds the corrected corporate domain where one is known.
+   */
+  match_domain: string | null;
+  product: string | null;
+  arr_usd: number | null;
+  cam_usd: number | null;
+  cam_plus_usd: number | null;
+  size_segment: string | null;
+  industry: string | null;
+  location: string | null;
+  employee_count: number | null;
+  /** Market id from lib/gtm-markets.ts, once assigned */
+  market_id: string | null;
+  imported_at: string;
+}
+
+export async function initializeCustomerAccountTables() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS customer_accounts (
+      id SERIAL PRIMARY KEY,
+      source_name TEXT NOT NULL,
+      company_name TEXT,
+      domain TEXT,
+      match_domain TEXT,
+      product TEXT,
+      arr_usd NUMERIC(14,2),
+      cam_usd NUMERIC(14,2),
+      cam_plus_usd NUMERIC(14,2),
+      size_segment TEXT,
+      industry TEXT,
+      location TEXT,
+      employee_count INTEGER,
+      market_id TEXT,
+      imported_at TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(source_name)
+    )
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_customer_accounts_domain ON customer_accounts(match_domain)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_customer_accounts_market ON customer_accounts(market_id)`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_customer_accounts_arr ON customer_accounts(arr_usd DESC)`;
+}
+
+export async function upsertCustomerAccount(data: {
+  sourceName: string;
+  companyName?: string | null;
+  domain?: string | null;
+  matchDomain?: string | null;
+  product?: string | null;
+  arrUsd?: number | null;
+  camUsd?: number | null;
+  camPlusUsd?: number | null;
+  sizeSegment?: string | null;
+  industry?: string | null;
+  location?: string | null;
+  employeeCount?: number | null;
+  marketId?: string | null;
+}) {
+  await sql`
+    INSERT INTO customer_accounts (
+      source_name, company_name, domain, match_domain, product,
+      arr_usd, cam_usd, cam_plus_usd, size_segment, industry,
+      location, employee_count, market_id
+    ) VALUES (
+      ${data.sourceName}, ${data.companyName ?? null}, ${data.domain ?? null},
+      ${data.matchDomain ?? null}, ${data.product ?? null},
+      ${data.arrUsd ?? null}, ${data.camUsd ?? null}, ${data.camPlusUsd ?? null},
+      ${data.sizeSegment ?? null}, ${data.industry ?? null},
+      ${data.location ?? null}, ${data.employeeCount ?? null}, ${data.marketId ?? null}
+    )
+    ON CONFLICT (source_name) DO UPDATE SET
+      company_name = ${data.companyName ?? null},
+      domain = ${data.domain ?? null},
+      match_domain = ${data.matchDomain ?? null},
+      product = ${data.product ?? null},
+      arr_usd = ${data.arrUsd ?? null},
+      cam_usd = ${data.camUsd ?? null},
+      cam_plus_usd = ${data.camPlusUsd ?? null},
+      size_segment = ${data.sizeSegment ?? null},
+      industry = ${data.industry ?? null},
+      location = ${data.location ?? null},
+      employee_count = ${data.employeeCount ?? null},
+      market_id = ${data.marketId ?? null},
+      imported_at = NOW()
+  `;
+}
+
+/** ARR rolled up per market, for anything that needs revenue by market. */
+export async function getCustomerArrByMarket() {
+  return (await sql`
+    SELECT market_id,
+           COUNT(*)::int AS accounts,
+           COALESCE(SUM(arr_usd), 0)::float AS arr_usd
+    FROM customer_accounts
+    GROUP BY market_id
+    ORDER BY arr_usd DESC
+  `) as { market_id: string | null; accounts: number; arr_usd: number }[];
+}

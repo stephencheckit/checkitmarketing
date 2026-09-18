@@ -139,6 +139,41 @@ interface ExistingAccount {
   id: string;
   /** Current labels, so tagging can append instead of replacing. */
   labelIds: string[];
+  stageId: string | null;
+}
+
+/**
+ * Stages that disqualify an account from a prospecting list. The
+ * customer_accounts domain set alone is not enough: corporate groups buy under
+ * one domain and appear under another (octapharmausa.com is the customer,
+ * octapharmaplasma.com is the sibling), and the spreadsheet lags Apollo on
+ * renames and mergers. Apollo's own stage is the more reliable signal.
+ */
+const BLOCKED_STAGES = /current client|do not prospect/i;
+
+async function blockedStageIds(): Promise<Set<string>> {
+  const res = await fetch(`${APOLLO}/account_stages`, { headers: HEADERS });
+  if (!res.ok) return new Set();
+  const d = (await res.json()) as {
+    account_stages?: { id: string; name?: string; display_name?: string }[];
+  };
+  return new Set(
+    (d.account_stages || [])
+      .filter((s) => BLOCKED_STAGES.test(s.display_name || s.name || ''))
+      .map((s) => String(s.id))
+  );
+}
+
+/** Label ids whose membership marks an account as an existing customer. */
+async function customerLabelIds(): Promise<Set<string>> {
+  const res = await fetch(`${APOLLO}/labels`, { headers: HEADERS });
+  if (!res.ok) return new Set();
+  const labels = (await res.json()) as { id: string; name: string; modality: string }[];
+  return new Set(
+    labels
+      .filter((l) => l.modality === 'accounts' && /customer|current client/i.test(l.name))
+      .map((l) => String(l.id))
+  );
 }
 
 /**
@@ -167,6 +202,7 @@ async function lookupExistingAccounts(domains: string[]): Promise<Map<string, Ex
         present.set(dom, {
           id: String(a.id),
           labelIds: Array.isArray(a.label_ids) ? a.label_ids.map(String) : [],
+          stageId: a.account_stage_id ? String(a.account_stage_id) : null,
         });
       }
       if (!d.pagination || page >= d.pagination.total_pages) break;
@@ -214,7 +250,16 @@ async function main() {
       `) as { d: string }[]
     ).map((r) => r.d)
   );
-  console.log(`Excluding ${customerDomains.size} customer domains.\n`);
+  const blockedStages = await blockedStageIds();
+  const customerLabels = await customerLabelIds();
+  const isCustomerAccount = (a: ExistingAccount) =>
+    (a.stageId !== null && blockedStages.has(a.stageId)) ||
+    a.labelIds.some((l) => customerLabels.has(l));
+
+  console.log(
+    `Excluding ${customerDomains.size} customer domains, ` +
+      `${blockedStages.size} blocked stages, ${customerLabels.size} customer lists.\n`
+  );
 
   const profiles = ONLY_MARKET
     ? ICP_PROFILES.filter((p) => p.marketId === ONLY_MARKET)
@@ -290,8 +335,15 @@ async function main() {
     // they are filled first and the per-market cap is spent on them before any
     // account is created.
     const onProfile = [...found.values()];
-    const toTag = onProfile.filter((c) => inWorkspace.has(c.domain));
-    const toCreate = onProfile.filter((c) => !inWorkspace.has(c.domain));
+    const customerHits = onProfile.filter((c) => {
+      const a = inWorkspace.get(c.domain);
+      return a ? isCustomerAccount(a) : false;
+    });
+    for (const c of customerHits) claimed.add(c.domain);
+
+    const prospectable = onProfile.filter((c) => !customerHits.includes(c));
+    const toTag = prospectable.filter((c) => inWorkspace.has(c.domain));
+    const toCreate = prospectable.filter((c) => !inWorkspace.has(c.domain));
 
     const tagExisting = toTag.slice(0, PER_MARKET);
     const createNew = toCreate.slice(0, Math.max(0, PER_MARKET - tagExisting.length));
@@ -311,7 +363,8 @@ async function main() {
     console.log(
       `${profile.marketId.padEnd(18)} ${String(found.size).padStart(4)} on profile  ->  ` +
         `${String(existing).padStart(3)} existing accounts to tag, ` +
-        `${String(createNew.length).padStart(3)} to create`
+        `${String(createNew.length).padStart(3)} to create` +
+        (customerHits.length ? `, ${customerHits.length} dropped as customers` : '')
     );
     for (const c of [...tagExisting, ...createNew].slice(0, 5)) {
       console.log(

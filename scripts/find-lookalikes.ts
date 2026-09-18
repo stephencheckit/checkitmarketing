@@ -164,16 +164,32 @@ async function blockedStageIds(): Promise<Set<string>> {
   );
 }
 
+/**
+ * Account lists whose membership marks an account as an existing customer.
+ * Named explicitly rather than pattern-matched: a list called "First 2 pages
+ * of healthcare - none customers" matches any sensible regex for "customer"
+ * and would wrongly exclude 16 prospectable accounts.
+ */
+const CUSTOMER_LIST_NAMES = [
+  'Customers',
+  'Customer · GTM1',
+  'US Medical — Customers (do not sequence)',
+];
+
 /** Label ids whose membership marks an account as an existing customer. */
 async function customerLabelIds(): Promise<Set<string>> {
   const res = await fetch(`${APOLLO}/labels`, { headers: HEADERS });
   if (!res.ok) return new Set();
   const labels = (await res.json()) as { id: string; name: string; modality: string }[];
-  return new Set(
-    labels
-      .filter((l) => l.modality === 'accounts' && /customer|current client/i.test(l.name))
-      .map((l) => String(l.id))
-  );
+  const wanted = new Set(CUSTOMER_LIST_NAMES);
+  const matched = labels.filter((l) => l.modality === 'accounts' && wanted.has(l.name));
+
+  for (const name of CUSTOMER_LIST_NAMES) {
+    if (!matched.some((l) => l.name === name)) {
+      console.warn(`  warning: customer list "${name}" not found in Apollo — not excluding it.`);
+    }
+  }
+  return new Set(matched.map((l) => String(l.id)));
 }
 
 /**

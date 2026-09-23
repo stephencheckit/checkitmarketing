@@ -1,4 +1,4 @@
-import GtmMap from '../(marketing)/gtm-map/GtmMap';
+import GtmMapClient from '../(marketing)/gtm-map/GtmMapClient';
 
 /**
  * Unauthenticated preview of the GTM map for review without a portal login.
@@ -10,5 +10,5 @@ export const metadata = {
 };
 
 export default function GtmMapPreviewPage() {
-  return <GtmMap />;
+  return <GtmMapClient />;
 }

@@ -1,5 +1,5 @@
-import GtmMap from './GtmMap';
+import GtmMapClient from './GtmMapClient';
 
 export default function GtmMapPage() {
-  return <GtmMap offsetNav liveApollo />;
+  return <GtmMapClient offsetNav liveApollo />;
 }

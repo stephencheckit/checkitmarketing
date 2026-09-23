@@ -1,7 +1,12 @@
 'use client';
 
 import { createContext, useContext } from 'react';
-import { EMPTY_SNAPSHOT, groupListsByMarket, type ApolloSnapshot } from '@/lib/apollo-lists';
+import {
+  EMPTY_SNAPSHOT,
+  groupListsByMarket,
+  marketsById,
+  type ApolloSnapshot,
+} from '@/lib/apollo-lists';
 
 // The map's nodes are rendered by React Flow, so they can't be passed props
 // directly — Apollo data reaches them through context, keyed by segment id.
@@ -22,5 +27,7 @@ export function useSegmentLists(segmentId: string) {
   return {
     status: snapshot.status,
     lists: bySegment[marketId] ?? [],
+    // Deduped across the market's lists; the per-list counts still sum higher.
+    market: marketsById(snapshot.markets)[marketId],
   };
 }

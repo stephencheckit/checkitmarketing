@@ -18,8 +18,8 @@ import { useSegmentLists } from './apollo-context';
 import {
   BUCKET_COLOR,
   BUCKET_LABEL,
-  bucketStages,
-  type ApolloListSummary,
+  bucketMarketStages,
+  type StageMix,
 } from '@/lib/apollo-lists';
 
 const PILLAR_RING: Record<Pillar, string> = {
@@ -220,9 +220,10 @@ export function RepNode({ data }: NodeProps) {
   );
 }
 
-/** Stacked stage mix across a segment's Apollo lists. */
-function StageBar({ lists }: { lists: ApolloListSummary[] }) {
-  const { accounts, buckets } = bucketStages(lists);
+/** Stacked stage mix for a market, each account counted once. */
+function StageBar({ mix }: { mix: StageMix | undefined }) {
+  const accounts = mix?.accounts ?? 0;
+  const buckets = mix?.buckets ?? [];
   if (accounts === 0) return null;
 
   return (
@@ -256,8 +257,12 @@ export function SegmentNode({ id, data }: NodeProps) {
     detail: string;
     accounts: string[];
   };
-  const { status, lists } = useSegmentLists(id);
-  const totalAccounts = lists.reduce((sum, l) => sum + l.accounts, 0);
+  const { status, lists, market } = useSegmentLists(id);
+  const mix = bucketMarketStages(market);
+  // Distinct accounts, not the sum of the list counts below — a market's lists
+  // overlap, so the per-list figures add up to more than the market holds.
+  const totalAccounts = market?.accounts ?? 0;
+  const overlap = market ? market.listRows - market.accounts : 0;
   const anyTruncated = lists.some((l) => l.truncated);
 
   return (
@@ -303,7 +308,15 @@ export function SegmentNode({ id, data }: NodeProps) {
                   {lists.length === 1 ? '' : 's'}
                 </span>
               </div>
-              <StageBar lists={lists} />
+              <StageBar mix={mix} />
+              {overlap > 0 ? (
+                <div
+                  className="mt-1 text-[9px] text-muted"
+                  title="The same account appears in more than one of this market's lists"
+                >
+                  {overlap} overlapping across lists
+                </div>
+              ) : null}
               <ul className="mt-1.5 space-y-0.5">
                 {lists.map((l) => (
                   <li key={l.id} className="flex items-baseline justify-between gap-1.5">

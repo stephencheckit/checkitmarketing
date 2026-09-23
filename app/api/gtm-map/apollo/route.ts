@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { getAccountDetailsForLabel, getAccountStages, getLabels } from '@/lib/apollo';
-import { EXCLUDED_APOLLO_LISTS, mappedApolloLists } from '@/lib/gtm-markets';
+import { EXCLUDED_APOLLO_LISTS, mappedApolloLists, segmentNodeId } from '@/lib/gtm-markets';
 
 // Building this payload costs roughly one Apollo request per 100 accounts, so
 // it is cached rather than rebuilt per page view. The map is a briefing view —
@@ -30,10 +30,29 @@ interface ListSummary {
   stages: Record<string, number>;
 }
 
+/**
+ * Per-market totals with each account counted once. A market's lists overlap —
+ * the same account sits in both a hand-built list and a lookalike cohort — so
+ * summing per-list counts overstates the addressable set and makes the
+ * planner's required conversion look easier than it is. us-facilities holds 95
+ * list rows covering 48 companies.
+ */
+interface MarketSummary {
+  marketId: string;
+  segmentId: string;
+  /** Distinct accounts across the market's lists. */
+  accounts: number;
+  /** Rows summed across lists; the excess over `accounts` is the overlap. */
+  listRows: number;
+  /** Stage tally over distinct accounts. */
+  stages: Record<string, number>;
+}
+
 interface Payload {
   fetchedAt: string;
   stages: { id: string; name: string; category: string | null }[];
   lists: ListSummary[];
+  markets: MarketSummary[];
   /** Account lists in Apollo that no segment claims and that aren't excluded */
   unmappedLists: { id: string; name: string; count: number }[];
   /** Lists this map references that Apollo no longer returns */
@@ -74,19 +93,22 @@ async function build(): Promise<Payload> {
 
   const present = mapped.filter((m) => labelById.has(m.id));
 
-  const lists = await inPool(present, CONCURRENCY, async (ref): Promise<ListSummary> => {
+  const stageOf = (stageId: string | null) =>
+    stageId ? stageName.get(stageId) ?? 'Unknown' : 'No stage';
+
+  const fetched = await inPool(present, CONCURRENCY, async (ref) => {
     const label = labelById.get(ref.id)!;
     const accounts = await getAccountDetailsForLabel(ref.id, MAX_PAGES);
 
     const stageTally: Record<string, number> = {};
     let withOwner = 0;
     for (const a of accounts) {
-      const name = a.accountStageId ? stageName.get(a.accountStageId) ?? 'Unknown' : 'No stage';
+      const name = stageOf(a.accountStageId);
       stageTally[name] = (stageTally[name] || 0) + 1;
       if (a.ownerId) withOwner++;
     }
 
-    return {
+    const summary: ListSummary = {
       id: ref.id,
       // Apollo's current name wins, so a rename shows through immediately.
       name: label.name || ref.name,
@@ -97,6 +119,34 @@ async function build(): Promise<Payload> {
       truncated: accounts.length < label.cachedCount,
       withOwner,
       stages: stageTally,
+    };
+    return { summary, accounts };
+  });
+
+  const lists = fetched.map((f) => f.summary);
+
+  const marketAccounts = new Map<string, Map<string, string>>();
+  const marketRows = new Map<string, number>();
+  for (const { summary, accounts } of fetched) {
+    const seen = marketAccounts.get(summary.marketId) ?? new Map<string, string>();
+    for (const a of accounts) {
+      // First stage seen wins; the same account carries one stage in Apollo, so
+      // any list it appears in reports the same value.
+      if (!seen.has(a.id)) seen.set(a.id, stageOf(a.accountStageId));
+    }
+    marketAccounts.set(summary.marketId, seen);
+    marketRows.set(summary.marketId, (marketRows.get(summary.marketId) || 0) + accounts.length);
+  }
+
+  const markets: MarketSummary[] = [...marketAccounts.entries()].map(([marketId, seen]) => {
+    const stages: Record<string, number> = {};
+    for (const stage of seen.values()) stages[stage] = (stages[stage] || 0) + 1;
+    return {
+      marketId,
+      segmentId: segmentNodeId(marketId),
+      accounts: seen.size,
+      listRows: marketRows.get(marketId) || 0,
+      stages,
     };
   });
 
@@ -112,6 +162,7 @@ async function build(): Promise<Payload> {
     fetchedAt: new Date().toISOString(),
     stages: stages.map((s) => ({ id: s.id, name: s.name, category: s.category })),
     lists,
+    markets,
     unmappedLists,
     missingLists,
   };

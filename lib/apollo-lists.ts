@@ -20,10 +20,25 @@ export interface ApolloListSummary {
   stages: Record<string, number>;
 }
 
+/**
+ * Per-market totals with each account counted once. A market's lists overlap,
+ * so summing `ApolloListSummary.accounts` double-counts; use this for any
+ * number that feeds a decision.
+ */
+export interface ApolloMarketSummary {
+  marketId: string;
+  segmentId: string;
+  accounts: number;
+  /** Rows summed across lists; the excess over `accounts` is the overlap. */
+  listRows: number;
+  stages: Record<string, number>;
+}
+
 export interface ApolloSnapshot {
   /** `off` is the static view — unauthenticated pages never call Apollo. */
   status: 'off' | 'loading' | 'ready' | 'error';
   lists: ApolloListSummary[];
+  markets: ApolloMarketSummary[];
   unmappedLists: { id: string; name: string; count: number }[];
   missingLists: { id: string; name: string; marketId: string; segmentId: string }[];
   fetchedAt: string | null;
@@ -33,6 +48,7 @@ export interface ApolloSnapshot {
 export const EMPTY_SNAPSHOT: ApolloSnapshot = {
   status: 'off',
   lists: [],
+  markets: [],
   unmappedLists: [],
   missingLists: [],
   fetchedAt: null,
@@ -62,6 +78,7 @@ export function useApolloLists(enabled: boolean): ApolloSnapshot {
         if (!res.ok) throw new Error(body?.error || `Request failed (${res.status})`);
         return body as {
           lists: ApolloListSummary[];
+          markets: ApolloMarketSummary[];
           unmappedLists: ApolloSnapshot['unmappedLists'];
           missingLists: ApolloSnapshot['missingLists'];
           fetchedAt: string;
@@ -72,6 +89,7 @@ export function useApolloLists(enabled: boolean): ApolloSnapshot {
         setSnapshot({
           status: 'ready',
           lists: body.lists,
+          markets: body.markets ?? [],
           unmappedLists: body.unmappedLists,
           missingLists: body.missingLists,
           fetchedAt: body.fetchedAt,
@@ -142,7 +160,7 @@ export interface StageMix {
   clients: number;
 }
 
-export function bucketStages(lists: ApolloListSummary[]): StageMix {
+function mixFromTally(stages: Record<string, number>, accounts: number): StageMix {
   const totals: Record<StageBucket, number> = {
     client: 0,
     opportunity: 0,
@@ -151,13 +169,8 @@ export function bucketStages(lists: ApolloListSummary[]): StageMix {
     dead: 0,
     other: 0,
   };
-  let accounts = 0;
-
-  for (const list of lists) {
-    accounts += list.accounts;
-    for (const [stage, count] of Object.entries(list.stages)) {
-      totals[STAGE_BUCKETS[stage] ?? 'other'] += count;
-    }
+  for (const [stage, count] of Object.entries(stages)) {
+    totals[STAGE_BUCKETS[stage] ?? 'other'] += count;
   }
 
   return {
@@ -169,6 +182,37 @@ export function bucketStages(lists: ApolloListSummary[]): StageMix {
     prospectable: accounts - totals.client - totals.dead,
     clients: totals.client,
   };
+}
+
+/**
+ * Stage mix for a market, each account counted once. Prefer this over
+ * `bucketListStages` anywhere the number drives a decision.
+ */
+export function bucketMarketStages(market: ApolloMarketSummary | undefined): StageMix | undefined {
+  if (!market) return undefined;
+  return mixFromTally(market.stages, market.accounts);
+}
+
+/**
+ * Stage mix for a set of lists, summing per-list counts. An account in two of
+ * the lists is counted twice, so this is only safe for a single list.
+ */
+export function bucketListStages(lists: ApolloListSummary[]): StageMix {
+  const stages: Record<string, number> = {};
+  let accounts = 0;
+  for (const list of lists) {
+    accounts += list.accounts;
+    for (const [stage, count] of Object.entries(list.stages)) {
+      stages[stage] = (stages[stage] || 0) + count;
+    }
+  }
+  return mixFromTally(stages, accounts);
+}
+
+export function marketsById(markets: ApolloMarketSummary[]) {
+  const out: Record<string, ApolloMarketSummary> = {};
+  for (const m of markets) out[m.marketId] = m;
+  return out;
 }
 
 export function groupListsByMarket(lists: ApolloListSummary[]) {

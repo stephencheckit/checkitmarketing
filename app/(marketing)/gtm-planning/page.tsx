@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { GTM_MARKETS } from '@/lib/gtm-markets';
 import {
-  bucketStages,
-  groupListsByMarket,
+  bucketMarketStages,
+  marketsById,
   useApolloLists,
   type StageMix,
 } from '@/lib/apollo-lists';
@@ -71,6 +71,59 @@ type PlanState = {
   reps: Rep[];
 };
 
+interface MarketArr {
+  marketId: string;
+  customers: number;
+  arrUsd: number;
+}
+
+interface ArrSnapshot {
+  status: 'loading' | 'ready' | 'error';
+  markets: MarketArr[];
+  unattributed: { customers: number; arrUsd: number };
+}
+
+/** Active customer ARR per market, used to weight focus by real revenue. */
+function useMarketArr(): ArrSnapshot {
+  const [snapshot, setSnapshot] = useState<ArrSnapshot>({
+    status: 'loading',
+    markets: [],
+    unattributed: { customers: 0, arrUsd: 0 },
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/gtm-planning/market-arr')
+      .then(async (res) => {
+        const body = await res.json();
+        if (!res.ok) throw new Error(body?.error || `Request failed (${res.status})`);
+        return body as Omit<ArrSnapshot, 'status'>;
+      })
+      .then((body) => {
+        if (cancelled) return;
+        setSnapshot({
+          status: 'ready',
+          markets: body.markets ?? [],
+          unattributed: body.unattributed ?? { customers: 0, arrUsd: 0 },
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSnapshot({
+            status: 'error',
+            markets: [],
+            unattributed: { customers: 0, arrUsd: 0 },
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return snapshot;
+}
+
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
@@ -85,6 +138,40 @@ function equalFocus(markets: Market[], category: Category): Market[] {
     focusById[m.id] = i === inCat.length - 1 ? 100 - used : each;
     if (i < inCat.length - 1) used += each;
   });
+  return markets.map((m) =>
+    m.category === category ? { ...m, focusPct: focusById[m.id] ?? 0 } : m
+  );
+}
+
+/**
+ * Set focus within a category from each market's share of active customer ARR.
+ * Markets with no customers land on 0% — they have no installed base to argue
+ * from — so the sliders stay available to put a net-new bet back on them.
+ * Falls back to an even split if the category has no attributed ARR at all.
+ */
+function arrWeightedFocus(
+  markets: Market[],
+  category: Category,
+  arrByMarket: Record<string, number>
+): Market[] {
+  const inCat = markets.filter((m) => m.category === category);
+  if (inCat.length === 0) return markets;
+
+  const total = inCat.reduce((s, m) => s + (arrByMarket[m.id] || 0), 0);
+  if (total <= 0) return equalFocus(markets, category);
+
+  let used = 0;
+  const focusById: Record<string, number> = {};
+  inCat.forEach((m, i) => {
+    if (i === inCat.length - 1) {
+      focusById[m.id] = Math.max(0, 100 - used);
+    } else {
+      const pct = Math.round(((arrByMarket[m.id] || 0) / total) * 100);
+      focusById[m.id] = pct;
+      used += pct;
+    }
+  });
+
   return markets.map((m) =>
     m.category === category ? { ...m, focusPct: focusById[m.id] ?? 0 } : m
   );
@@ -260,6 +347,13 @@ function formatGBP(n: number) {
   }).format(Math.round(n));
 }
 
+/** Customer ARR is stored in USD, unlike the plan itself which is in GBP. */
+function formatUsdCompact(n: number) {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}m`;
+  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000)}k`;
+  return `$${Math.round(n)}`;
+}
+
 function formatCompact(n: number) {
   if (Math.abs(n) >= 1_000_000)
     return `£${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 1 : 2)}m`;
@@ -362,8 +456,11 @@ function CategoryFocusPanel({
   categoryArr,
   categoryPct,
   markets,
+  arrShare,
+  canWeightByArr,
   onFocusChange,
   onEqualize,
+  onWeightByArr,
   onRemove,
   onAdd,
 }: {
@@ -371,8 +468,12 @@ function CategoryFocusPanel({
   categoryArr: number;
   categoryPct: number;
   markets: (Market & { arr: number })[];
+  /** Each market's share of active customer ARR within this category, 0–100. */
+  arrShare: Record<string, number>;
+  canWeightByArr: boolean;
   onFocusChange: (id: string, pct: number) => void;
   onEqualize: () => void;
+  onWeightByArr: () => void;
   onRemove: (id: string) => void;
   onAdd: (draft: {
     label: string;
@@ -412,6 +513,19 @@ function CategoryFocusPanel({
             className="text-xs px-2.5 py-1 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
           >
             Equalize
+          </button>
+          <button
+            type="button"
+            onClick={onWeightByArr}
+            disabled={!canWeightByArr}
+            title={
+              canWeightByArr
+                ? 'Set focus from each market’s share of active customer ARR'
+                : 'Customer ARR unavailable'
+            }
+            className="text-xs px-2.5 py-1 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground disabled:opacity-40"
+          >
+            Weight by ARR
           </button>
           <button
             type="button"
@@ -528,6 +642,11 @@ function CategoryFocusPanel({
               step={5}
               onChange={(v) => onFocusChange(m.id, v)}
               display={`${m.focusPct}% · ${formatCompact(m.arr)}`}
+              hint={
+                arrShare[m.id] === undefined
+                  ? 'No attributed customer ARR'
+                  : `${Math.round(arrShare[m.id])}% of today’s ${category} ARR`
+              }
             />
           </div>
         ))}
@@ -625,15 +744,26 @@ export default function GtmPlanningPage() {
 
   // Apollo tells us how many accounts actually exist per market, which turns
   // the pipeline target from an assertion into something testable.
+  const customerArr = useMarketArr();
+  const arrByMarket = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const m of customerArr.markets) out[m.marketId] = m.arrUsd;
+    return out;
+  }, [customerArr.markets]);
+
   const apollo = useApolloLists(true);
+  // Keyed off the deduped market summaries: a market's lists overlap, and
+  // summing them inflated `prospectable`, which made the required conversion
+  // read easier than it is.
   const apolloByMarket = useMemo(() => {
-    const grouped = groupListsByMarket(apollo.lists);
+    const byId = marketsById(apollo.markets);
     const out: Record<string, StageMix> = {};
-    for (const [marketId, lists] of Object.entries(grouped)) {
-      out[marketId] = bucketStages(lists);
+    for (const [marketId, summary] of Object.entries(byId)) {
+      const mix = bucketMarketStages(summary);
+      if (mix) out[marketId] = mix;
     }
     return out;
-  }, [apollo.lists]);
+  }, [apollo.markets]);
 
   useEffect(() => {
     try {
@@ -682,6 +812,22 @@ export default function GtmPlanningPage() {
   });
   const medicalMarkets = marketRows.filter((m) => m.category === 'medical');
   const commercialMarkets = marketRows.filter((m) => m.category === 'commercial');
+
+  // Each market's share of today's ARR within its own category, so the panel
+  // can show plan focus against installed revenue side by side.
+  const arrShareByCategory = useMemo(() => {
+    const out: Record<string, number> = {};
+    for (const category of ['medical', 'commercial'] as Category[]) {
+      const inCat = state.markets.filter((m) => m.category === category);
+      const total = inCat.reduce((s, m) => s + (arrByMarket[m.id] || 0), 0);
+      if (total <= 0) continue;
+      for (const m of inCat) {
+        if (arrByMarket[m.id] === undefined) continue;
+        out[m.id] = (arrByMarket[m.id] / total) * 100;
+      }
+    }
+    return out;
+  }, [state.markets, arrByMarket]);
 
   const ukArr = marketRows
     .filter((m) => m.region === 'uk')
@@ -1236,6 +1382,13 @@ export default function GtmPlanningPage() {
               Set focus within medical and commercial. Add or remove markets; UK/US is a tag
               on each market (drives region totals above).
             </p>
+            {customerArr.status === 'ready' && customerArr.unattributed.customers > 0 ? (
+              <p className="text-xs text-amber-300 mt-1.5">
+                {customerArr.unattributed.customers} active customers carrying{' '}
+                {formatUsdCompact(customerArr.unattributed.arrUsd)} are not assigned to a
+                market, so they are absent from the ARR weighting below.
+              </p>
+            ) : null}
           </div>
           <div className="grid lg:grid-cols-2 gap-6">
             <CategoryFocusPanel
@@ -1243,6 +1396,8 @@ export default function GtmPlanningPage() {
               categoryArr={medicalArr}
               categoryPct={medicalPct}
               markets={medicalMarkets}
+              arrShare={arrShareByCategory}
+              canWeightByArr={customerArr.status === 'ready'}
               onFocusChange={(id, pct) =>
                 setState((p) =>
                   markCustom({ ...p, markets: setFocusPct(p.markets, id, pct) })
@@ -1253,6 +1408,14 @@ export default function GtmPlanningPage() {
                   markCustom({ ...p, markets: equalFocus(p.markets, 'medical') })
                 )
               }
+              onWeightByArr={() =>
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    markets: arrWeightedFocus(p.markets, 'medical', arrByMarket),
+                  })
+                )
+              }
               onRemove={removeMarket}
               onAdd={(draft) => addMarket('medical', draft)}
             />
@@ -1261,6 +1424,8 @@ export default function GtmPlanningPage() {
               categoryArr={commercialArr}
               categoryPct={commercialPct}
               markets={commercialMarkets}
+              arrShare={arrShareByCategory}
+              canWeightByArr={customerArr.status === 'ready'}
               onFocusChange={(id, pct) =>
                 setState((p) =>
                   markCustom({ ...p, markets: setFocusPct(p.markets, id, pct) })
@@ -1269,6 +1434,14 @@ export default function GtmPlanningPage() {
               onEqualize={() =>
                 setState((p) =>
                   markCustom({ ...p, markets: equalFocus(p.markets, 'commercial') })
+                )
+              }
+              onWeightByArr={() =>
+                setState((p) =>
+                  markCustom({
+                    ...p,
+                    markets: arrWeightedFocus(p.markets, 'commercial', arrByMarket),
+                  })
                 )
               }
               onRemove={removeMarket}

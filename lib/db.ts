@@ -5877,12 +5877,19 @@ export async function upsertCustomerAccount(data: {
 }
 
 /** ARR rolled up per market, for anything that needs revenue by market. */
+/**
+ * Active customer ARR per GTM market, used to weight the planner's focus.
+ * Churned accounts are excluded: they inflate a market's apparent size with
+ * revenue that is not there to defend or expand. A null market_id means the
+ * classifier could not place the account and the ARR is unattributed.
+ */
 export async function getCustomerArrByMarket() {
   return (await sql`
     SELECT market_id,
            COUNT(*)::int AS accounts,
            COALESCE(SUM(arr_usd), 0)::float AS arr_usd
     FROM customer_accounts
+    WHERE COALESCE(status, 'active') <> 'churned'
     GROUP BY market_id
     ORDER BY arr_usd DESC
   `) as { market_id: string | null; accounts: number; arr_usd: number }[];

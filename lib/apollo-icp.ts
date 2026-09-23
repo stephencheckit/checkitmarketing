@@ -12,8 +12,8 @@
 //      "food & beverages") while the customer export carries the current one
 //      ("hospitals and health care", "food and beverage services"), so the two
 //      cannot be compared directly.
-//   3. Three markets (us-senior, us-venues, uk-water) have one customer or
-//      none, so no profile can be inferred from the installed base at all.
+//   3. Two markets (us-senior, us-venues) have one customer or none, so no
+//      profile can be inferred from the installed base at all.
 //
 // The industry strings are Apollo's exact spellings, sampled from live search
 // responses. The headcount bands bracket the active customer percentiles per
@@ -25,7 +25,6 @@
 //   uk-entertainment     22       81     630
 //   us-medical           32       78   3,696
 //   us-facilities        25       44   7,882
-//   uk-water          3,416    3,416   3,416   (single customer)
 //   us-venues         1,070    1,070   1,070   (single customer)
 //   uk-forecourts    65,862   65,862  65,862   (single customer, BP)
 
@@ -136,13 +135,6 @@ export const ICP_PROFILES: IcpProfile[] = [
       'facilities services',
       'retail',
     ],
-  },
-  {
-    marketId: 'uk-water',
-    locations: UK,
-    employeeRanges: ['201,1000', '1001,5000', '5001,10000'],
-    keywords: ['water utility', 'wastewater', 'water treatment'],
-    industries: ['utilities', 'environmental services'],
   },
   {
     marketId: 'us-venues',

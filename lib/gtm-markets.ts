@@ -137,21 +137,6 @@ export const GTM_MARKETS: GtmMarket[] = [
     ],
   },
   {
-    id: 'uk-water',
-    label: 'Water utilities',
-    detail: 'Operational monitoring — CWM led',
-    region: 'uk',
-    pillar: 'operational',
-    // Operational has no separate planning number, so it competes for the
-    // commercial allocation.
-    category: 'commercial',
-    beachheads: [],
-    apolloLists: [
-      { id: '6927063e1e2d2f0015cc748a', name: 'water companies UK' },
-      { id: '6aac236d5a2fa300107fdf5d', name: 'Lookalike · Water utilities · 2026-09' },
-    ],
-  },
-  {
     id: 'us-venues',
     label: 'Venues & entertainment',
     detail: 'Stadiums, arenas, attractions',
@@ -211,6 +196,10 @@ export const EXCLUDED_APOLLO_LISTS: Record<string, string> = {
   // the addressable set.
   '689331aa3beb9c0015a72908': 'Facilities Management companies — superseded by FM · UK / FM · US',
   '68a8778984f38f000d15e467': 'FM Companies UK — superseded by FM · UK',
+  // UK water utilities was dropped as a market. Kept here rather than deleted
+  // in Apollo so the work survives if it is ever picked back up.
+  '6927063e1e2d2f0015cc748a': 'water companies UK — UK water dropped as a market',
+  '6aac236d5a2fa300107fdf5d': 'Lookalike · Water utilities — UK water dropped as a market',
 };
 
 /** The map's segment node id for a market. */

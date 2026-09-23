@@ -145,6 +145,9 @@ const PRODUCT_DATA: Record<
 > = {
   'CAM+': { label: 'Medical monitoring', pillar: 'medical', note: 'Sensor-based, regulated' },
   CAM: { label: 'Commercial monitoring', pillar: 'commercial', note: 'Food safety, sensor-based' },
+  // CWM has no market of its own now that UK water is dropped: it is carried
+  // into the commercial markets alongside CAM rather than sold into a segment
+  // of its own, so nothing hangs below this card.
   CWM: { label: 'Operational monitoring', pillar: 'operational', note: 'Workflow — often no sensors' },
 };
 
@@ -355,7 +358,7 @@ const S = 'source-bottom';
 
 /**
  * Who works each market. `support` is the BDR feeding the AE — note that
- * April carries four UK markets with BDR cover on only two of them, which the
+ * April carries three UK markets with BDR cover on only one of them, which the
  * map shows rather than smooths over.
  */
 const COVERAGE: Record<string, { primary: string[]; support: string[] }> = {
@@ -363,7 +366,6 @@ const COVERAGE: Record<string, { primary: string[]; support: string[] }> = {
   'uk-forecourts': { primary: ['rep-april'], support: [] },
   'uk-entertainment': { primary: ['rep-april'], support: [] },
   'uk-foodservice': { primary: ['rep-april'], support: ['rep-tom'] },
-  'uk-water': { primary: ['rep-april'], support: [] },
   'us-medical': { primary: ['rep-jen'], support: ['rep-bryan'] },
   'us-venues': { primary: ['rep-open'], support: ['rep-jordan'] },
   'us-senior': { primary: ['rep-open'], support: [] },

@@ -25,10 +25,11 @@ import {
   type StageMix,
 } from '@/lib/apollo-lists';
 
-// Bumped to v6 when markets moved to lib/gtm-markets.ts: a saved v5 plan
-// carries the old market ids (and no UK water market), and restoring it would
-// quietly reinstate the list the map no longer agrees with.
-const STORAGE_KEY = 'checkit-gtm-planning-v6';
+// Bumped on every change to the market list. A saved plan stores its own
+// `markets` array and restoring it replaces the seed wholesale, so an old key
+// would reinstate a market that has since been dropped — v7 drops UK water —
+// along with the focus percentage it was holding.
+const STORAGE_KEY = 'checkit-gtm-planning-v7';
 
 type ScenarioId = 'base' | 'upside' | 'conservative' | 'custom';
 type Category = 'medical' | 'commercial';

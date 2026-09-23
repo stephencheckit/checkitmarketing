@@ -150,10 +150,11 @@ function classify(
       : { marketId: null, reason: 'non-UK forecourt — no market' };
   }
 
+  // UK water was a market of its own until it was dropped, so utilities now
+  // have nowhere to land. Anglian Water stays a customer, just an unattributed
+  // one, which is the honest reading of a segment nobody is selling into.
   if (UTILITY_INDUSTRIES.has(industry)) {
-    return region === 'uk'
-      ? { marketId: 'uk-water', reason: 'UK utility' }
-      : { marketId: null, reason: 'non-UK utility — no market' };
+    return { marketId: null, reason: 'utilities — no market' };
   }
 
   if (LEISURE_INDUSTRIES.has(industry)) {

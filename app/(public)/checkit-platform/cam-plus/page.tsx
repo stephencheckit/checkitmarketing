@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   alternates: { canonical: 'https://checkitv6.com/checkit-platform/cam-plus' },
   openGraph: {
-    title: 'Keep your monitoring estate. Move your platform forward.',
+    title: 'Keep your monitoring hardware. Move your platform forward.',
     description:
       'The Checkit Platform gives CAM+ customers a modern medical monitoring platform without replacing the sensors and infrastructure you already rely on.',
     url: 'https://checkitv6.com/checkit-platform/cam-plus',
@@ -116,7 +116,7 @@ const capabilities = [
   },
   {
     icon: Eye,
-    title: 'Estate visibility',
+    title: 'Multi-site visibility',
     description: "See what's happening across sites and identify where attention is needed.",
   },
 ];
@@ -163,7 +163,7 @@ export default function CheckitPlatformCamPlusPage() {
                 For CAM+ customers
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-[1.05] tracking-tight">
-                Keep your monitoring estate.{' '}
+                Keep your monitoring hardware.{' '}
                 <span className="text-gradient">Move your platform forward.</span>
               </h1>
               <p className="text-lg sm:text-xl text-muted mb-8 max-w-xl leading-relaxed">
@@ -203,7 +203,7 @@ export default function CheckitPlatformCamPlusPage() {
                 A new platform, without starting again.
               </h2>
               <p className="text-lg text-muted leading-relaxed mb-8">
-                You have already invested in your monitoring estate. The Checkit Platform is designed to
+                You have already invested in your monitoring hardware. The Checkit Platform is designed to
                 build on that investment, not force you to replace it.
               </p>
               <ul className="grid sm:grid-cols-2 gap-2.5">
@@ -265,7 +265,7 @@ export default function CheckitPlatformCamPlusPage() {
               More than a new interface.
             </h2>
             <p className="text-lg text-muted leading-relaxed">
-              The Checkit Platform adds the capabilities a modern monitoring estate needs, on top of the
+              The Checkit Platform adds the capabilities modern medical monitoring needs, on top of the
               hardware you already run.
             </p>
           </div>
@@ -389,7 +389,7 @@ export default function CheckitPlatformCamPlusPage() {
       <section className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Built around the realities of medical estates.
+            Built around the realities of medical sites.
           </h2>
           <p className="text-lg text-muted max-w-2xl mb-10">
             Quotes, logos and migration results will sit here once early Checkit Platform customers can be referenced.
@@ -417,7 +417,7 @@ export default function CheckitPlatformCamPlusPage() {
                 Ready to move your monitoring platform forward?
               </h2>
               <p className="text-lg text-foreground/75 mb-8">
-                Keep the estate you trust. Get the platform it deserves.
+                Keep the hardware you trust. Get the platform it deserves.
               </p>
               <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about the Checkit Platform" />
             </div>

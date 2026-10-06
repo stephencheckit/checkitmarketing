@@ -64,7 +64,7 @@ export default function PlatformPreview() {
           <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
           <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
           <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
-          <span className="ml-3 text-[11px] text-muted">Estate overview</span>
+          <span className="ml-3 text-[11px] text-muted">All sites</span>
         </div>
 
         <div className="flex">
@@ -102,6 +102,7 @@ export default function PlatformPreview() {
         </div>
       </div>
 
+      {/* TODO(product): in-app mobile acknowledgement is not documented for the current medical platform. */}
       <div className="absolute -bottom-8 -left-3 sm:-left-8 w-56 sm:w-64 rounded-2xl border border-white/10 bg-[#111a2e]/95 backdrop-blur shadow-2xl shadow-black/60 p-3.5">
         <div className="flex items-center gap-2 mb-2">
           <span className="w-6 h-6 rounded-md bg-red-500/15 text-red-400 flex items-center justify-center">

@@ -2,7 +2,7 @@ import { Bell, ClipboardCheck, Gauge, PenLine, Settings2, ShieldCheck, type Luci
 
 const entries: { icon: LucideIcon; event: string; detail: string; who: string; signed?: boolean }[] = [
   { icon: Settings2, event: 'Threshold changed', detail: 'Upper limit 8.0°C → 7.5°C · reason recorded', who: 'Pharmacy lead', signed: true },
-  { icon: Gauge, event: 'Calibration recorded', detail: 'Probe 2 · certificate attached', who: 'Estates engineer', signed: true },
+  { icon: Gauge, event: 'Calibration recorded', detail: 'Probe 2 · certificate attached', who: 'Facilities engineer', signed: true },
   { icon: Bell, event: 'Alert acknowledged', detail: 'Vaccine fridge, Ward 4', who: 'Pharmacy on-call' },
   { icon: ClipboardCheck, event: 'Corrective action closed', detail: 'Stock moved and reviewed', who: 'Pharmacy on-call' },
   { icon: PenLine, event: 'Incident approved', detail: 'Reviewed and signed off', who: 'Quality manager', signed: true },

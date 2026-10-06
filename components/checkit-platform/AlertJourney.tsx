@@ -86,6 +86,8 @@ function DetectVisual() {
 }
 
 function AlertVisual() {
+  // TODO(product): email, SMS and voice call are documented for the current medical platform; in-app push
+  // and in-app acknowledgement are not. Confirm for the new platform.
   const channels = [
     { icon: Smartphone, label: 'App push' },
     { icon: MessageSquare, label: 'SMS' },
@@ -127,7 +129,7 @@ function EscalateVisual() {
   const levels = [
     { role: 'Ward nurse in charge', status: 'No response', state: 'missed' as const },
     { role: 'Pharmacy on-call', status: 'Acknowledged', state: 'done' as const },
-    { role: 'Estates manager', status: 'Not needed', state: 'idle' as const },
+    { role: 'Facilities manager', status: 'Not needed', state: 'idle' as const },
   ];
   return (
     <Panel label="Escalation path">
@@ -164,6 +166,7 @@ function EscalateVisual() {
 }
 
 function ActVisual() {
+  // TODO(product): guided corrective-action checklists depend on task management, listed as roadmap for medical.
   const tasks = [
     { label: 'Check door seal and power', done: true },
     { label: 'Move stock to backup fridge', done: true },

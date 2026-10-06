@@ -30,7 +30,7 @@ import {
 export const metadata: Metadata = {
   title: 'The Checkit Platform',
   description:
-    'The Checkit Platform brings monitoring, alerting, response, workflow and compliance together in one platform — helping healthcare teams protect critical assets and prove what happened.',
+    'The Checkit Platform brings monitoring, alerting, response, workflow and compliance together in one platform, helping healthcare teams protect critical assets and prove what happened.',
   robots: { index: false, follow: false },
   alternates: { canonical: 'https://checkitv6.com/checkit-platform' },
   openGraph: {
@@ -122,7 +122,7 @@ export default function CheckitPlatformPage() {
               </h1>
               <p className="text-lg sm:text-xl text-muted mb-8 max-w-xl leading-relaxed">
                 The Checkit Platform brings monitoring, alerting, response, workflow and compliance together
-                in one platform — helping healthcare teams protect critical assets and prove
+                in one platform, helping healthcare teams protect critical assets and prove
                 what happened.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-3">
@@ -133,7 +133,7 @@ export default function CheckitPlatformPage() {
                   See how it works
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <DemoRequestButton industry="Checkit Platform — new customers" variant="secondary" label="Talk to an expert" />
+                <DemoRequestButton industry="Checkit Platform (new customers)" variant="secondary" label="Talk to an expert" />
               </div>
             </div>
             <div className="lg:col-span-6 lg:pl-4">
@@ -308,7 +308,7 @@ export default function CheckitPlatformPage() {
                 Compliance isn&apos;t a report you create afterwards.
               </h2>
               <p className="text-lg text-muted leading-relaxed mb-8">
-                The Checkit Platform is designed to capture the evidence as work happens — from threshold
+                The Checkit Platform is designed to capture the evidence as work happens, from threshold
                 changes and alerts through to corrective actions, approvals and resolution.
               </p>
               <ul className="flex flex-wrap gap-2">
@@ -363,7 +363,7 @@ export default function CheckitPlatformPage() {
                   Discover how the Checkit Platform can connect monitoring, alerting, response and compliance
                   across your healthcare estate.
                 </p>
-                <DemoRequestButton industry="Checkit Platform — new customers" label="Talk to us" />
+                <DemoRequestButton industry="Checkit Platform (new customers)" label="Talk to us" />
               </div>
             </div>
           </div>

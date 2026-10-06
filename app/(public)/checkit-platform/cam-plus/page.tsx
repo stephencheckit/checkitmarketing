@@ -171,7 +171,7 @@ export default function CheckitPlatformCamPlusPage() {
                 replacing the sensors and infrastructure you already rely on.
               </p>
               <div className="flex flex-col sm:flex-row items-start gap-3 mb-10">
-                <DemoRequestButton industry="Checkit Platform — existing CAM+ customers" label="Talk to us about the Checkit Platform" />
+                <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about the Checkit Platform" />
                 <Link href="#what-gets-better" className={linkButton}>
                   See what&apos;s changing
                 </Link>
@@ -360,7 +360,7 @@ export default function CheckitPlatformCamPlusPage() {
                 A supported, controlled migration, step by step.
               </p>
             </div>
-            <DemoRequestButton industry="Checkit Platform — existing CAM+ customers" label="Talk to us about your migration" />
+            <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about your migration" />
           </div>
           <ol className="relative grid sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-4">
             <span
@@ -419,7 +419,7 @@ export default function CheckitPlatformCamPlusPage() {
               <p className="text-lg text-foreground/75 mb-8">
                 Keep the estate you trust. Get the platform it deserves.
               </p>
-              <DemoRequestButton industry="Checkit Platform — existing CAM+ customers" label="Talk to us about the Checkit Platform" />
+              <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about the Checkit Platform" />
             </div>
           </div>
         </div>

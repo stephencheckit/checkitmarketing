@@ -2,123 +2,64 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import DemoRequestButton from '@/components/DemoRequestButton';
 import PlatformPreview from '@/components/checkit-platform/PlatformPreview';
-import EstateStack from '@/components/checkit-platform/EstateStack';
-import FragmentedVsConnected, { type FlowItem } from '@/components/checkit-platform/FragmentedVsConnected';
+import AlertJourney, { type JourneyStep } from '@/components/checkit-platform/AlertJourney';
 import AuditTrailMock from '@/components/checkit-platform/AuditTrailMock';
 import {
   Activity,
-  Bell,
+  ArrowRight,
   Check,
   ClipboardList,
-  Eye,
-  FileSearch,
-  FileSpreadsheet,
+  FileCheck,
   Gauge,
+  GitBranch,
   History,
-  Phone,
-  PenLine,
+  LayoutDashboard,
+  Network,
   Radio,
-  Rocket,
-  Server,
-  Shield,
   ShieldCheck,
   Smartphone,
-  Sparkles,
-  Workflow,
-  Wrench,
+  Zap,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Checkit Platform for CAM+ Customers',
+  title: 'The Checkit Platform for CAM+ Customers',
   description:
-    'The Checkit Platform gives CAM+ customers a modern medical monitoring platform without replacing the sensors and infrastructure you already rely on.',
+    'Keep the sensors and infrastructure you already rely on, and gain mobile alerts, a connected response and audit-ready records on the Checkit Platform.',
   robots: { index: false, follow: false },
   alternates: { canonical: 'https://checkitv6.com/checkit-platform/cam-plus' },
   openGraph: {
-    title: 'Keep your monitoring hardware. Move your platform forward.',
+    title: 'Keep the hardware you trust. Get a better way to work.',
     description:
-      'The Checkit Platform gives CAM+ customers a modern medical monitoring platform without replacing the sensors and infrastructure you already rely on.',
+      'Keep the sensors and infrastructure you already rely on, and gain mobile alerts, a connected response and audit-ready records on the Checkit Platform.',
     url: 'https://checkitv6.com/checkit-platform/cam-plus',
   },
 };
 
-const proofPoints = [
-  'Keep your existing sensors and hardware',
-  'Bring your monitoring history with you',
-  'Modern web-based platform',
-  'Monitoring, response and compliance in one place',
-  'Supported, controlled migration',
-];
-
-const benefits = [
-  {
-    icon: Shield,
-    title: 'Protect your investment',
-    description: 'Your existing monitoring infrastructure remains in place.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Modernise the experience',
-    description: 'Move from legacy interfaces and fragmented processes to a modern, accessible platform.',
-  },
-  {
-    icon: Rocket,
-    title: "Prepare for what's next",
-    description: 'Gain the foundations for stronger compliance, workflow, mobile alerting and future capabilities.',
-  },
+const gains = [
+  { icon: Smartphone, title: 'Alerts that reach people anywhere', description: 'Get critical alerts to the people who need to act, on their phones, wherever they are.' },
+  { icon: GitBranch, title: 'One connected response', description: 'Every alert connects to acknowledgement, corrective action and resolution, instead of calls and paper logs.' },
+  { icon: FileCheck, title: 'Audits without the scramble', description: 'A clear, attributable record of changes, actions and approvals, ready before anyone asks for it.' },
+  { icon: Gauge, title: 'Calibration and IQ/OQ in one place', description: 'Calibration records and qualification documents sit alongside the monitoring data they support.' },
+  { icon: LayoutDashboard, title: 'Every site in one view', description: 'See what is happening across your sites and where attention is needed.' },
+  { icon: Zap, title: 'A modern, web-based platform', description: 'Move from legacy interfaces to a modern platform that is easier for your team to use.' },
 ];
 
 const stays = [
-  { icon: Radio, label: 'Your sensors stay' },
-  { icon: Server, label: 'Your infrastructure stays' },
-  { icon: Activity, label: 'Your monitoring continues' },
-  { icon: History, label: 'Your historical records come with you' },
-  { icon: ClipboardList, label: 'Your established processes are supported' },
-  { icon: Shield, label: 'No rip and replace' },
+  { icon: Radio, title: 'Your sensors stay', description: 'The sensors already installed across your sites keep doing their job.' },
+  { icon: Network, title: 'Your infrastructure stays', description: 'Your existing monitoring infrastructure remains in place.' },
+  { icon: Activity, title: 'Your monitoring continues', description: 'Your assets stay monitored while you move to the new platform.' },
+  { icon: History, title: 'Your history comes with you', description: 'Your historical monitoring records move across to the new platform.' },
+  { icon: ClipboardList, title: 'Your processes are supported', description: 'The established processes your teams rely on are supported.' },
+  { icon: ShieldCheck, title: 'No rip and replace', description: 'Build on the investment you have already made, rather than starting again.' },
 ];
 
-const today: FlowItem[] = [
-  { icon: Radio, label: 'Monitoring', note: 'Readings in one system' },
-  { icon: Bell, label: 'Alert', note: 'Someone has to notice' },
-  { icon: Phone, label: 'Someone responds', note: 'By phone, in person, ad hoc' },
-  { icon: FileSpreadsheet, label: 'Action recorded elsewhere', note: 'Paper logs, spreadsheets, email' },
-  { icon: FileSearch, label: 'Evidence assembled later', note: 'Pieced together for an audit' },
-];
-
-const connected: FlowItem[] = [
-  { icon: Radio, label: 'Detect', note: 'Out-of-range condition identified' },
-  { icon: Smartphone, label: 'Alert', note: 'Sent to the people who need to act' },
-  { icon: Wrench, label: 'Respond', note: 'Acknowledged, escalated, actioned' },
-  { icon: PenLine, label: 'Record', note: 'Captured as the work happens' },
-  { icon: ShieldCheck, label: 'Prove', note: 'Evidence ready when asked' },
-];
-
-const capabilities = [
-  {
-    icon: Smartphone,
-    title: 'Mobile alerting',
-    description: 'Get critical alerts to the people who need to act, wherever they are.',
-  },
-  {
-    icon: Workflow,
-    title: 'Connected workflow',
-    description: 'Connect an alert to acknowledgement, corrective action and resolution.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Compliance built in',
-    description: 'Create a clear, attributable record of changes, actions and approvals.',
-  },
-  {
-    icon: Gauge,
-    title: 'Calibration & IQ/OQ',
-    description: 'Bring calibration records and operational qualification into the platform.',
-  },
-  {
-    icon: Eye,
-    title: 'Multi-site visibility',
-    description: "See what's happening across sites and identify where attention is needed.",
-  },
+const journey: JourneyStep[] = [
+  { id: 'detect', title: 'Detect', description: 'A monitored asset moves outside its defined parameters.' },
+  { id: 'alert', title: 'Alert', description: 'The alert reaches the right people on their phones and other configured channels, wherever they are.' },
+  { id: 'escalate', title: 'Escalate', description: 'If nobody acknowledges, the configured escalation path takes over automatically.' },
+  { id: 'act', title: 'Act', description: 'The responsible person follows the agreed response and records what they did.' },
+  { id: 'record', title: 'Record', description: 'The acknowledgement, actions and resolution are captured, by name and time.' },
+  { id: 'prove', title: 'Prove', description: 'The complete record is ready when you need to demonstrate compliance.' },
 ];
 
 const complianceTopics = [
@@ -133,16 +74,13 @@ const complianceTopics = [
 ];
 
 const migrationSteps = [
-  'Understand your current environment',
-  'Plan the migration',
-  'Validate the new platform against your existing system',
-  'Migrate your records',
-  'Run and compare',
-  'Cut over with confidence',
+  { title: 'Understand your current environment', description: 'We start with your sites, sensors and how your teams work today.' },
+  { title: 'Plan the migration', description: 'Agree the approach and timing with your team.' },
+  { title: 'Validate', description: 'Validate the new platform against your existing system.' },
+  { title: 'Migrate your records', description: 'Your monitoring history moves across with you.' },
+  { title: 'Run and compare', description: 'Check the new platform against what you see today.' },
+  { title: 'Cut over with confidence', description: 'Switch when you are satisfied, with Checkit supporting you.' },
 ];
-
-const linkButton =
-  'inline-flex items-center gap-2 px-6 py-3 bg-surface-elevated text-foreground font-medium rounded-lg hover:bg-surface-hover transition-colors border border-border';
 
 const eyebrow = 'text-xs font-semibold uppercase tracking-widest text-accent mb-3';
 
@@ -162,30 +100,24 @@ export default function CheckitPlatformCamPlusPage() {
                 <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                 For CAM+ customers
               </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-[1.05] tracking-tight">
-                Keep your monitoring hardware.{' '}
-                <span className="text-gradient">Move your platform forward.</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-foreground mb-6 leading-[1.05] tracking-tight">
+                Keep the hardware you trust.{' '}
+                <span className="text-gradient">Get a better way to work.</span>
               </h1>
               <p className="text-lg sm:text-xl text-muted mb-8 max-w-xl leading-relaxed">
-                The Checkit Platform gives CAM+ customers a modern medical monitoring platform without
-                replacing the sensors and infrastructure you already rely on.
+                The Checkit Platform builds on the sensors and infrastructure you already rely on, adding
+                mobile alerts, a connected response and audit-ready records, without a rip and replace.
               </p>
-              <div className="flex flex-col sm:flex-row items-start gap-3 mb-10">
-                <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about the Checkit Platform" />
-                <Link href="#what-gets-better" className={linkButton}>
-                  See what&apos;s changing
+              <div className="flex flex-col sm:flex-row items-start gap-3">
+                <Link
+                  href="#what-you-gain"
+                  className="btn-gradient inline-flex items-center gap-2 px-6 py-3 font-medium rounded-lg"
+                >
+                  See what you gain
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
+                <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" variant="secondary" label="Talk to us" />
               </div>
-              <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
-                {proofPoints.map((point) => (
-                  <li key={point} className="flex items-start gap-2.5 text-sm text-foreground/90">
-                    <span className="mt-0.5 w-4 h-4 rounded-full bg-accent/15 text-accent flex items-center justify-center shrink-0">
-                      <Check className="w-2.5 h-2.5" />
-                    </span>
-                    {point}
-                  </li>
-                ))}
-              </ul>
             </div>
             <div className="lg:col-span-6 lg:pl-4">
               <PlatformPreview />
@@ -194,131 +126,79 @@ export default function CheckitPlatformCamPlusPage() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-28 border-y border-border bg-surface">
+      <section id="what-you-gain" className="py-20 lg:py-28 border-y border-border bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            <div className="lg:col-span-5">
-              <p className={eyebrow}>What stays</p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                A new platform, without starting again.
-              </h2>
-              <p className="text-lg text-muted leading-relaxed mb-8">
-                You have already invested in your monitoring hardware. The Checkit Platform is designed to
-                build on that investment, not force you to replace it.
-              </p>
-              <ul className="grid sm:grid-cols-2 gap-2.5">
-                {stays.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <li key={item.label} className="flex items-center gap-3 text-sm text-foreground">
-                      <span className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                        <Icon className="w-4 h-4" />
-                      </span>
-                      {item.label}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            <div className="lg:col-span-7">
-              <EstateStack />
-            </div>
+          <div className="max-w-2xl mb-12">
+            <p className={eyebrow}>What you gain</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Less chasing. Less paperwork. More control.
+            </h2>
+            <p className="text-lg text-muted leading-relaxed">
+              The work that used to be split across phone calls, paper logs and spreadsheets becomes one
+              connected platform.
+            </p>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-4 mt-16">
-            {benefits.map((benefit) => {
-              const Icon = benefit.icon;
+          <dl className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {gains.map((gain, i) => {
+              const Icon = gain.icon;
               return (
-                <div key={benefit.title} className="bg-background border border-border rounded-2xl p-6 card-glow">
-                  <span className="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5" />
-                  </span>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{benefit.title}</h3>
-                  <p className="text-muted leading-relaxed">{benefit.description}</p>
+                <div key={gain.title} className="rounded-2xl border border-border bg-background p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <Icon className="w-6 h-6 text-accent" />
+                    <span className="text-xs font-semibold text-muted tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                  </div>
+                  <dt className="font-semibold text-foreground mb-2">{gain.title}</dt>
+                  <dd className="text-sm text-muted leading-relaxed">{gain.description}</dd>
                 </div>
               );
             })}
-          </div>
+          </dl>
         </div>
       </section>
 
-      <section id="what-gets-better" className="py-20 lg:py-28">
+      <section id="what-stays" className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-12">
-            <p className={eyebrow}>What gets better</p>
+            <p className={eyebrow}>What stays</p>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Less fragmentation. More visibility.
+              A new platform, without starting again.
             </h2>
             <p className="text-lg text-muted leading-relaxed">
-              The work that used to be split across people and documents becomes one connected workflow.
+              You have already invested in your monitoring hardware. The Checkit Platform is designed to
+              build on that investment, not force you to replace it.
             </p>
           </div>
-          <FragmentedVsConnected today={today} connected={connected} />
-        </div>
-      </section>
-
-      <section id="whats-new" className="py-20 lg:py-28 bg-surface border-y border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-12">
-            <p className={eyebrow}>What&apos;s new</p>
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              More than a new interface.
-            </h2>
-            <p className="text-lg text-muted leading-relaxed">
-              The Checkit Platform adds the capabilities modern medical monitoring needs, on top of the
-              hardware you already run.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {capabilities.map((item, i) => {
+          <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {stays.map((item) => {
               const Icon = item.icon;
               return (
-                <div
-                  key={item.title}
-                  className={`group relative bg-background border border-border rounded-2xl p-6 hover:border-accent/40 transition-colors overflow-hidden ${
-                    i === 0 ? 'lg:row-span-2 flex flex-col' : ''
-                  }`}
-                >
-                  <div className="absolute -top-16 -right-16 w-40 h-40 bg-accent/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
-                  <div className="relative w-11 h-11 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
+                <li key={item.title} className="rounded-2xl border border-border bg-surface p-6">
+                  <span className="w-11 h-11 rounded-xl bg-accent/10 text-accent flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5" />
-                  </div>
-                  <h3 className="relative text-lg font-semibold text-foreground mb-2">{item.title}</h3>
-                  <p className="relative text-sm text-muted leading-relaxed">{item.description}</p>
-                  {i === 0 && (
-                    <div className="relative mt-auto pt-8" aria-hidden="true">
-                      <div className="mx-auto max-w-[15rem] rounded-2xl border border-white/10 bg-[#0b1220] p-3 shadow-xl">
-                        {[
-                          { text: 'Vaccine fridge · 8.9°C', tone: 'bg-red-500' },
-                          { text: 'Escalated to on-call', tone: 'bg-amber-400' },
-                          { text: 'Acknowledged', tone: 'bg-green-500' },
-                        ].map((n) => (
-                          <div key={n.text} className="flex items-center gap-2 rounded-lg bg-white/[0.05] px-2.5 py-2 mb-1.5 last:mb-0">
-                            <span className={`w-1.5 h-1.5 rounded-full ${n.tone}`} />
-                            <span className="text-[11px] text-foreground">{n.text}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </span>
+                  <h3 className="text-lg font-semibold text-foreground mb-1.5">{item.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{item.description}</p>
+                </li>
               );
             })}
-            <div className="sm:col-span-2 lg:col-span-3 border border-dashed border-border rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-surface-elevated text-muted flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-lg font-semibold text-foreground">Asset Intelligence</h3>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-surface-elevated text-muted border border-border">
-                    Expanding
-                  </span>
-                </div>
-                <p className="text-sm text-muted leading-relaxed">An expanding capability on the platform.</p>
-              </div>
-            </div>
+          </ul>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="py-20 lg:py-28 bg-surface border-y border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mb-12">
+            <p className={eyebrow}>Alerts and response</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              From alarm to evidence, in one flow.
+            </h2>
+            <p className="text-lg text-muted leading-relaxed">
+              Today, an alarm can mean phone calls, paper logs and evidence pieced together later. On the
+              Checkit Platform, alerts reach the right people on their phones, and every acknowledgement,
+              action and resolution is recorded as it happens.
+            </p>
           </div>
+          <AlertJourney steps={journey} />
         </div>
       </section>
 
@@ -326,7 +206,7 @@ export default function CheckitPlatformCamPlusPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div>
-              <p className={eyebrow}>Compliance</p>
+              <p className={eyebrow}>Compliance and evidence</p>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 Turn monitoring data into evidence you can prove.
               </h2>
@@ -352,74 +232,40 @@ export default function CheckitPlatformCamPlusPage() {
 
       <section id="migration" className="py-20 lg:py-28 bg-surface border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-14">
-            <div className="max-w-2xl">
-              <p className={eyebrow}>Migration</p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Move when you&apos;re ready.</h2>
-              <p className="text-lg text-muted leading-relaxed">
-                A supported, controlled migration, step by step.
-              </p>
-            </div>
-            <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about your migration" />
+          <div className="max-w-2xl mb-12">
+            <p className={eyebrow}>Migration</p>
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">Move when you&apos;re ready.</h2>
+            <p className="text-lg text-muted leading-relaxed">A supported, controlled migration, step by step.</p>
           </div>
-          <ol className="relative grid sm:grid-cols-2 lg:grid-cols-6 gap-6 lg:gap-4">
-            <span
-              className="hidden lg:block absolute top-6 left-[8%] right-[8%] h-0.5 bg-linear-to-r from-accent/30 via-accent to-green-400"
-              aria-hidden="true"
-            />
-            {migrationSteps.map((step, i) => {
-              const last = i === migrationSteps.length - 1;
-              return (
-                <li key={step} className="relative flex lg:flex-col lg:items-center lg:text-center gap-4 lg:gap-0">
-                  <span
-                    className={`relative z-10 w-12 h-12 rounded-full flex items-center justify-center font-bold shrink-0 ring-8 ring-surface lg:mb-5 ${
-                      last ? 'bg-green-500 text-white' : 'bg-background border-2 border-accent text-accent'
-                    }`}
-                  >
-                    {last ? <Check className="w-5 h-5" /> : i + 1}
-                  </span>
-                  <p className="font-medium text-foreground leading-snug pt-3 lg:pt-0">{step}</p>
-                </li>
-              );
-            })}
+          <ol className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {migrationSteps.map((step, i) => (
+              <li key={step.title} className="rounded-2xl border border-border bg-background p-6">
+                <span className="w-10 h-10 rounded-full border-2 border-accent text-accent font-bold flex items-center justify-center mb-4">
+                  {i + 1}
+                </span>
+                <h3 className="text-lg font-semibold text-foreground mb-1.5">{step.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{step.description}</p>
+              </li>
+            ))}
           </ol>
         </div>
       </section>
 
-      <section className="py-20 lg:py-28">
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-            Built around the realities of medical sites.
-          </h2>
-          <p className="text-lg text-muted max-w-2xl mb-10">
-            Quotes, logos and migration results will sit here once early Checkit Platform customers can be referenced.
-          </p>
-          <div className="grid md:grid-cols-3 gap-4">
-            {['Customer quotes', 'Customer logos', 'Migration results'].map((slot) => (
-              <div
-                key={slot}
-                className="min-h-32 rounded-2xl border border-dashed border-border bg-surface/40 p-6 flex flex-col justify-between"
-              >
-                <p className="font-medium text-foreground">{slot}</p>
-                <p className="text-sm text-muted">Placeholder. Nothing is claimed until the evidence exists.</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-linear-to-br from-accent/25 via-accent/10 to-background px-6 py-14 sm:px-12 lg:py-20 text-center">
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[36rem] h-64 bg-accent/30 blur-3xl rounded-full" aria-hidden="true" />
-            <div className="relative max-w-2xl mx-auto">
-              <h2 className="text-3xl lg:text-5xl font-bold text-foreground mb-5 tracking-tight">
+          <div className="relative overflow-hidden rounded-3xl border border-accent/30 bg-linear-to-br from-accent/25 via-accent/10 to-background px-6 py-14 sm:px-12 lg:py-20">
+            <div className="absolute -top-24 right-0 w-[32rem] h-64 bg-accent/30 blur-3xl rounded-full" aria-hidden="true" />
+            <div className="relative grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
                 Ready to move your monitoring platform forward?
               </h2>
-              <p className="text-lg text-foreground/75 mb-8">
-                Keep the hardware you trust. Get the platform it deserves.
-              </p>
-              <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us about the Checkit Platform" />
+              <div>
+                <p className="text-lg text-foreground/75 mb-6 leading-relaxed">
+                  Keep the hardware you trust. Talk to us about what the Checkit Platform means for your
+                  sites and how the move would work.
+                </p>
+                <DemoRequestButton industry="Checkit Platform (existing CAM+ customers)" label="Talk to us" />
+              </div>
             </div>
           </div>
         </div>

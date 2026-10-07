@@ -10,7 +10,6 @@ import {
   BellRing,
   Building2,
   Check,
-  ClipboardCheck,
   Droplet,
   FileCheck,
   FlaskConical,
@@ -119,20 +118,11 @@ const capabilities = [
   { icon: LayoutDashboard, title: 'Multi-site visibility', description: 'Dashboards across sites, assets, alarms and trends.' },
   { icon: Smartphone, title: 'Mobile alerting', description: 'Alerts that reach people on the move, not just at a workstation.' },
   { icon: GitBranch, title: 'Escalation & incident response', description: 'Escalate automatically and capture who acknowledged and when.' },
-  // TODO(product): task management is listed as roadmap for the medical platform in the BioIVT deck. Confirm availability.
-  { icon: ClipboardCheck, title: 'Digital checks & SOPs', description: 'Make the correct response repeatable across sites and shifts.' },
   { icon: FileCheck, title: 'Audit trails & compliance reporting', description: 'An attributable record of alarms, actions and changes.' },
   { icon: Gauge, title: 'Calibration & IQ/OQ', description: 'Calibration records and qualification documentation in the platform.' },
 ];
 
 const complianceItems = ['Audit trail', 'Electronic signatures', 'Calibration records', 'IQ/OQ', 'Corrective action', 'Reporting'];
-
-const checksPoints = [
-  'Replace paper logs and spreadsheets',
-  'Standardise SOPs across sites and shifts',
-  'Keep standards consistent as staff change',
-  'Show that required checks were completed',
-];
 
 const environments = [
   { icon: Pill, label: 'Pharmacy', description: 'Protect medicines and respond fast, wherever staff are.' },
@@ -282,7 +272,7 @@ export default function CheckitPlatformPage() {
             <div className="lg:col-span-5">
               <p className={eyebrow}>Asset Intelligence</p>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                See risk building before it becomes loss.
+                Know which fridges and freezers need attention first.
               </h2>
               <p className="text-lg text-muted leading-relaxed mb-8">
                 Asset Intelligence uses the monitoring data you already collect to rate the health of
@@ -434,7 +424,7 @@ export default function CheckitPlatformPage() {
           <div className="max-w-3xl mb-12">
             <p className={eyebrow}>Capabilities</p>
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
-              Everything you need to monitor, understand and protect critical stock at every site.
+              Everything you need to monitor, understand and protect critical stock.
             </h2>
           </div>
           <ul className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -464,13 +454,13 @@ export default function CheckitPlatformPage() {
             <div>
               <p className={eyebrow}>Compliance and evidence</p>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-                Don&apos;t just know something went wrong. Prove what happened.
+                Every alarm, action and sign-off, ready as evidence.
               </h2>
               <p className="text-lg text-muted leading-relaxed mb-8">
                 Every alarm, acknowledgement, action and configuration change is recorded with who, what
                 and when, so the evidence exists before anyone asks for it.
               </p>
-              <ul className="flex flex-wrap gap-2 mb-10">
+              <ul className="flex flex-wrap gap-2">
                 {complianceItems.map((item) => (
                   <li
                     key={item}
@@ -481,23 +471,6 @@ export default function CheckitPlatformPage() {
                   </li>
                 ))}
               </ul>
-              {/* TODO(product): digital checks / task management is listed as roadmap for the medical platform. Confirm before external use. */}
-              <div className="rounded-2xl border border-border bg-background p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                    <ClipboardCheck className="w-4 h-4" />
-                  </span>
-                  <p className="font-semibold text-foreground">Make the correct response repeatable, and prove it happened.</p>
-                </div>
-                <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-2">
-                  {checksPoints.map((point) => (
-                    <li key={point} className="flex items-start gap-2 text-sm text-muted">
-                      <Check className="w-3.5 h-3.5 text-accent mt-0.5 shrink-0" />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
             <AuditTrailMock />
           </div>

@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
   alternates: { canonical: 'https://checkitv6.com/checkit-platform' },
   openGraph: {
-    title: 'Critical asset compliance with proactive risk prevention.',
+    title: 'See risk before it becomes a compliance problem.',
     description:
       'Brings temperature and environmental monitoring, asset insight, alerting, response and compliance together across every site.',
     url: 'https://checkitv6.com/checkit-platform',
@@ -172,8 +172,8 @@ export default function CheckitPlatformPage() {
                 Critical asset monitoring
               </span>
               <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-foreground mb-6 leading-[1.05] tracking-tight">
-                Critical asset compliance{' '}
-                <span className="text-gradient">with proactive risk prevention.</span>
+                See risk before it becomes{' '}
+                <span className="text-gradient">a compliance problem.</span>
               </h1>
               <p className="text-lg sm:text-xl text-muted mb-8 max-w-xl leading-relaxed">
                 Checkit brings temperature and environmental monitoring together with asset insight,

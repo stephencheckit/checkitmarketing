@@ -5,719 +5,849 @@ export interface NoteCopy {
   body: string;
 }
 
+// Short notes for /resources. Voice matches the Checkit platform: plain, specific,
+// about the monitored asset, the alert, the response, and the record.
+// Topics rotate through food service, pharmacy, pathology, blood and plasma,
+// senior living, and multi-site operations.
 export const NOTE_LIBRARY: NoteCopy[] = [
   {
     title: 'The first ten minutes after a cooler alert',
-    excerpt: 'The sensor has already done its job by the time the alert reaches someone. What happens next is a food decision, and it needs to be written down.',
+    excerpt: 'The sensor has already stored the excursion. The next ten minutes are for the food, and for writing down what was decided.',
     openings: [
-      'The walk-in alerted in the middle of the rush, just after a delivery had been walked in with the door held open. Nobody was surprised. The door had been open a long time. The question was what, inside, had actually warmed up.',
-      'The alert had been waiting since 2 a.m. The opener was the first person to see it, standing in the dark kitchen with a phone and a cooler full of food that service was about to depend on.',
-      'Two units alerted at once. The team went to the prep fridge, because that was the one in front of them, and left the other one for later. Later did not come until the lunch was already plated.',
-      'By the time anyone looked, the alert had cleared itself. The cooler felt cold again. The history still showed forty minutes above the line, which is the part that does not go away when the air feels fine.',
+      'A walk-in alerted during service, just after a delivery had been walked in with the door held open. The question was which food had actually warmed up.',
+      'The alert had been waiting since 2 a.m. The opener was the first person to see it, with a service about to depend on that cooler.',
+      'Two units alerted at once. The team dealt with the one in front of them and left the other until after lunch.',
+      'By the time anyone looked, the air felt cold again. The history still showed forty minutes above the line.',
     ],
-    body: `A Checkit alert means the sensor has already left its range and the reading is stored. The next ten minutes are not for silencing the phone. They are for deciding what happened to the food. Probe what sits nearest the door, the thin pans and the dairy, not the air in the middle of the box. If the unit is still warm and the trace is longer than a door that was opened and shut, move that food into a unit that is holding.
+    body: `A Checkit alert means a monitored unit has left its range and the reading is already stored. The next ten minutes are for the food. Probe what sits nearest the door, then move or discard what is no longer safe, and write that decision on the alert before going back to the line.
 
-Then write the action down before going back to the line: what moved, what was discarded, and who decided. Clearing the notification leaves a temperature history with no response attached. That is the version an inspector reads later, and it is a weaker story than a short note made while the door was still open.
+Clearing the notification leaves a temperature history with no response. That is a weaker record than a short note made while the door was still open: what moved, what was discarded, and who decided.
 
-The sensor cannot tell you whether the soup is still usable. Someone on the shift has to, and Checkit is where that decision should live.`,
+The sensor cannot say whether the soup is still usable. Someone on the shift has to, and Checkit is where that decision should live.`,
   },
   {
-    title: 'The temperature log that ends when the lights go off',
-    excerpt: 'A number written at the end of the shift is a picture of a busy kitchen. It says nothing about the six hours when the building was empty.',
+    title: 'A vaccine fridge that was back in range by morning',
+    excerpt: 'A morning reading inside 2°C to 8°C does not erase the night. The stock stays quarantined until someone decides, against the trace.',
     openings: [
-      'The closer wrote 38°F on the sheet at ten, locked the office, and went home. At six the next morning the case was warm, and the sheet from the night before was no help at all.',
-      'Someone copied the afternoon reading onto the night row because the kitchen was already dark and the walk to the cooler felt pointless. The sheet looked complete. The night was not on it.',
-      'The paper log for the month had a number in every box. The sensor, which nobody had looked at, showed the unit failing on a Sunday while the log said everything was fine.',
-      'A gasket tore after close. The closing check, taken while people were still in the building, was a perfectly ordinary temperature. The failure happened in the hours the clipboard does not cover.',
+      'The clinic fridge spent the night at 10°C and was back at 5°C when the pharmacy opened. The morning reading was comforting. It was not the night.',
+      'A ward fridge alerted at 11 p.m. The night team acknowledged it and left the decision for pharmacy in the morning.',
+      'The display said 6°C at the start of clinic. The history showed a door that had not latched after the last collection.',
+      'Staff were ready to use the morning vaccines because the fridge felt cold. The alert from 3 a.m. was still open.',
     ],
-    body: `An end-of-shift check is worth doing. It is also the easy part of the day, because someone is there to take it. Overnight is when doors stay shut, defrost cycles run, and a compressor that has been struggling finally shows itself. A sheet filled in before the lights go off cannot see any of that.
+    body: `For a vaccine fridge the safe range is generally 2°C to 8°C. A reading back inside that range by the time people arrive does not close the excursion. Quarantine the stock, keep it in a unit you have checked, and do not issue it until someone with the authority to release or discard it has looked at the trace.
 
-That is what the sensor is for. Put it where the food actually sits, and let it watch the building after everyone has left. In the morning, the trace comes before the prep list. If the unit stayed in range, the food can be used. If it did not, the food decision comes first, and it gets written on the alert rather than discovered halfway through portioning.
+Checkit already has the start, the peak, and the recovery if the sensor was running. What it needs from the team is the decision: which batches, what was done with them, and who signed it.
 
-Paper is a reasonable backup for a check someone is standing there to make. It is the wrong tool for a closed kitchen. Checkit covers the hours the log pretends did not happen.`,
+If the length of the excursion is unclear, write that down too. An honest gap is a better record than a time somebody guessed to make the morning look tidy.`,
   },
   {
-    title: 'Take the temperature before the delivery hits the shelf',
-    excerpt: 'A receiving check only counts if it is the food, it happens before the product is put away, and the number is somewhere other people can find it.',
+    title: 'A reagent fridge and a food fridge are not the same risk',
+    excerpt: 'Both can alert on temperature. The product, the range, and the person who may release it are different, and the record has to say which is which.',
     openings: [
-      'The poultry came off a truck that had sat on the dock with the door open. The boxes were sweating. They were also already on a speed rack by the time anyone thought about a thermometer.',
-      'The invoice was signed at the desk, and the temperature was written afterward from memory. It matched what the driver had said. It did not match the case of milk.',
-      'The driver was in a hurry, the walk-in was two turns away, and the delivery went straight onto the shelf. The check became something the team meant to do.',
-      'The box felt cold, which is what boxes feel like when they have been in a truck. Nobody opened it. The product inside had a different opinion.',
+      'The lab and the staff kitchen sat on the same corridor. Overnight, both fridges alerted. Only one of them held reagents that could not be replaced that week.',
+      'A new sensor was named "Fridge 2." Nobody opening the alert could tell whether that was histology or the pantry.',
+      'The food team cleared an alert that belonged to the reagent fridge, because the notification looked like every other cooler on the account.',
+      'Pathology came in to a quiet dashboard. The reagent fridge had recovered, and nobody had written down what was inside it.',
     ],
-    body: `Probe the food, not the air in the truck and not the outside of the carton. Refrigerated product should be at 41°F or below before it joins food you already trust. With a Checkit probe the reading uploads as it is taken, so the accept-or-reject decision sits with the delivery instead of on the back of an invoice purchasing will never open.
+    body: `Name the asset the way the people who respond will recognise it: site, room, and what it protects. A reagent fridge, a vaccine fridge, and a kitchen walk-in can all leave range. They do not share a safe limit, and they should not share a vague name in Checkit.
 
-If it is warm, do not slide it into the cooler to see if it comes down. A warm case pulls the unit out of range and warms what was already stored. Refuse it, or quarantine it, and write the reason in a sentence a buyer can understand next week.
+When the alert fires, the response is about that product. Quarantine it, record what was in the unit, and leave the release to the person who is allowed to make it. A cleared alarm on the wrong asset is how a lab problem gets treated like a kitchen one.
 
-The person who signs for the delivery should be the person who took the temperature. Those two jobs drift apart easily, and the record gets worse every time they do.`,
+The trace is only useful if the next person can tell, from the asset name alone, what was at risk.`,
   },
   {
-    title: 'When the hot hold quietly gives up',
-    excerpt: 'Below 135°F, the pan is no longer being held. It is waiting for someone to reheat it or throw it out, and the sensor is how you find that moment.',
+    title: 'A plasma freezer does not get a casual morning',
+    excerpt: 'High-value stock needs a named response. A recovered display is not a decision about the plasma.',
     openings: [
-      'The steam well had been switched on late, loaded anyway, and the sensor never reached a holding temperature. Service started on food that had not actually gotten hot.',
-      'Dinner ran long. The last pan sat, unstirred, while the line dealt with the board. By the time anyone looked, it had slipped under the line it was supposed to hold.',
-      'A holding cabinet door stayed open between tickets. The food had gone in hot. It did not stay that way, and the first plates were already going out.',
-      'Someone refilled a pan by pouring fresh food on top of food that had already cooled. The top looked fine. The bottom was the problem, and it was about to be served.',
+      'Plasma freezer 2 alerted just after midnight. By the time the blood bank opened, the air temperature looked ordinary and the alarm was still unanswered.',
+      'An engineer had the door open for a repair. The work order was raised. The plasma in that freezer was not mentioned on it.',
+      'The unit climbed during a defrost and did not come back on its usual curve. The morning check was a glance at the display.',
+      'Two freezers alerted. The team checked the one they walk past. The plasma freezer is at the end of the room.',
     ],
-    body: `Hot food has to stay at 135°F or above. A number in the 120s is not close enough for the rest of service. Stir, take the temperature in the center of the food, and if it is under the line, reheat it to 165°F before it goes back to holding, or discard it. Do not rescue a cool pan by topping it up.
+    body: `Blood and plasma are not stock you discover a problem with halfway through issuing it. If the freezer leaves its range, quarantine first and keep the product unused until the person responsible has read the trace and recorded the decision.
 
-A Checkit sensor on the well or the cabinet is there so this is found before the pass, not after a complaint. The reading still needs a decision next to it: which pan, what you did, and who did it. If the same well alerts twice in a week, the history is telling you the equipment is the problem. Another reminder to "keep an eye on it" will not fix a well that cannot hold.
+Checkit holds the temperatures and the times. The note has to hold the rest: which freezer, what was stored there, whether it was moved, and who released or discarded it. "Back in range" describes the air. It does not describe the inventory.
 
-Check it before the first ticket. A cabinet that is merely switched on is not the same thing as a cabinet that is hot.`,
+If the same freezer is slow to recover after defrost, that history is the maintenance case. Write it on the alert while the curve is still this week's curve, not last quarter's rumour.`,
   },
   {
-    title: 'Cooling fails in the gap after the pan leaves the stove',
-    excerpt: 'The walk-in being cold does not mean the soup in the middle of a deep pan cooled on time. That clock is a separate record, and it is the one teams lose.',
+    title: 'A care home still has a night, even when the office is shut',
+    excerpt: 'Medication fridges and dining-room chillers do not pause because the manager has gone home. The alert has to reach someone who is still in the building.',
     openings: [
-      'The stockpot went into the walk-in with the lid on, still deep and hot. The room sensor barely moved. The soup in the center was another matter, and nobody was timing it.',
-      'Cooling started properly, and then the cook got pulled to the line. The pan sat. The two-hour mark passed while everyone was busy doing the job they had been pulled to do.',
-      'The shallow pans were in the dish pit, so the chili went into a deep hotel pan because that was what was clean. It looked handled. It was not cooling.',
-      'The morning crew found a pot from the night before and had to decide whether to hope. The task that should have closed the question had never been finished.',
+      'The medication fridge alerted at 1 a.m. The escalation path ended at a manager who was not on shift and not near the home.',
+      'Night staff knew the dining-room chiller had been temperamental. They did not know the alert was also theirs to acknowledge.',
+      'By morning the fridge was cold again. The night shift had left a note in the office diary, and the alert in Checkit was still blank.',
+      'Two homes share an account. The alert for the smaller one went to the team at the larger one, who assumed someone on site had it.',
     ],
-    body: `Under the FDA Food Code, food has to get from 135°F to 70°F within two hours, and from there to 41°F within four more. The first stage is the one that disappears, because once a pan leaves the burner it feels like someone has dealt with it. A walk-in sensor will confirm the room is cold. It will not confirm the center of the pan is.
+    body: `Senior living runs on more than one kind of cold storage: medication, supplements, and the food for the next service. Each needs a range, a sensor, and a person on duty who can see the alert.
 
-Spread the food thin, leave it uncovered, and take a temperature at the start and again before the two hours are gone. Log those times. If it is still above 70°F when the first window closes, reheat it to 165°F and begin again, or throw it out. Giving it "a little longer" in a deep pot is how a whole batch gets kept on a wish.
+Put the night escalation on people who are actually in the building, or on call for it. An acknowledgement from someone who cannot walk to the fridge is not a response. The action, when they do get there, still has to say what happened to the medication or the food.
 
-Checkit can hold the clock if someone starts it. A cooling record with no start time is just a pot in a fridge.`,
+A paper note in the office and a blank alert in Checkit are two halves of a record. The half an inspector will trust is the one attached to the temperature.`,
   },
   {
-    title: 'Check the thermometer before you trust the rest of the day',
-    excerpt: 'Every temperature taken on the line depends on the probe being honest. An ice bath takes a minute, and it belongs in the record before service starts.',
+    title: 'The site you cannot walk is the one the dashboard is for',
+    excerpt: 'A facilities or multi-site lead cannot stand in every kitchen and every clinic. The account is how those rooms stay visible overnight.',
     openings: [
-      'The probe lived in a sanitizer bucket between uses, and nobody had checked it that week. It was the thermometer the whole line was using anyway.',
-      'Two thermometers on the same station disagreed by four degrees. Both had been used that morning. Only one of them had any business being in a pan.',
-      'A new opener picked up a dial thermometer that had been in the drawer since training. It looked official. It had never been checked on that shift.',
-      'The only ice-bath check anyone could remember was from orientation. Since then the probes had been dropped, borrowed, and put back, and the record had not noticed.',
+      'Four sites, one manager, and a Monday that started with three open alerts. Two of them were from the site nobody had visited that week.',
+      'The flagship kitchen was checked every afternoon. The smaller production unit alerted on Sunday and waited until someone thought to look.',
+      'A contract catering account covered a venue that only operates on event days. The cooler did not know the venue was dark.',
+      'Region reviews were still being built from exported spreadsheets. The alerts, meanwhile, had already named the site.',
     ],
-    body: `Fill a cup with ice and add just enough water to fill the gaps. The tip sits in the ice water, not on the bottom of the cup and not in your hand. A working thermometer reads 32°F, give or take a degree. If it does not, adjust it or take it off the line before it records a shift's worth of confident, slightly wrong numbers.
+    body: `Checkit is the view across sites you will not walk today: which assets are in alarm, which alerts are still open, and which sites keep repeating. That is the list to work from, not the site that happens to be nearest the office.
 
-Do this before the board fills up, and log it in Checkit: which probe, what it read, and whether it stayed in use. If two probes disagree, trust the one that just passed and tag the other so the next person does not pick it up.
+Open alerts need an owner at that site, and a path that moves on if they do not respond. A dashboard full of alarms nobody has acknowledged is a list of rooms where the product decision has not been made.
 
-It is a small task. It is also the reason a later reading of 140°F means 140°F, which is the entire point of writing temperatures down.`,
+When the same site appears every week, the next step is maintenance or a reset of who is on the escalation, not another reminder to be more careful.`,
   },
   {
-    title: 'The air in the fridge and the food are different stories',
-    excerpt: 'A display that says 36°F can sit next to a pan of turkey that is already too warm. The continuous record and the spot check answer different questions.',
+    title: 'The temperature log that stops when the kitchen closes',
+    excerpt: 'A number written at the end of the shift says the kitchen was busy. It says nothing about the hours the building was empty.',
     openings: [
-      'The display said 36°F. A tray of sliced turkey by the door probed at 47°F. Both numbers were real, and only one of them was about the food.',
-      'The sensor hung in front of the fan, in the coldest air in the box. It had been reporting a flattering temperature for months while the door shelf did something else.',
-      'The team logged the digital readout every afternoon and never put a probe in a product. The log was immaculate. It was a log of the machine talking about itself.',
-      'After a big delivery the sensor recovered in a few minutes. The food that had been sitting in the open door had not, and nobody checked it because the unit "was back."',
+      'The closer wrote the walk-in down at ten and went home. At six the case was warm, and the closing sheet could not explain the night.',
+      'Someone copied the afternoon reading into the night row because the kitchen was already dark. The sheet looked complete.',
+      'The paper log had a number in every box. The sensor showed the unit failing on Sunday while the log said it was fine.',
+      'A gasket tore after close. The closing check, taken while people were still there, was an ordinary temperature.',
     ],
-    body: `A Checkit sensor is the story of the unit across the day and the night. A probe is the food in front of you. They come apart after a delivery, a long prep, or a stack of hot pans, and an inspector who asks about the product is not asking about the air.
+    body: `An end-of-shift check is worth doing. It is also the easy part of the day, because someone is standing there. Overnight is when a compressor that has been struggling finally shows itself. A sheet filled in before the lights go off cannot see that.
 
-Put the sensor where the food actually sits, not in the blast from the fan, and use the probe for the spot check so that reading uploads next to the trace. Cold food still has to be at 41°F or below. If you only keep the sensor, you know the machine. If you only keep a clipboard number, you know one moment and you cannot prove the rest.
+The sensor is there for the closed building. In the morning, read the trace before the prep list. If the unit stayed in range, the food can be used. If it did not, the food decision comes first, and it gets written on the alert.
 
-The useful record is both, in the same place, so a warm pan is not hiding behind a healthy-looking display.`,
+Paper is a fair backup for a check someone is present to make. It is the wrong tool for a kitchen that is empty. Checkit covers the hours the log leaves blank.`,
   },
   {
-    title: 'Write the corrective action the way you would want to read it',
-    excerpt: 'The sensor already has the temperature and the time. The note is the decision. "Checked" is not a decision, and it ages badly.',
+    title: 'Who gets the alert when the pharmacy is closed',
+    excerpt: 'An alarm that rings in an empty department is a missed excursion. Escalation has to name the person who is actually on duty.',
     openings: [
-      'The log said OK next to a unit that had been alerting through breakfast. The temperature was in the history. The response was a word that could have meant anything.',
-      'Someone wrote "adjusted" and went home. The next shift could see that something had happened. They could not see what had been moved, or whether it was safe to move it back.',
-      'Three discards in a week had alerts and no product names. The food was gone. The reason was a rumor by the time the manager asked.',
-      'The comment was a paragraph long and still left out the only fact that mattered, which the sensor had already captured and the note had managed to avoid.',
+      'The pharmacy alarm panel sounded in a room that had been locked since six. The on-call phone did not ring.',
+      'A nurse on the ward acknowledged a fridge alert because the notification reached the ward group. She could not say whether the vaccines were still issuable.',
+      'The escalation list still included a pharmacist who had left the trust in the spring. The alert stopped with them.',
+      'Weekend cover was a different team. The weekday escalation path did not know that.',
     ],
-    body: `Checkit stores the degrees and the clock. What it needs from a person is shorter than people think: which food or which unit, what you did, and your name. "Moved the soup to the other walk-in and discarded the sliced turkey" is a note. "Checked fridge" is a shrug that will still be attached to a 52°F trace six months from now.
+    body: `Mobile alerting only works if the path matches the rota. The first person should be someone who can reach the fridge. If they do not acknowledge, Checkit should move the alert to the next person on the path, including the people who cover nights and weekends.
 
-Write it during service, while you remember which pan. If the same unit collects the same sentence three times, stop polishing the comment and call someone about the machine. The history is already the case for that call.
+Acknowledgement is not the decision about the medicines. It is the proof that a person saw it. The decision, quarantine or release, still has to be recorded by someone allowed to make it.
 
-A note that would confuse a stranger is not finished. The stranger, later, might be an inspector, or it might just be you on a Monday.`,
+Review the path when staff change. An escalation list that ends at a leaver is a fridge with nobody watching it.`,
   },
   {
-    title: 'Do not leave a warm unit as a rumor for the next shift',
-    excerpt: 'Saying "the prep fridge was weird" on the way out is not a handoff. The next cook needs the reading, the food, and what is still unfinished.',
+    title: 'Who owns the alarm between shifts in the lab',
+    excerpt: 'A sample fridge that alerts at handover is easy for both shifts to treat as the other shift\'s problem.',
     openings: [
-      'The afternoon lead mentioned, on the way to the car, that the prep fridge had been acting up. The alert was still open. The evening crew found it the way you find most rumors, which is too late.',
-      'Food had been moved out of a warm unit. The incoming cook saw an empty shelf, assumed it was a mistake, and put the food back before anyone explained why the shelf was empty.',
-      'Service had been "called." There was no ticket number on the action, and by the next morning nobody could say which company, or whether anyone was actually coming.',
-      'The sensor was falling back toward range at shift change, so both crews decided it was handled. It started climbing again after the handoff conversation was over.',
+      'The late shift saw the reagent fridge climbing and left it for the early shift, because handover was in twenty minutes.',
+      'The early shift found an acknowledged alert and assumed the samples had already been checked. The note was empty.',
+      'A door sensor and a temperature sensor fired together at 7 a.m., in the gap between the two teams.',
+      'The lab manager asked who had cleared the overnight alarm. Both shifts were sure it was the other one.',
     ],
-    body: `If a unit ran warm on your shift, the handoff is part of the corrective action. Leave the current reading, what you moved or threw out, and whether a technician has actually been called. Leave it in Checkit. A sentence in the doorway will not survive the first hour of the next service.
+    body: `Handover is part of the response. If a unit is out of range at the change of shift, the leaving team records the current reading, what was moved, and what is still open. The incoming team should be able to read that on the alert without a conversation in the corridor.
 
-Do not put food back because the air feels colder than it did. Probe it. Cold food is at 41°F or below, and if the sensor is still rising, that food stays in a unit that is holding. The next person should be able to open the alert and know what they inherited without calling you on your night off.
+Do not put samples back because the air feels colder than it did. The range for that fridge is the limit, and if the sensor is still rising, the product stays quarantined.
 
-A handoff that depends on memory is how the same cooler becomes a surprise twice in one day.`,
+A handoff that lives in memory is how the same fridge becomes a surprise twice in one day. Checkit is the place the unfinished action is written down.`,
   },
   {
-    title: 'An open door will warm a reach-in faster than the team expects',
-    excerpt: 'The food at the front moves first. A temperature sensor and a door sensor together tell you whether you have a habit or a failing compressor.',
+    title: 'The blood bank alarm people have learned to clear',
+    excerpt: 'If the same freezer is acknowledged and dismissed every week, the team has stopped treating the alert as information.',
     openings: [
-      'Someone wedged the reach-in with a sheet pan so they could portion without using a hand on the door. An hour later the sensor had a story, and the pans at the front had a temperature.',
-      'The door did not quite latch. The gap was small enough to ignore if you were busy, which everyone was. The contact sensor did not ignore it.',
-      'On the line, the reach-in was opened for every ticket and not always closed between them. Each opening was "just a second." The seconds added up in the food.',
-      'The gasket was split along the handle side. The door looked closed. It was not sealed, and the overnight trace had started to show the difference.',
+      'The night alarm for freezer 2 was cleared before anyone opened the door. It had been doing that on Tuesdays for a month.',
+      'A defrost spike and a failing compressor had started to look the same on the phone, so both got the same swipe.',
+      'The acknowledgement comment had become a full stop. There was no note, because everyone already "knew" that freezer.',
+      'An audit asked for the last ten alarms on the plasma freezer. Nine were cleared in under a minute, with nothing written.',
     ],
-    body: `A small reach-in dumps its cold air quickly, and the items in front, especially in shallow pans, are the ones that cross 41°F. Checkit can show the temperature climb next to the door. A sensor on the back wall can still look reasonable while that happens. If you also have a door contact, the two traces together are the explanation: a long open followed by a recovery is a door, and a climb with the door shut is a machine.
+    body: `An alert that is always cleared is an alert the team has decided not to trust. Sometimes that is a defrost curve everyone recognises. Sometimes it is a freezer that is actually getting worse, hiding inside the habit.
 
-Close it between pulls. If prep needs the door open, take what you need and get out, then probe the food in front before you trust it. Food that has gone warm gets moved or discarded, and that action goes on the alert. A door that will not latch is not a quirk. It is a temperature problem you can see, and once the team knows the open door is recorded, the sheet-pan habit tends to end on its own.`,
+If it is defrost, write that, and write that the product was still in range when it recovered. If it is not back on the usual curve, leave the alert open and call it maintenance. Checkit can show the repeat. It cannot decide that this one was different from last Tuesday unless someone says so.
+
+The record of a cleared alarm with no reason is the record of a team that stopped looking.`,
   },
   {
-    title: 'Some freezer alerts are defrost, and some are not',
-    excerpt: 'A freezer is supposed to warm up on a schedule. The useful question is whether this spike looks like the ones before it, or whether it has started to last longer.',
+    title: 'Medication storage is not the dining-room fridge',
+    excerpt: 'A care home often has both. They need different ranges, different responders, and names that do not collapse into "upstairs fridge."',
     openings: [
-      'The same freezer alerted every night around one, and it was back in range by three. The night lead had started clearing them in a stack, without opening a single trace.',
-      'Everyone knew that unit "always did that." The phrase had been true for a year. It was also how a new, longer spike got the same shrug as the old ones.',
-      'Defrost used to last twenty minutes. The history from the last two weeks showed it taking more than an hour to come back, and the food nearest the coil was soft.',
-      'Product had been pushed against the evaporator. A cycle that used to pass unnoticed was now warming the boxes stacked in the airflow.',
+      'The upstairs fridge alerted. Night staff checked the dining room, because that was the fridge they knew.',
+      'Medication and leftover desserts had, at one point, shared a chill. The sensor was still named for the food.',
+      'A temperature excursion on the medication fridge was written up in the kitchen diary. Pharmacy never saw it.',
+      'The safe range on the medication fridge had been copied from the kitchen walk-in, because both were "just fridges."',
     ],
-    body: `Learn the shape of a normal night for that sensor. If Checkit shows the same rise and the same return, note it once so the next person does not treat a known defrost as an emergency. Do not clear a week of them without looking at how long they lasted. Length is the difference between a cycle and a failure.
+    body: `Set the range for the product, not for the nearest similar appliance. Medication that must stay within a tight band should not inherit the limit from a kitchen chiller, and the alert should go to the people who handle medication, not only to the kitchen team.
 
-When the spike runs long, or the product itself is soft, it is no longer routine. Check the coil for ice, make sure boxes are not blocking the air, and send the trace with the service call. A technician can debate a story. The graph is harder to wave off.
+In Checkit, the asset name should say medication, the room, and the home. The action on the alert should say whether doses were quarantined and who was told. A kitchen corrective-action habit does not cover a medicine fridge.
 
-An alert people have decided to ignore will still be ignored on the night it is telling the truth. The habit is the risk, not the defrost.`,
+If both fridges alert and only one is checked, the record will show which one. That is the point of naming them properly before the night you need to.`,
   },
   {
-    title: 'A min/max thermometer forgets the night you needed',
-    excerpt: 'The needle can tell you an extreme happened. It cannot tell you when, or for how long, or what anyone did. Resetting it throws away the only clue.',
+    title: 'Repeat alarms are how you decide where to send an engineer',
+    excerpt: 'A single excursion can be a door. The same asset, week after week, is a maintenance job with a history attached.',
     openings: [
-      'Every morning someone reset the min/max before writing anything down. The clinic fridge always looked fine at the start of the day. The night was erased with the needle.',
-      'The minimum showed 1°C. That could have been ten minutes or ten hours, and the difference was the entire question about whether the vaccines were still usable.',
-      'Staff wrote the current temperature twice a day, which was usually a comfortable 5°C, and never looked at the minimum sitting underneath it.',
-      'The night shift cleared the thermometer so the day shift would not walk into an alarm. They succeeded. The day shift walked into a fridge with no memory.',
+      'One kitchen had six alerts. Five were the same prep fridge, each one closed with "door left open."',
+      'A clinic fridge had been "a bit warm on delivery day" for a quarter. The deliveries were not the thing that had changed.',
+      'The engineer was sent to the site that shouted loudest. The site with the repeating overnight spike had not shouted at all. It had only alerted.',
+      'Three homes. One of them accounted for most of the month\'s alarms, all on two medication fridges.',
     ],
-    body: `Vaccine and medication refrigerators are generally kept between 2°C and 8°C. A min/max thermometer can show that the range was broken. It cannot show the shape of the break, and the moment someone resets it, even that clue is gone.
+    body: `Sort the open and recent alerts by asset, not by the morning they happened to be noticed. A door left open once is a coaching note. The same sensor crossing the line every night is a gasket, a hinge, or a compressor, and the trace is the reason to book the work.
 
-A sensor keeps the overnight trace and can alert a person before the morning routine wipes the slate. If all you have today is the needle, write the minimum and maximum down before anyone touches them, then quarantine the product. Whether it can be used is a clinical decision. It is not a decision a cleared dial gets to make.
+Checkit already has the repeats. The useful habit is to look at them before writing another identical corrective action. Put the work-order number on the latest alert so the next person can see the response was maintenance, not another reminder.
 
-A reading of 5°C at 8 a.m. does not repair the night. Checkit is how that night stays visible long enough for the right person to see it.`,
+The site that alarms the most is the site that should be first on the engineer\'s list, even if nobody has phoned about it.`,
   },
   {
-    title: 'Put the sensor where the fridge is actually warm',
-    excerpt: 'The coldest air in a unit is a flattering place to measure. The warm spot is usually the door, the top shelf, or the front of a fridge someone has packed full.',
+    title: 'Take the temperature before the delivery is put away',
+    excerpt: 'A receiving check counts when it is the food, it happens before the product joins stock you already trust, and the number is on the delivery.',
     openings: [
-      'The probe had been hanging in front of the fan since installation. It reported a beautiful temperature. The milk, which lived on the door, did not.',
-      'The top shelf was packed to the ceiling and almost never opened. Nothing was measuring it. That was also where the oldest product had ended up.',
-      'Vaccines sat in the door rack because it was easy to reach. The sensor was on the back wall, in the part of the fridge nobody was using.',
-      'When the new unit arrived, the magnet went wherever it stuck. Nobody compared it to a probe in the food. The alert was honest about the wrong spot.',
+      'The poultry came off a truck that had sat with the door open. The boxes were on a rack before anyone reached for a probe.',
+      'The invoice was signed at the desk. The temperature was written afterwards, from what the driver had said.',
+      'The driver was in a hurry. The delivery went straight into the walk-in, and the check became something the team meant to do.',
+      'The box felt cold. Nobody opened it. The product inside was a different temperature from the carton.',
     ],
-    body: `Every fridge has a place that runs warmer than the rest. That is where a Checkit sensor earns its keep. Compare it, for a day, to a probe in the food at that spot. If they disagree, believe the food and move the sensor. A reading taken in the discharge air tells you the compressor is trying. It does not tell you the product is safe.
+    body: `Probe the food, not the air in the truck and not the outside of the box. With a Checkit probe the reading stays on the delivery, so the accept-or-reject decision is not living on the back of an invoice.
 
-Do not let the next delivery bury it. If the shelving changes, or something more sensitive moves to a new place, look at the placement again. An alert is only as good as the air it is sitting in.
+If it is warm, do not slide it into a monitored cooler to see if it comes down. A warm case pulls the unit out of range and warms what was already stored. Refuse it or quarantine it, and write the reason where purchasing can find it later.
 
-Cold food still has to hold at 41°F or below in the warm spot, not in the most generous corner of the box.`,
+The person who signs for the delivery should be the person who took the temperature. When those jobs split, the record gets worse every time.`,
   },
   {
-    title: 'If the food is being held on time, the time has to be real',
-    excerpt: 'Time instead of temperature only works when the start and the discard are written down and then obeyed. A whiteboard that gets wiped is not that system.',
+    title: 'The range on a medicine fridge is the limit, not the dial',
+    excerpt: 'A setpoint the fridge likes and a range the medicines require are different numbers. Widening the alert until the phone goes quiet does not make the stock safer.',
     openings: [
-      'Pizza sat on the screen through a slow hour with nothing on it to say when it had landed there. It looked like it belonged. The clock did not exist.',
-      'A catering tray left the kitchen hot, and the start time stayed on a whiteboard in the pass. By the time the tray was on the buffet, the whiteboard had been erased for the next ticket.',
-      'The pan had a time on it. Then someone topped it up from a fresh batch and left the old time in place, which now described food that had not been there.',
-      'Trays came back from an event and went into the walk-in because they still looked all right. Nobody could say how long they had been between temperatures.',
+      'The alert limit had been widened because the fridge "ran a little high" after the morning clinic. The stock did not get colder. The phone got quieter.',
+      'The dial said 4. The sensor, in the middle of the stock, said something else on warm afternoons.',
+      'A fridge was set colder to be safe, then alarmed all night because the lower limit had been left at a kitchen setting.',
+      'The display matched the setpoint. The top shelf, where the vaccines actually sat, did not.',
     ],
-    body: `Holding food on time, rather than on temperature, is a specific method with a written procedure. It is not a name for food that happens to be sitting out. The pan needs the moment it left cold holding, at 41°F or below, or hot holding, at 135°F or above, and it needs the time it has to be gone. When that time arrives, the food goes. It does not get slid into a monitored cooler and saved.
+    body: `The setpoint is the instruction to the machine. The alert range is the limit for the product. For vaccines that is generally 2°C to 8°C. Set the Checkit alert inside that range, with enough room that a real drift reaches someone before the stock is lost, and not so tight that every ordinary door opening becomes a page.
 
-Put the clock in Checkit so it travels with the food and so a fresh batch cannot inherit an old one. Topping up a pan resets nothing. It contaminates the only record you had.
+If the only way to stop the noise is to widen the alert until it matches a weak fridge, the fridge is the problem. Moving the limit so the record looks calm is how the record stops being true.
 
-The sensors in the kitchen will not cover a buffet or a pass. If the time is not written down, you are not using time as a control. You are hoping.`,
+Write the range on the asset in degrees. A dial with no units is not what the sensor is measuring.`,
   },
   {
-    title: 'Look at the night before you start the prep',
-    excerpt: 'The overnight trace decides whether yesterday\'s food is still an ingredient. Starting the list before anyone opens it means the menu is already a bet.',
+    title: 'A door left open in the lab is a product decision',
+    excerpt: 'The temperature sensor says the air moved. Someone still has to say what happened to the samples that were in it.',
     openings: [
-      'The prep cook was portioning before the manager had finished unlocking the office. The overnight alerts were still sitting, unread, on a phone in a jacket.',
-      'A unit had alerted at three in the morning. The first recipe of the day used food from that unit, because the recipe was at the top of the list and the alert was not.',
-      'Yesterday\'s soup came out for service while the sensor history was still unopened. It might have been fine. Nobody had checked the only record that knew.',
-      'On the opening list, "start prep" came before "check the coolers." The order was a small thing. It was also why the check kept happening after the food had already been handled.',
+      'A reagent fridge door did not latch after a busy run. The contact sensor had been unhappy for forty minutes before anyone noticed the air temperature.',
+      'The samples nearest the door were the ones people reach for. They were also the ones that warmed first.',
+      'An engineer left the freezer ajar and assumed the lab would see it. The lab was in a meeting.',
+      'The door alarm cleared when the door was shut. The samples were put straight back into use.',
     ],
-    body: `Open Checkit before anything moves. The sensors either stayed in range or they did not. If they did, probe what you plan to use and get on with the work. If a unit left its range, that food is not automatically an ingredient. Decide, write the action, and only then start portioning. Once it is mixed into something else, a discard becomes a much larger mess than it needed to be.
+    body: `A door alarm and a temperature alarm answer different questions. The door says it was open. The temperature says for how long the product was exposed, and how far it went. Both belong on the same asset in Checkit, and the note has to cover the samples, not just the fact that someone shut the door.
 
-Put the sensor review first on the opening list, ahead of the recipes. A check that happens after twenty pans are done is a record of a decision you already missed, which is not really a check.
+Quarantine what sat in the open door until the person responsible has looked at the trace. Shutting the door ends the excursion. It does not release the stock.
 
-If the same unit is warm at the start of the day more than once, the list is no longer the remedy. The history is a reason to call for service.`,
+If the latch is the thing that fails, say so on the alert. The next repeat will then read as a repair, not as another careless close.`,
   },
   {
-    title: 'Have the last two weeks ready before anyone asks',
-    excerpt: 'Inspectors start with temperatures, what you did about the bad ones, and whether the story makes sense. A complete binder full of identical numbers often does not.',
+    title: 'High-value stock needs a named response',
+    excerpt: 'Plasma, blood, and irreplaceable samples need a person on the alert path who is allowed to decide, not a shared inbox that everyone assumes someone else is watching.',
     openings: [
-      'The binder was full. Every line said roughly the same temperature, written in the same hand. The sensor in the same cooler told a less tidy story, and that was the one with the variation.',
-      'An inspector pointed at a walk-in and asked for the last two weeks. The team knew the records existed. Finding them took long enough to feel like they did not.',
-      'Something had been thrown out on a Thursday. The alert was there. The reason was not, so the discard looked, on paper, like it had never been decided by anyone.',
-      'Today was easy to open in the app. Last Tuesday took a search. Inspections have a way of being about last Tuesday.',
+      'The freezer alert went to a group. Everyone in the group saw it. Nobody in the group was sure it was theirs.',
+      'The scientific lead was the only person who could release the samples. They were not on the escalation path.',
+      'A night alarm was acknowledged by security, which proved someone had seen a phone, and nothing about the inventory.',
+      'The asset was called "Freezer." It held a week of plasma collections. The name did not say so.',
     ],
-    body: `What you want within reach is recent sensor history and the actions that followed it. Cold food at 41°F or below, hot food at 135°F or above, and a plain account of what happened when a number was off. An inspector is looking for a pattern that a person could believe. Missing days, and comments that say nothing, are patterns too.
+    body: `Put a named role on the path for assets that hold blood, plasma, or samples you cannot reorder in the morning. Acknowledgement should come from someone who can stand in front of the unit or who is explicitly handing that job to someone who can.
 
-Checkit should show who was alerted, when the unit left range, and what was done. If a technician came, that note belongs on the same unit, because it is the explanation for the spike. The last few weeks matter more than a perfect archive from last year.
+Then record the decision in Checkit against the alarm: moved, quarantined, released, or discarded, with the name of the person who decided. A group chat beside an empty alert is not an audit trail.
 
-Pull them once, before you need them, and see whether the story holds. If it does not hold for you, it will not hold for anyone else.`,
+Name the asset for the inventory it protects. "Freezer" is not a record. "Plasma freezer 2, blood bank" is.`,
   },
   {
-    title: 'When the power returns, the food does not reset with it',
-    excerpt: 'The lights coming back on are not a decision. The trace tells you how long the unit was out, which is the fact you need before anything goes back into service.',
+    title: 'The night shift cannot be the only copy of what happened',
+    excerpt: 'If the excursion is explained at handover and nowhere else, the morning team inherits a story. The record should already contain the decision.',
     openings: [
-      'The power had been off overnight and the walk-in door had stayed shut, which felt reassuring and was not, by itself, an answer about the food.',
-      'A short outage hit during service. Pans stayed on the line because restarting the kitchen felt more urgent than measuring anything.',
-      'The generator covered the dining room. It did not cover the walk-in, and for a while nobody realized those were different buildings, electrically speaking.',
-      'A freezer had partially thawed. Staff closed it again and meant to refreeze whatever still looked frozen, which is a guess about ice crystals they had not actually checked.',
+      'Night staff moved the medication to another fridge and said so at 7 a.m. By 9 a.m. the day team had moved it back.',
+      'The verbal handover included a fridge that "had been odd." The alert comment was blank.',
+      'A senior carer wrote the temperatures in the communication book. Checkit still showed an open alarm with no action.',
+      'The manager asked, two days later, which doses had been quarantined. The night shift was off, and the book did not name them.',
     ],
-    body: `Leave the door shut until you are ready to look. Then read the Checkit trace for when the gap started and when it ended, and probe the food rather than the air. Refrigerated food above 41°F has to be judged by how long it sat there and what it is. Frozen food that still has ice crystals, and that stayed at or below 41°F, can often go back. Food you cannot time should not return to service because everyone is tired and the dining room is full.
+    body: `Say what was moved, what was left, and what is still waiting, on the alert, before the shift ends. The next team should learn it from Checkit, not from a conversation that disappears once the office gets busy.
 
-Write the window, the temperatures, and what you discarded on that alert. The sensor is what turns "it was off for a bit" into a start and an end.
+Name the medication or the food. "Checked fridge" does not tell the day shift whether breakfast can be served or whether doses must stay quarantined.
 
-Do not solve a warm case by wedging a fresh delivery in front of the old product and calling the morning recovered.`,
+A handover that depends on who is in the room is how the same excursion gets discovered twice.`,
   },
   {
-    title: 'A thermometer you skipped will be wrong with confidence',
-    excerpt: 'Once service starts, every probe reading inherits the calibration you did not do. The task takes a minute. The shift it protects is the rest of the day.',
+    title: 'Escalation is the plan for when the first person is busy',
+    excerpt: 'The first alert often finds someone in the middle of service, a round, or a clinic. The path behind them is what keeps the stock from waiting.',
     openings: [
-      'The ice was gone by the time the first ticket printed, so the calibration task was skipped with the intention of doing it at a lull that never arrived.',
-      'A thermometer hit the floor, got rinsed, and went straight back into a pot of soup. The drop was the moment it should have been checked, and it was the moment nobody had time.',
-      'Closing was supposed to have calibrated the probes. Opening assumed that had happened. The app, which had the task still open, was not consulted by either shift.',
-      'Three probes were on the line. One of them had a passing check sometime in the last month. The other two were just thermometers people liked.',
+      'The head chef was on the pass. The cooler alert sat on their phone for twenty minutes, unacknowledged, while the food sat in the walk-in.',
+      'The pharmacist was with a patient. There was no second person on the vaccine fridge path.',
+      'An alert reached the facilities desk. The desk was covered. The kitchen at the other site did not know.',
+      'The on-call phone was in a drawer on silent. The escalation never left that phone.',
     ],
-    body: `Keep ice at the station, or make the ice bath the first thing in Checkit before the board fills. Tip in the ice water, looking for 32°F, and record which probe passed. If service is already moving and a thermometer was just dropped, or it disagrees with another, stop using it. A bad probe does not announce itself. It quietly shifts every hot-holding and cooling decision on that station by a few degrees, and the record looks normal while it happens.
+    body: `Set the acknowledgement window for the reality of the shift, then move the alert if it is missed. Checkit escalation is how a busy first responder does not become a single point of failure.
 
-If you have more thermometers than anyone can check, you have too many on the line. A probe that will not calibrate is broken. Log that, so it does not wander back into a drawer and out again tomorrow as if it were new.`,
+The second person needs to be able to act, or to reach someone who can. A path that climbs into a mailbox nobody watches at night is the same as no path.
+
+Test it on a quiet afternoon: trigger a check, or watch the next real alarm, and see who actually answers. A path that looks right on a screen and fails on a Saturday night is not finished.`,
   },
   {
-    title: 'The weekend is when a small cooler problem becomes a Monday one',
-    excerpt: 'Friday is the last time the usual person looks. If the alert has nowhere to go after that, Sunday happens without anyone, and Monday inherits the food.',
+    title: 'When the hot hold quietly slips',
+    excerpt: 'Below the holding line, the pan is no longer being held. The sensor is how that moment shows up before the food goes out.',
     openings: [
-      'Friday\'s list was skipped because the closer was short. The sensor alerted into a phone that was in a jacket, in a car, on the way home.',
-      'The unit had been a degree warmer every afternoon for two weeks. Each day still passed. Nobody opened the week view, so the slope was invisible one reading at a time.',
-      'Saturday\'s crew knew the cooler. They did not know who was supposed to get the alert, or what they were allowed to throw out if it fired.',
-      'Monday prep started on food that had sat through an unwatched Sunday. The sheet from Friday was the newest piece of paper in the building.',
+      'The well was switched on late and loaded anyway. Service started on food that had not reached a holding temperature.',
+      'The last pan sat unstirred while the line cleared the board. It slipped under the line it was supposed to hold.',
+      'A cabinet door stayed open between tickets. The first plates were already going out.',
+      'Fresh food was poured onto food that had already cooled. The top looked fine. The bottom was about to be served.',
     ],
-    body: `Before you leave on Friday, look at the week, not only at the last number. A sensor creeping up every afternoon is a gasket, a coil, or a door that gets propped when the kitchen is busy. Leave a named person on the weekend alert, and leave the service number on the unit in Checkit rather than in a contact list on one manager\'s phone.
+    body: `Hot food has to stay at 135°F or above. A number in the 120s is not close enough for the rest of service. If a Checkit sensor on the well or the cabinet shows it under the line, reheat it properly before it goes back, or discard it. Do not rescue a cool pan by topping it up.
 
-Monday begins with that weekend history, then a probe of anything you mean to prep. Cold food is still 41°F or below. If there is no weekend data, treat the food with less confidence, not more. A skipped Friday is a decision to be surprised on Monday, and the alert routing is the part you can still fix before the door locks.`,
+Write which pan and what you did. If the same well alerts twice in a week, the history is pointing at the equipment. Another note that says "keep an eye on it" will not fix a well that cannot hold.
+
+Check the cabinet before the first ticket. Switched on is not the same thing as hot.`,
   },
   {
-    title: 'The kitchen you did not walk is the one that needs the dashboard',
-    excerpt: 'Multi-site problems rarely show up in the building you visited yesterday. They show up as a site that has gone quiet.',
+    title: 'Quarantine the medicines before the clinic starts',
+    excerpt: 'The safest morning habit is to treat an overnight alert as a hold on the stock, and to lift that hold only with a recorded decision.',
     openings: [
-      'Five sites sent in their checks. One of them had been writing the same temperature for two weeks, and the sensor in that fridge did not agree with a single one of those numbers.',
-      'There was a café fridge inside a larger building that had never been given a sensor, because it did not feel like a real site until the day it was the problem.',
-      'The site manager went on leave. The checklists stopped the same day, which told you more about the system than a month of perfect scores had.',
-      'An alert at a distant site went to a mailbox. On Sunday the mailbox was closed, and so, effectively, was the response.',
+      'Clinic was due to start at nine. The vaccine fridge had an open alert from 4 a.m., and the first patient was already booked.',
+      'A nurse took a box from the top shelf because the fridge door felt cold. The alert was still red on the phone in the office.',
+      'The locum pharmacist did not know the local rule for who may release stock after an excursion.',
+      'Yesterday\'s alert had been acknowledged and never resolved. This morning\'s team treated the fridge as clear.',
     ],
-    body: `Open the dashboard and look for the site you have not heard from. A missing day is more informative than a column of identical 38°F readings. Someone should be able to see every monitored unit without waiting for a photo of a clipboard to arrive by email.
+    body: `If the alert is open, the stock is on hold. That is the order of the morning: quarantine, read the trace, then let the authorised person release or discard, and record the outcome on the alarm before anyone issues a dose.
 
-Send alerts to a person who is actually working at that site that day, and to someone else who will notice if the first person does not act. When the same site keeps missing tasks, the remedy is coverage and a sensor, not a firmer message. Messages are how headquarters stays comfortable.
+Checkit can show that the acknowledgement happened and that the resolution happened, and who did each. A fridge that was "probably fine" is not one of those states.
 
-The warm fridge will be at the location the report has been quiet about. Checkit is only useful there if someone is willing to look at the quiet sites first.`,
+Close the alert only when the decision is written. An acknowledgement with no resolution is an excursion that is still open, even if the air is cold again.`,
   },
   {
-    title: 'The alerts people have learned to clear without reading',
-    excerpt: 'A notification that cries wolf every night will be swiped away. The night it is right, it gets the same swipe, because that is what the team has been trained to do.',
+    title: 'What to write when the samples cannot be replaced',
+    excerpt: 'Some excursions end in a scientific decision, not a kitchen one. The monitoring record still has to show what was decided and by whom.',
     openings: [
-      'The freezer alerted on every defrost, and the night lead had started clearing them in bulk at the end of the shift. Opening the trace was no longer part of the gesture.',
-      'The threshold was tighter than the unit could hold on a delivery day. By the third week, "it always does this on Tuesdays" had become the official interpretation.',
-      'Ten people received every alert. Each of them assumed one of the other nine had it, which meant the alert was everybody\'s and therefore nobody\'s.',
-      'The sound in the office had been turned down because it interrupted meetings. The meetings continued. So did the cooler.',
+      'A research freezer drifted overnight. The samples were the product of a month of work, and the alert comment said "ok now."',
+      'The lab kept the samples because throwing them out felt worse than explaining them. The explanation was never written down.',
+      'A principal investigator released the box in conversation. Checkit still showed the alarm as cleared by a technician at 7:12.',
+      'The logger file was exported to email. The action in the platform was empty, so the audit trail and the science lived in different places.',
     ],
-    body: `An alert that people ignore is not a safety system, however many sensors are behind it. Set the threshold so it means food moving out of range, not a door that was open for a minute you already understand. A known defrost can stay visible in the history without paging the entire company.
+    body: `The sensor cannot judge a sample. It can show how warm it got and for how long. The person who owns the work has to release or discard it, and that decision belongs on the alert: which boxes, what was decided, and their name.
 
-One person should own the response, with a backup if they do not act. Once a week, look at which units alerted and which of those were real. Retire the noisy rule or repair the equipment. Adding another name to a tired list does not create a reader.
+"OK now" is a description of the freezer after the door was shut. It is not a description of the samples. If the decision is to keep them with a caveat, write the caveat. Future you, and anyone who asks, will not remember the conversation.
 
-If clearing the notification is easier than understanding it, the setup has already failed, and Checkit is recording the habit along with the temperatures.`,
+Keep the record in Checkit even when a longer scientific note also exists. The temperature and the decision should be in the same place.`,
   },
   {
-    title: 'Someone has to get the alert when the manager is off',
-    excerpt: 'A phone that belongs to one person is a plan for the days that person is working. Nights and weekends need a second name, and a definition of what answering means.',
+    title: 'The trace is the evidence. The note is the decision.',
+    excerpt: 'A graph shows that the freezer moved. It does not show whether the plasma was issued afterwards. That sentence has to be written.',
     openings: [
-      'The manager\'s phone was off for the weekend, which was a reasonable way to spend a weekend. The walk-in alerted at midnight anyway, to a phone that was not going to move.',
-      'The alert went to a group. Everyone saw that everyone else had seen it. Nobody drove in, because the presence of the group felt like coverage.',
-      'A supervisor had left two months ago. The alert still knew their number. The person who had replaced them had never been added, and did not know they were supposed to be.',
-      'Escalation was an email to a shared inbox. The inbox was read on weekday mornings. The compressor did not keep weekday hours.',
+      'The curve was obvious. The comment said "false alarm" and stopped, which left the plasma question unanswered.',
+      'An auditor asked what happened to the units in freezer 2 on the night of the spike. The graph was easy. The outcome took an afternoon to reconstruct.',
+      'Someone exported the chart and pasted it into a report. The actions taken were still only in a shift book.',
+      'The alarm was resolved in four minutes. The resolution text was a single word: done.',
     ],
-    body: `Name two people on the Checkit alert, and decide what counts as an answer. Opening the notification is not it. An answer is a check, food moved or discarded, or a real call for service, written on the alert so the next person can see it happened.
+    body: `Checkit stores the degrees and the clock. The note is shorter than people fear, and it has to contain the decision: which stock, what you did, and your name. "Plasma moved to freezer 1. Freezer 2 left out of service. Engineer called, job 4412." That is a record. "Done" is not.
 
-If the first person does not act, the second should hear about it without anyone having to forward a text. Review the list when shifts change. A number for someone who no longer works there is a common reason a freezer runs until morning.
+"False alarm" needs a reason: a known defrost, back in range, product still within limit when checked. Without the reason, it reads as a spike nobody was willing to own.
 
-Test the path on a quiet afternoon. You would rather find the gap then, with the kitchen still calm, than on the night a compressor stops and the only phone that knows is face down in another town.`,
+Use the comment on the alert. A clean trace with nothing written on it is half a record.`,
   },
   {
-    title: 'Check the bucket while you are already checking the coolers',
-    excerpt: 'Sanitizer and temperature fail in the same window, at the start of service, when both are easy to mean to do. Put them on the same walk or one of them will be skipped.',
+    title: 'One manager, several dining rooms',
+    excerpt: 'Senior living catering often means more than one servery. The record has to show which room, which service, and who responded.',
     openings: [
-      'The sensors had been reviewed and the sheet felt done. The sanitizer bucket had been mixed by eye, which is a method that works until the day someone tests it.',
-      'The strips were in a drawer the morning crew did not open. The task asked for a photo. The photo never happened, and the bucket went to the line anyway.',
-      'One bucket sat through a whole service and was never changed. It had been correct at ten. By two it was water with a memory of being correct.',
-      'The number written down was the concentration someone had intended to mix. The strip, which was still in the packet, had not been invited to the record.',
+      'Lunch went out from three serveries. The hot hold in the smallest one slipped, and the alert went to a chef who was plating in the main kitchen.',
+      'A satellite dining room was checked "when someone was over that way." The sensor had been out of range through the service.',
+      'The corrective action said "servery." The home has four.',
+      'Weekend cover ran two dining rooms with one cook. The escalation path still assumed a full weekday brigade.',
     ],
-    body: `Do the sanitizer test on the same Checkit round as the sensors, while you are already walking. The strip tells you whether the bucket is in the range printed on the bottle, not whether the pour looked right. If it is weak or too strong, remake it and record the new reading. A bucket left out all service will not stay at the strength it had at the start of the day.
+    body: `Name each servery, trolley, and holding cabinet for the room it serves. An alert that says "hot hold" will be answered in the room the chef is already standing in, which may not be the room that alarmed.
 
-A check that requires a separate trip to the office will happen when an inspector is in the building and not on an ordinary Tuesday. Keep the strips at the station.
+The response is the same shape as anywhere else in Checkit: acknowledge, deal with the food, write down which service and what was done. If weekend staffing cannot meet the weekday path, change the path, do not hope the weekday names will pick up.
 
-The sensors will not notice a weak bucket. The task will, if it is standing in the same path as the thing the team already refuses to skip.`,
+A group of dining rooms is a small multi-site problem. Treat it like one.`,
   },
   {
-    title: 'A cold pan can still be too old to use',
-    excerpt: 'The sensor can tell you the food is cold. It cannot tell you the food should still be there. The labels are the other half of the walk.',
+    title: 'A cleared notification is not a completed response',
+    excerpt: 'Acknowledgement proves the alert was seen. Resolution proves someone decided what happened to the stock.',
     openings: [
-      'Pans went into the walk-in without dates because the cook was coming straight back for them. Then the cook did not come straight back, and the pans became anonymous.',
-      'Two half-pans were combined to save a shelf, and a fresh label went over the old one. The date now described the newer food. The older food was still in the pan.',
-      'Prep from two different days ended up in one container with today\'s sticker, which is an honest-looking way to lose track of the clock.',
-      'The sensor was comfortably in range. Half the pans were past the day the site uses. Cold, and done.',
+      'The phone was swiped clear on the way into the building. The fridge was not opened for another hour.',
+      'An alert showed as acknowledged by a manager who was off site. The local team had not started the quarantine.',
+      'The dashboard looked calm by 8 a.m. Three alerts had been cleared overnight with no action text.',
+      'A supervisor asked for proof of the response. The system had a timestamp for "seen" and nothing after it.',
     ],
-    body: `When you walk a cooler, read the labels in the same look as the temperature. Food at 41°F or below can still be old. The label should say what it is and when it was made or opened, in a form the next shift does not have to decode.
+    body: `Treat acknowledgement and resolution as different steps, because they are. The first is the person. The second is the product: quarantined, moved, discarded, released, or passed back into service, with enough detail that a stranger could follow it.
 
-Do not put today\'s date on a pan you combined with yesterday\'s. The older food sets the time. If a pan has no label at all, the walk is not finished until it has one or it has been thrown out, and the discard is written down so the missing pan has an explanation.
+Do not resolve an alert to make a dashboard look ready for a visit. The visit, or the audit after it, will ask what was decided. Checkit can show the time you resolved it. It cannot improve a sentence you did not write.
 
-A sensor will never catch an unlabeled container. A person walking the shelves will, which is why the Checkit task has to include the shelves and not only the number on the screen.`,
+If the action is still in progress, leave the alert open. An open alert is an honest status. A closed one with an empty note is a gap.`,
   },
   {
-    title: 'Ice in the well is not the same thing as cold food',
-    excerpt: 'A pan can sit in a cold well and still be warm at the top. The fridge sensors do not measure the line. A probe during service does.',
+    title: 'Cooling is a clock someone has to start',
+    excerpt: 'A cold walk-in does not prove a deep pan of soup cooled on time. That clock is its own record.',
     openings: [
-      'By noon the salad-bar ice had melted to the rim and the pans were standing in water. They looked seated in the well. The food at the surface was the temperature of the room.',
-      'Pans were nested up above the ice line so more items would fit. The bottoms were cold. The tops, which are the part people eat, were not.',
-      'A backup pan waited on the counter because the well was full. It waited through the rush, which is a long time to be a backup.',
-      'Someone packed fresh ice around a pan that was already warm and left it there, as if ice were a corrective action rather than a prop.',
+      'The stockpot went into the walk-in with the lid on. The room sensor barely moved. Nobody was timing the soup.',
+      'Cooling started, and then the cook was pulled to the line. The two-hour mark passed while they were gone.',
+      'The shallow pans were in the pot wash, so the chili went into a deep pan because that was what was clean.',
+      'The morning crew found a pot from the night before and had to guess whether the clock had ever been started.',
     ],
-    body: `Cold holding on ice still means the food itself is at 41°F or below. Checkit sensors on the fridges do not reach a pan on the pass. Probe the top of the food while service is running, and log it. A well that looks busy can be a warm well with ice somewhere near it.
+    body: `Food has to get from 135°F to 70°F within two hours, and from there to 41°F within four more. A walk-in sensor confirms the room. It does not confirm the centre of the pan. Spread the food thin, leave it uncovered, and record a temperature at the start and again before the first window closes.
 
-Refresh the ice before the rush, not after the tomatoes have spent an hour in meltwater. If a pan is over 41°F, replace it from a unit that is in range and record the swap. Do not ice a warm pan and walk away.
+If it misses the window, reheat it and start again, or discard it. Checkit can hold those times if someone starts the record. A cooling note with no start time is just a pot in a fridge.
 
-The spare pan belongs in a monitored refrigerator until the moment it takes the place of the one on the line. "Backup" is not a holding method.`,
+Write the batch down. "Soup, Tuesday night" is a record. "Cooling done" is not.`,
   },
   {
-    title: 'A walk-in will cool food only if you let it',
-    excerpt: 'The room being cold is not the same as the pan cooling on time. Without a blast chiller, the method is shallow pans, no lids, and a clock someone actually starts.',
+    title: 'Write the medicine decision the way an auditor will read it',
+    excerpt: 'The sensor already has the degrees and the time. The note needs the batches and the outcome, in words a stranger can follow.',
     openings: [
-      'A deep pan of chili went onto a speed rack with the lid on, because that was how it had left the stove. The walk-in was 38°F. The chili was not in any hurry.',
-      'Hot stock was parked next to raw chicken "just until it cooled," inside a unit the sensor was watching. The sensor watched the room get worse.',
-      'Three pots went in at the end of the night. The walk-in trace started to climb, and everything that had been fine an hour earlier was now sharing a box with a lot of heat.',
-      'The blast chiller had been the thing that used to record cooling. It was gone. The habit of writing a start time had left with it.',
+      'The comment said "see fridge log." The fridge log was a clipboard that had not been updated since March.',
+      'Batch numbers were in the pharmacy system. The alert comment said "vaccines checked," which did not say which ones.',
+      'An inspector asked for the overnight excursion on the 4th. The graph was there. The outcome took a search through email.',
+      'The locum wrote "as per protocol." The protocol was not attached, and the protocol did not name the stock.',
     ],
-    body: `Cooling still has a clock: 135°F down to 70°F in two hours, then to 41°F in four more. Spread the food in shallow pans, leave the lids off, and give it shelf space so air can move. Probe the center and write the times down. A sensor reading of 38°F is news about the room. The pan can be hot in a cold room for a long time.
+    body: `Write for someone who was not on the shift and does not know the local shorthand. Use the asset name as it appears in Checkit. Say what the product was, what the trace showed in plain language, and what was decided.
 
-Watch the unit while you do it. Enough hot food will pull the walk-in out of range and warm what was already stored, which is a second problem created by trying to solve the first. If the trace starts rising, there is too much heat in a box Checkit is there to protect.
+"Fridge 3 reached 9.4°C at 01:12 and recovered at 06:05. Vaccines on the top shelf quarantined. Superintendent released batches A and B at 09:40. Batch C discarded." The sensor drew the graph. The sentence is the response.
 
-Start the task even when the process feels informal. Informal is how the two-hour mark passes without anyone noticing it was a deadline.`,
+Abbreviations that only this team understands will not survive the person who asks in six months.`,
   },
   {
-    title: 'A cold cooler can still be stored dangerously',
-    excerpt: 'Temperature and storage order fail independently. The door is already open for the sensor check. That is the moment to see what is sitting above what.',
+    title: 'A lab freezer that is starting to struggle',
+    excerpt: 'Units rarely fail in a single night. They run warmer, or take longer to recover, while every spot check still passes.',
     openings: [
-      'Raw chicken was on the shelf above the prepared salads. The sensor was happy. Gravity was not interested in the sensor.',
-      'A delivery had been pushed onto the nearest rack during the unload and never moved again. The nearest rack was the wrong one, and it stayed wrong for the rest of the week.',
-      'Ready-to-eat pans shared a speed rack with meat that was thawing. Both were cold. That was the only thing they should have had in common.',
-      'The cooler was reorganized the week of an inspection and cluttered again by Thursday. The task did not ask anyone to look up, so nobody did.',
+      'A freezer that used to sit comfortably inside its range had spent a week living near the top of it. Every morning check still passed.',
+      'Defrost recovery was taking longer than it had a month ago. Nobody had changed a setting.',
+      'The compressor almost never rested on warm afternoons. The sensor showed more work for a worse result.',
+      'The scientists had started moving the irreplaceable boxes to the other freezer. Nobody had raised a job, because nothing had actually alarmed that day.',
     ],
-    body: `While the door is open, look at the shelves and not only at the reading. Raw food goes below food that will not be cooked again, so nothing drips onto something you will serve as it is. A temperature of 38°F does not catch a drip. Checkit will report a safe sensor on an unsafe shelf unless a person is asked to see the shelf.
+    body: `Compare this week with last month, not only with the limit. A unit living against its upper line does not have margin. Clean the coil, look at the seal, and schedule service while the samples are still safe. Waiting for the alert means waiting until the product is already the incident.
 
-Move it then, and note it the way you would note a warm pan. If the rack is too full to see the order, it is too full to be safe, and it is probably blocking the air the sensor depends on. Those two problems travel together more often than people admit.
+How long a defrost takes to recover tells the same story. Write the drift down when you notice it. A work order is easier to justify with three weeks of a climbing line in Checkit than with a ruined morning and a theory.
 
-The sensor covers the temperature. The task covers everything the sensor is not built to see.`,
+The sensor was put there to see this early. Someone still has to look at last month before this morning becomes the story.`,
   },
   {
-    title: 'One good afternoon reading can hide a bad week',
-    excerpt: 'A single in-range check can be a healthy fridge or a fridge that spends every night too warm. The shape of the week is the record that tells them apart.',
+    title: 'After the repair, look at the next night',
+    excerpt: 'A work order closes the job in someone\'s system. The freezer either recovered overnight or it did not, and the trace is the check.',
     openings: [
-      'Every afternoon check passed. Every overnight trace did not. The daily sheet, which was the only thing anyone read, described a unit that did not exist at 3 a.m.',
-      'After catering weekends the reach-in ran a little closer to the limit. Each week the change was small enough to shrug at. The month was not small.',
-      'On the day a manager visited, the fridge looked fine, because that was a Tuesday afternoon. The other six days were in the history, unopened.',
-      'A gasket was replaced on a Thursday. Nobody looked at Friday night or Saturday night to see whether the spike had actually stopped.',
+      'The engineer replaced a gasket at 4 p.m. and marked the job complete. Nobody looked at the freezer again until the next alarm.',
+      'Plasma freezer 2 had a new fan. The following night still showed the same slow recovery after defrost.',
+      'The kitchen walk-in was "fixed" on a Friday. Saturday\'s trace looked like Friday\'s.',
+      'The job sheet said the setpoint was adjusted. The alert range in Checkit had not been, so the fridge alarmed all weekend for a different reason.',
     ],
-    body: `Read the week in Checkit, not only today\'s number. A flat line inside the range is a unit doing its job. A line that touches the limit every afternoon, or jumps every night, is a unit on the way out. One passing probe will not show the slope, which is why a daily sheet can stay cheerful while the equipment declines.
+    body: `When the engineer leaves, watch the next quiet period on that asset. The repair worked if the overnight spike, or the slow recovery, is gone. If the curve is unchanged, the unit is not finished, and you know it from the sensor rather than from a callback next month.
 
-After a repair, look at the next two nights on that sensor. The work is done if the spike is gone, not if the technician said it was. Cold food still has to be able to stay at 41°F or below at three in the morning, which is a stricter test than a reading taken while the kitchen is staffed.
+Write the job number on the alert that caused the visit, and note what you see the next morning. That ties the maintenance history to the temperatures.
 
-If you only keep the daily number, you have built a record that hides the failure the sensor was installed to catch.`,
+If the visit changed the setpoint, change the alert range only if the product limit changed. A new setpoint is not a new safe range.`,
   },
   {
-    title: 'The first check of the day is the one that counts',
-    excerpt: 'Overnight alerts are the permission to cook. Food pulled for prep before anyone reads them is a bet the sensor may already have lost.',
+    title: 'A missed check should look like a gap',
+    excerpt: 'Copying yesterday\'s temperature into today\'s row makes a missed round invisible. A missing check in the record is easier to manage than a invented one.',
     openings: [
-      'The first person in turned on the ovens and pulled proteins in the same minute. The app was still in a coat pocket. The proteins were already on a board.',
-      'A sensor had gone offline overnight. Prep started because the food felt cold to a hand, which is not a thermometer and has never been one.',
-      'The alerts were on a phone, and the phone was on a desk in the office, and the office was not where the food was.',
-      'Someone did complete the review. They did it upstairs, after the downstairs team had already started the list the review was supposed to authorize.',
+      'The evening medication round was skipped and filled in the next morning from memory. The fridge had alerted in between.',
+      'A paper sheet had a number in every box for a week the sensor showed was not that tidy.',
+      'The new starter copied the previous reading because the probe was missing and the sheet could not be handed over with a blank.',
+      'An inspector compared the clipboard with the history. The clipboard was perfect. The history was not.',
     ],
-    body: `Walk the sensors before the food moves. Each unit either came through the night or it did not. At or below 41°F, what you probe can go into prep. Above that, stop before it is portioned, sauced, or folded into a recipe you can no longer throw away cleanly. A blank sensor is a failed check, not a pass you are allowed to assume.
+    body: `If a check did not happen, leave the gap and record why. Inventing a temperature to keep a sheet tidy is how a real excursion gets buried under a number nobody measured.
 
-This is slower than starting straight in on the list, by about ten minutes. It is faster than a wasted prep, and the alerts are already sitting there. Someone has to read them while the decision is still cheap.
+Checkit is already measuring the asset overnight. Use that history when a round is missed, and write the corrective action for the gap: who noticed, what the trace showed, and what happened to the stock. Do not backfill a temperature you did not take.
 
-If the team treats the opening review as paperwork that follows the cooking, the review will always be late, and Checkit will have a perfect record of warnings nobody used.`,
+A blank that is explained is a managed miss. A full sheet that disagrees with the sensor is a different kind of finding.`,
   },
   {
-    title: 'Closing checks describe the easy part of the night',
-    excerpt: 'A completed closing list proves someone was careful while the kitchen was still staffed. It does not prove the food stayed cold after the door locked.',
+    title: 'Name the asset the way it appears on the door',
+    excerpt: 'An alert that says "Sensor 14" will be answered slowly, or in the wrong room. The name is part of the response.',
     openings: [
-      'The closer probed every unit, submitted the list, and locked up. The door contact on the walk-in showed it had not latched behind them.',
-      'Hot pans went into the walk-in after the closing temperatures had already been sent. The list was accurate about a moment that was already over.',
-      'Closing was finished at eight because that was when the list was due. The last event in the building ended at eleven, and the cooler was opened again after the record had closed.',
-      'The closing checklist was perfect. At 1 a.m. the sensor alerted, which made the checklist a description of a different night than the one the food had.',
+      'The notification said "RF-14." The person on call did not know which building that was.',
+      'Two "main fridges" existed, one in pharmacy and one in the kitchen, because each team had named theirs first.',
+      'A replaced sensor kept the old name of a unit that had been removed. Alerts for the new freezer looked like a ghost.',
+      'The site code in Checkit did not match the site code on the work-order system, so jobs were raised against the wrong address.',
     ],
-    body: `Take the closing readings. Then assume they have already expired. Doors get reopened for a late pan, seals fail when the building goes quiet, and hot food has a way of arriving after the list is done. If you add anything to a cooler after the check, that check is over for that unit.
+    body: `Use the name on the door, plus the site: "Ward 4 vaccine fridge," "Blood bank plasma freezer 2," "Servery B hot hold." The person receiving the alert on their phone may not be the person who installed the sensor.
 
-You will not stay to watch the night. The sensor will. Looking at the trace in the morning is the real end of the previous day, and it belongs at the top of the opening work rather than as an afterthought once prep is underway.
+When a unit is replaced, rename the asset or retire it. A history that belongs to a fridge you scrapped will be blamed on the fridge that took its place.
 
-A finished checklist is evidence of care at ten o\'clock. The Checkit history is evidence of what the food did after that, which is the question the food itself cares about.`,
+Align the name with the maintenance system if you can. The alert and the job should be obviously about the same machine.`,
   },
   {
-    title: 'Delivery day is harder on a cooler than the cooler admits',
-    excerpt: 'The door is open longer, the dock is warm, and a new stack of product can hide the sensor. The afternoon spike on those days is a pattern, not a personality.',
+    title: 'An open door and a failing compressor look different overnight',
+    excerpt: 'A unit that holds all day and climbs all night is often a seal. On a single afternoon reading it looks like a machine that cannot keep up.',
     openings: [
-      'Three vendors arrived in the same hour. The walk-in door barely had time to close, and the temperature trace spent the afternoon recovering from a visit it had not been designed to enjoy.',
-      'A pallet sat on the dock while the invoice was checked in the office. The dock was warm. The invoice was not the thing that needed a thermometer.',
-      'The new delivery was stacked in front of the sensor, which then spent the week measuring cardboard. The food behind the cardboard was on its own.',
-      'Every Tuesday ran warmer than every other day, and the team had started to expect it. Tuesday was delivery day. Expecting it had become a substitute for changing it.',
+      'A trolley caught the walk-in hinge. The door still closed if you pushed it. After the building went quiet, the temperature did not hold.',
+      'You could see light through the seal. The overnight trace had started to agree.',
+      'The unit held while people were around to shut it, and climbed after the last close of the evening.',
+      'Ice built along one side of a freezer door the team had been complaining about without writing it down.',
     ],
-    body: `Bring product in so the door is open in short stretches, not as a standing invitation. Probe it before it goes onto the shelf, at 41°F or below if it is refrigerated, and log the reading. Do not leave it on a hot dock while someone looks for a pen.
+    body: `Before you condemn the machine, look at when it drifts. In range during a staffed day and out of range once everyone leaves is often a gasket, a latch, or a hinge. Those are smaller jobs than a compressor, and on a Checkit trace they have a shape.
 
-After the load is in, look at the sensor rather than only at the paperwork. Give the unit time to come back, and check that the food which was already there did not get pulled warm along the way. If the stack buried the sensor, move the sensor back to the warm spot. A probe behind boxes is not monitoring the fridge.
+Until it is fixed, keep the most sensitive product off the door side and probe it. After the repair, look at the next two nights. The spike should be gone. If it is still there, then you are looking at the machine.
 
-If one day a week is always the warm one, that is a door-open problem you can schedule differently. Checkit will show you the day. It will not rearrange the vendors.`,
+A door that needs a hip to close is already a temperature incident. It is waiting for a quiet night to prove it.`,
   },
   {
-    title: 'A new fridge has to earn the setting on its dial',
-    excerpt: 'New equipment does not get a pass for being new. The first week is when you learn where it runs warm, and you set the alert from the food rather than from the brochure.',
+    title: 'Weekend cover for a vaccine fridge',
+    excerpt: 'The weekday pharmacy path is not a weekend plan. Someone who is in the building, or truly on call, has to be named.',
     openings: [
-      'The display was set to 34°F on the day it was plugged in. Nobody had probed the food. The number on the panel was treated as a promise.',
-      'The unit was filled to the ceiling before anyone knew whether air could move. The sensor ended up describing a wall of product rather than a working fridge.',
-      'The sensor was still in the box. The team ran a paper log "until it was installed," and the until lasted longer than the first warm night.',
-      'The alert limits were copied from an older model that ran colder. The new fridge tripped them on an ordinary afternoon and taught the team, immediately, to distrust the alert.',
+      'Saturday\'s alert went to the weekday pharmacist. They saw it on Monday.',
+      'The hospital switchboard had a number for pharmacy that was not the number in the escalation path.',
+      'A bank nurse acknowledged the fridge alert and did not know the quarantine rule.',
+      'The fridge was fine all week and warm on Sunday, which is the day the path was thinnest.',
     ],
-    body: `For the first week, probe the door, the top shelf, and the middle of a normal load, and compare those readings with the Checkit sensor. You want the warm one at or below 41°F after the door has been shut for a while. Set the alert from what you measured, not from the figure on the sales sheet.
+    body: `Build a weekend and night path on purpose. The person on it should know the range, where the fridge is, and that an open alert means the stock is quarantined until pharmacy releases it.
 
-Do not pack it solid until you know the air moves. Install the sensor before the food depends on it. A few days of paper as a backup is reasonable. Skipping the overnight record because the install is "almost" done is how the first failure happens off camera.
+Checkit will follow the path you configured. It will not invent a pharmacist who is not on the list. If weekend clinical staff are the first responders, tell them what they are allowed to do, and who they escalate the decision to.
 
-If it cannot hold through a normal service, that conversation is with the warranty. The decision about the food, written on the alert, is a separate conversation and it should not wait for the other one.`,
+Review it before a bank-holiday weekend, not after the first excursion of the year that landed on one.`,
   },
   {
-    title: 'The temperature round has to survive a sick day',
-    excerpt: 'If only one person knows how the checks work, then on their day off the checks do not exist. The list and the alert names are what make the round real.',
+    title: 'Have the lab record ready before anyone asks',
+    excerpt: 'The excursion, the acknowledgement, and the decision should already be one history, not a search through inboxes on the day of the visit.',
     openings: [
-      'The opener called in sick, and the sensor review became something for the afternoon, which is a polite way of saying it belonged to no one.',
-      'The real instructions lived in a notebook in a locker. The task in the app said "check temps," which a new person can read and still not know which door to open.',
-      'A temporary cook could see a list of units. The names did not match anything written on the fridges, so the list and the kitchen were two different buildings.',
-      'The alert still went to the person who was not in the building. The person who was in the building did not know an alert had been sent.',
+      'A collaborator asked which samples had seen the overnight spike. The answer existed, split between the sensor portal and a lab book.',
+      'The quality visit was on Thursday. The only copy of last month\'s alarms was a spreadsheet someone had meant to update.',
+      'A freezer failure from March was remembered clearly and documented vaguely.',
+      'Two systems had two different recovery times for the same incident, because one of them had been typed from memory.',
     ],
-    body: `The round should be a Checkit list of units a stranger can find, with the same names that are on the doors. It should say what good looks like: cold food at 41°F or below, hot food at 135°F or above, and who to call if a sensor is out. Alerts go to the person actually working, and to a backup who will notice silence.
+    body: `Keep the response on the alert as it happens. When someone asks, Checkit should be able to show the asset, the curve, who acknowledged, and what was decided, without reconstructing the week from chat.
 
-If you want to know whether this is true, ask someone who does not usually open to walk it once. Every unit they cannot find is a unit that will be skipped the next time the usual person is out. A checklist with a single owner is a single point of failure that happens to have a login.
+Exporting a chart is useful. It is not a substitute for the note that says whether the samples were kept. If those live in different places, they will disagree the first time someone is in a hurry.
 
-The sensor will still record the night. The point of the task is that a person who was not there yesterday can still do something about it today.`,
+A record you can open in a minute is the point of monitoring. A record you build the night before a visit is a different, weaker thing.`,
+  },
+  {
+    title: 'Defrost is a pattern. A failure is a pattern that changed.',
+    excerpt: 'Freezers warm up on a schedule you can learn. The alert that matters is the one that does not come back the way it did last month.',
+    openings: [
+      'Every night at 2 a.m. the freezer rose and recovered within the hour. Everyone had stopped reading that alert.',
+      'Last Tuesday the recovery took three hours. It was cleared with the same comment as the one-hour nights.',
+      'A new freezer did not have a known defrost curve yet, so every spike was being treated as familiar.',
+      'The blood-bank team could describe the pattern out loud. The comments on the alerts did not mention defrost at all.',
+    ],
+    body: `Learn the defrost shape for each freezer and write it down once, on the asset, so the team knows what "normal recovery" means. When an alert matches that shape and the product stays in range, say so in the comment. When recovery is slower, or the peak is higher, treat it as a different event.
+
+Checkit will keep showing both. The comments are how a later reader tells the routine nights from the night the fan started to fail.
+
+Do not use one saved phrase for every spike. The phrase will still be there when the pattern has changed, and it will be wrong.`,
+  },
+  {
+    title: 'Families and inspectors ask the same question',
+    excerpt: 'What happened to the food, or the medication, and what did you do? The answer should already be on the alert.',
+    openings: [
+      'A relative asked why lunch was late. The real reason was a hot hold that had been out of range, and the note did not say the food was replaced.',
+      'The local inspector asked for the last excursion on the medication fridge. The temperatures were in Checkit. The action was in a diary in the manager\'s office.',
+      'Night staff had done the right thing and told the morning lead. Neither of them had written it where the record lives.',
+      'A complaint arrived a week later. The people who remembered the shift were on leave.',
+    ],
+    body: `Write the outcome in ordinary language on the alert: the food was discarded and the service was replaced, or the medication was quarantined and the GP was told. That sentence is what a manager needs when someone asks, and it is what an inspector will compare with the trace.
+
+Checkit already has the time and the temperature. The missing piece is almost always the human decision, made once, in the moment, and not reconstructed later.
+
+If you would be unwilling to read the note aloud to a family, it is not finished.`,
+  },
+  {
+    title: 'The weekend is when a small drift becomes Monday',
+    excerpt: 'A fridge that is slightly warm on Friday afternoon has two unsupervised nights ahead of it. Monday morning is a late time to notice.',
+    openings: [
+      'Friday\'s check passed. The sensor spent Saturday night against the top of the range and Sunday night above it.',
+      'The only person who looked at alerts on weekends was whoever happened to have notifications on.',
+      'A venue kitchen was dark from Sunday to Wednesday. The cooler was not.',
+      'Monday prep started before anyone opened the overnight history. The food was already on the bench.',
+    ],
+    body: `Before the last shift of the week, look at units that have been living near their limit, not only at units in alarm. A Friday reading inside the line can still be a unit with no margin for a warm weekend.
+
+Someone has to be on the weekend path, and Monday\'s first job on that site is the trace, before food is prepped or stock is issued. Checkit will have the two nights. It will not interrupt prep on its own.
+
+If a site is closed for days at a time, the escalation for that site has to reach a person, not a kitchen that is empty.`,
   },
   {
     title: 'Say what happened to the food',
-    excerpt: 'The sensor has the temperature. The corrective action is a verb: moved, discarded, reheated, called. "Monitored" is not one of those verbs.',
+    excerpt: 'The alert knows the cooler left range. It does not know whether the dairy was discarded, moved, or served.',
     openings: [
-      'Rice had been found at 50°F. The comment said it was being kept an eye on, which meant it was still in the pan and the eye had moved on to something else.',
-      'The walk-in had left its range and the note said the problem was handled. Handled did not say whether the milk was in another fridge or in a bin.',
-      'Food had been thrown out. Purchasing saw a short count at the end of the week and had no alert, and no product name, to explain it.',
-      'The same comment was copied forward for seven days on the same sensor. It had stopped being a decision and become a signature.',
+      'The log said OK next to a unit that had been alerting through breakfast.',
+      'Someone wrote "adjusted" and went home. The next shift could not tell what had been moved.',
+      'Three discards in a week had alerts and no product names.',
+      'The comment was long and still left out the only fact that mattered, which was what happened to the food.',
     ],
-    body: `Write the sentence you would want if you were reading it next month. Moved the soup to the other walk-in. Discarded the sliced turkey. Called service and kept the ticket number. Checkit already knows the degrees and the time. You are adding the fate of the product, which is the part a sensor cannot see.
+    body: `Write which food, what you did, and your name. "Moved the soup to the other walk-in and discarded the sliced turkey" is a note. "Checked fridge" will still be attached to a warm trace in six months, and it will not help.
 
-"Monitored," "aware," and "adjusted" do not say whether anyone can eat the food. If you cannot say what happened to it, the action is not done, however closed the notification looks.
+Do it during service, while you remember which pan. If the same unit collects the same sentence three times, stop rewriting the comment and raise a repair. The history is already the case for that call.
 
-When the same verb lands on the same unit all week, the comment is no longer the work. The machine is. The history is the reason the call gets made, and it is a better reason than another Monday of the same sentence.`,
+A note that would confuse a stranger is not finished. The stranger may be an inspector, or the other shift.`,
   },
   {
-    title: 'A door that was open for a minute is not a ruined fridge',
-    excerpt: 'Air temperature jumps the moment a door opens. Food follows only if the opening was long. The length of the spike is the fact worth acting on.',
+    title: 'Power comes back. The stock does not reset.',
+    excerpt: 'When the supply returns, every monitored unit needs its own trace read before anyone uses what was in it.',
     openings: [
-      'Someone probed the air the second the delivery door shut and wrote down 55°F, ready to empty the shelf. The sensor was already on its way back down.',
-      'A brief spike cleared in three minutes. A well-meaning closer discarded a shelf of food that had never left a safe temperature, because the alert had been loud and the trace had not been opened.',
-      'Stocking took half an hour with the door open, and it was described afterward as "just a door." The duration, which was sitting in the history, was not "just" anything.',
-      'The air sensor recovered. The milk in the door rack did not, and because nobody probed the door rack, the recovery on the screen was treated as the recovery of the product.',
+      'The site lost power at midnight and came back at 4 a.m. The team checked the lights and started the day.',
+      'One fridge recovered in twenty minutes. The freezer next to it did not, and it was the one nobody opened.',
+      'A generator covered the lab and not the pharmacy. Both were on the same account, and only one had a normal night.',
+      'The outage was written in the estates log. The product decisions were not written on the alerts.',
     ],
-    body: `Separate a short open from a real warm-up. If the Checkit trace blips and returns, and the door contact agrees the opening was brief, you do not need a dramatic discard. If the door was open for a delivery or a long prep, probe the food in the warm spot and write down what you find. Cold food above 41°F needs a decision. Cold air that comes back in a minute does not.
+    body: `After a power cut, open the history for each asset before you open the stock. Recovery time will differ. A vaccine fridge, a plasma freezer, and a kitchen walk-in do not get a single blanket "power was restored."
 
-Write which of the two you had, so the next person does not throw out a fridge over a ten-second spike or ignore a twenty-minute one because the last alert was a false drama. The history already has the length. The note should match it.
+Quarantine where the trace left the range, and record the decision per asset in Checkit. Estates can own the generator. They cannot own the release of the medicines.
 
-The beep is only the invitation to look. The graph is the look.`,
+If you do not know how long a unit was off, say so, and hold the stock until someone who is allowed to release it has looked.`,
   },
   {
-    title: 'If you threw it out, write down what it was',
-    excerpt: 'Food that disappears after a warm morning looks like waste, or worse, if nobody attaches the discard to the alert. The sensor already has the temperature. It needs the product.',
+    title: 'The sensor watches the unit. The probe checks the product.',
+    excerpt: 'A display at 36°F can sit next to food that is already too warm. The continuous record and the spot check answer different questions.',
     openings: [
-      'A case of cream was thrown out after a warm morning. The alert was cleared. The invoice still said the cream had been received, and nothing in the record explained the gap.',
-      'The cook discarded a pan and the manager heard about it from the dishwasher, which is a long way around for a fact that should have been on the alert.',
-      'The production sheet said the product had been used. It had been dumped. The two stories were the same number of portions and completely different events.',
-      'Nobody wrote it down because a discard felt like something they would be blamed for. The sensor history ended in a cleared notification and an unexplained hole in the count.',
+      'The display said 36°F. Sliced turkey by the door probed at 47°F. Both numbers were real.',
+      'The sensor hung in front of the fan, in the coldest air in the cabinet. The door shelf was a different story.',
+      'The team logged the readout every afternoon and never probed a product. The log was a diary of the machine talking about itself.',
+      'After a delivery the sensor recovered in a few minutes. The food that had been in the open door had not.',
     ],
-    body: `When food goes out because a unit left its range, the note should answer the next question without a meeting. What was it, roughly how much, and who decided. Checkit already has the temperature and the time. Purchasing, or the person who does the weekly order, should be able to see the discard without launching an investigation.
+    body: `A Checkit sensor is the story of the unit across the day and the night. A probe is the food or the stock in front of you. They come apart after a delivery, a long prep, or a stack of warm pans.
 
-People skip this when throwing food away feels like a personal failure. Often it is a door, a gasket, or a compressor, and that pattern stays invisible if the product simply vanishes and the alert is closed with nothing on it.
+Put the sensor where the product actually sits, not in the blast from the fan, and file the probe reading with the delivery or the corrective action so both live together. Cold food still has to be at 41°F or below. A vaccine fridge still has to sit between 2°C and 8°C. The air being healthy does not answer either question on its own.
 
-A short line on the alert is also what you will want when someone asks why the cooler was short. The alternative is a story nobody can reconstruct by Friday.`,
+The useful record is both, in the same place.`,
   },
   {
-    title: 'On the line, the temperature that matters is in the food',
-    excerpt: 'The pan is hot. The well is hot. The edge of the soup is hot. None of those is the center, and the center is the number you are allowed to trust.',
+    title: 'Do not widen the alarm to silence a weak fridge',
+    excerpt: 'If the only way to get a quiet phone is to move the limit, the fridge is no longer being monitored against the product.',
     openings: [
-      'A cook passed a thermometer over the top of a pan and called it 150°F. The gesture looked like a check. The tip had not been in the food.',
-      'The probe touched the bottom of a metal pan and reported the well, faithfully. The food above that metal was cooler than the number that got written down.',
-      'A thick soup was checked at the edge, next to the element, where soup is always warmest. The middle of the pan was the part that would actually be served.',
-      'The line check happened before anyone stirred. The uploaded reading was the hot skin on top of a cooler center, and it looked like a pass.',
+      'The vaccine fridge alarmed most afternoons. The limit was moved to 10°C so clinic could get through the week.',
+      'A kitchen walk-in "always ran high" on delivery day, so delivery day was effectively unmonitored.',
+      'The team was proud of a week with no alerts. The range had been edited on Monday.',
+      'An auditor asked when the limit changed. The answer was in the configuration history, and it did not match the SOP on the wall.',
     ],
-    body: `Put the tip in the center, stir first if the pan has a hot edge and a cool middle, and let the Checkit probe upload the reading so it does not have to be copied onto a sheet that will disagree with it later. Hot food needs to be at 135°F or above in that center. Cold food on a line needs to be at 41°F or below at the top of the pan, not only where it touches the ice.
+    body: `Change an alert range when the product requirement changes, or when a sensor has been moved onto a different asset. Do not change it because a struggling unit is noisy. The noise is the monitoring working.
 
-Do not take the number off the metal. The pan is not the product. If the center fails, reheat to 165°F and bring it back, or replace the pan, and name the pan in the action. "The line" is not a place anyone can audit.
+If a fridge cannot stay inside the real limit, repair or replace it, and quarantine product when it leaves range. Checkit will keep the history of the excursions either way. A wider limit only stops you being told.
 
-A check that never touches food is a walk past the station. It produces a feeling of having looked, which is not a temperature.`,
+Write down why a range was changed, in the same way you would write a corrective action. A silent edit is hard to defend later.`,
   },
   {
-    title: 'A holding cabinet can be switched on and still be cold',
-    excerpt: 'The light means the cabinet has power. The sensor means the food is hot. Those are different facts, and service should not start on the first one.',
+    title: 'Between shifts, the unfinished alarm has to be visible',
+    excerpt: 'An acknowledged alert with no outcome is still open work. The next shift should see it without being told.',
     openings: [
-      'The cabinet was turned on ten minutes before service and loaded immediately, because the light was on and the light had always been treated as ready.',
-      'During cleaning, a dial had been bumped to a lower setting. The sensor knew before anyone tasted the food. The dial did not announce itself.',
-      'Food went in genuinely hot. The cabinet could not keep it there, and the drop happened slowly enough that the first hour of service felt normal.',
-      'One cabinet alerted almost every service. The team had started using it for the items they could most afford to lose, which is a repair strategy with no repair in it.',
+      'The late shift acknowledged the reagent fridge and went home. The early shift started work as if the night had been quiet.',
+      'A handover email mentioned "fridge issues." Three assets had open alerts. The email did not name them.',
+      'The status in Checkit said acknowledged. Everyone read that as finished.',
+      'A sample set was used at 8 a.m. from a fridge that still had an unresolved overnight alarm.',
     ],
-    body: `Heat the cabinet before you ask it to hold anything, and trust the Checkit sensor rather than the switch. Then probe the food. Under 135°F, it is not being held. Reheat it to 165°F before it goes back in, or send something else, and write down which. Finding this before the first ticket is a much smaller problem than finding it at the pass.
+    body: `Leave the alert unresolved until the product decision is made. Acknowledgement tells the next person that someone saw it. It should not tell them the samples are fine.
 
-If the same cabinet alerts every day, stop routing the most fragile items into it and get it fixed. Working around a sensor you have decided not to believe means you have accepted a cold pan as part of the menu. The pre-service reading should be a task someone has to complete, not a glow someone has to notice.
+The incoming shift starts from the open alerts, not from the assumption that a quiet corridor means a quiet night. If they need to add the outcome, they add it on the same alarm, so the night and the morning are one record.
 
-Power is not temperature. The rest of the kitchen already knows that about ovens. Holding cabinets deserve the same suspicion.`,
+Checkit is the handover for the fridges. Anything that matters about them and lives only in an email will be the thing that gets missed.`,
   },
   {
-    title: 'Saturday does not suspend the refrigerators',
-    excerpt: 'A weekend crew can run service without a manager in the building. They cannot run it without knowing who answers if a sensor leaves its range.',
+    title: 'One view before you issue blood or plasma',
+    excerpt: 'The freezer can look normal at the moment of issue and still have spent the night out of range. Check the open alerts first.',
     openings: [
-      'The banquet kitchen ran Saturday with a crew that had never opened an alert. The alerts did not know that, and they fired anyway.',
-      'The notification went to a phone that was in an empty office, on a desk, under a folder. The office was the wrong building for a Saturday.',
-      'Sunday prep used food from Saturday, and nobody had opened the trace, so Sunday inherited whatever Saturday had decided not to look at.',
-      'The emergency number for service was in a binder in a locked desk. The crew on the floor had the app. They did not have the desk.',
+      'Issue started at 7 a.m. from a freezer that had an unacknowledged alarm at 2 a.m.',
+      'The display was in range. The history showed a door alarm through the previous evening.',
+      'A locum on the bench did not know there was a monitoring record to check before release.',
+      'The night team had quarantined one shelf and told the morning team verbally. The other shelf was issued as normal, which happened to be right, and was not written down.',
     ],
-    body: `Before Friday ends, the weekend team should know which sensors are watched, what an out-of-range reading means for the food they will touch, and who answers if one fires. That second person does not have to be on site. They do have to pick up, and they need the authority to say the food moves or the food goes.
+    body: `Before issue, look at open alerts on that asset, not only at the current temperature. If the night left the range, the stock stays held until the named person has recorded a release.
 
-Put the service number on the unit in Checkit, which is the screen the crew already has open. A failure that waits for Monday office hours is a discarded walk-in with several extra steps and a worse smell.
+Make that check part of the bench routine, the same way identity checks already are. Checkit is there so the night is visible at the moment someone is about to use the product, not afterwards in a report.
 
-On Monday, look at Saturday and Sunday on purpose, including the weekends when everyone says the building seemed fine. "Seemed" is what you say when nobody opened the history.`,
+If the night team already decided, the morning team should be able to read the decision on the alert and not have to remake it from memory.`,
+  },
+  {
+    title: 'A new starter needs the assets, not a tour of the binder',
+    excerpt: 'The first shift should include which fridge is which, who the alert goes to, and what they are allowed to do about it.',
+    openings: [
+      'A new carer acknowledged a medication-fridge alert and then asked a colleague what acknowledgement meant.',
+      'The kitchen induction covered the paper log. The sensor, which had replaced most of that log, was mentioned as "the app."',
+      'A new pharmacist inherited an escalation path that still named their predecessor.',
+      'The first real alarm of their first week was the training. It arrived at 6 a.m.',
+    ],
+    body: `Show the assets in the rooms, under the names they have in Checkit. Show what an alert looks like on the phone, what acknowledgement does, and what they must not do, which is release quarantined stock or close an alert with nothing written.
+
+Update the escalation path as part of the starter process, not as a later tidy-up. A path that still rings a leaver is a gap on day one.
+
+The binder can explain the policy. The first week should be spent on the fridges the policy is about.`,
+  },
+  {
+    title: 'The account should match the sites you actually operate',
+    excerpt: 'A closed kitchen that still alerts, or a new clinic that is not on the account, both mean the view is wrong.',
+    openings: [
+      'A servery had been converted into a store six months ago. Its sensor still alerted, and people still drove across to check it.',
+      'A new clinic opened with a vaccine fridge and a paper thermometer, because nobody had added it to the account.',
+      'Two sites had been merged. Alerts still used the old names, and jobs went to the old address.',
+      'A pop-up kitchen for a season was never given an owner. Its cooler alerted into a path that no longer existed.',
+    ],
+    body: `When a site opens, closes, or changes use, change the account in the same week. Retire assets that are gone. Add the fridge that is now holding medicines or food, with a range and a person on the path, before it has its first night.
+
+Checkit can only show the assets it has. A new vaccine fridge on a min/max thermometer is invisible until someone puts a sensor on it and names an owner.
+
+Old names that outlive the building will keep generating responses to rooms that are empty, and they train the team to ignore alarms.`,
+  },
+  {
+    title: 'Look at the night before you start the prep',
+    excerpt: 'The first useful check of the day is the trace, before food is portioned or stock is issued from a unit that alarmed at 3 a.m.',
+    openings: [
+      'Prep started at six. The walk-in alert from 3 a.m. was opened at ten, when someone finally looked at their phone.',
+      'The morning chef trusted the closing sheet from the night before. The sensor had a different account of the night.',
+      'Breakfast service used milk from a fridge that had spent two hours above range.',
+      'The night was fine, and nobody recorded that either. The absence of an alert was the information, and it was never glanced at.',
+    ],
+    body: `Open the overnight alerts before you open the prep list or the clinic list. If a unit left range, the food or the stock in it is the first job, not the second. If nothing alerted, you have learned that too, in a few seconds.
+
+Write the outcome on any alert you touch, even when the outcome is "probed at 39°F, food kept, door latch repaired." A morning that only clears notifications is a morning that threw away the reason the sensor was there.
+
+Checkit has already watched the night. The shift still has to read it.`,
+  },
+  {
+    title: 'The comment on a medicine fridge will be read by someone outside the team',
+    excerpt: 'Pharmacy, nursing, and quality do not share a shorthand. The note has to carry the batches and the decision without a translator.',
+    openings: [
+      'The comment said "per JP." JP was on leave, and quality wanted the batch numbers.',
+      'Nursing had quarantined the drawer. Pharmacy released "the fridge" without saying they had seen that note.',
+      'A shared abbreviation for discarded doses meant something else on the ward.',
+      'The best sentence in the record was in a WhatsApp group that quality could not log into.',
+    ],
+    body: `Write the note so a quality lead and a nurse can both follow it. Name the fridge, the time it was out, the batches or the drawer, and the decision. If pharmacy released the stock, pharmacy\'s name should be on that line, not inferred from who usually does it.
+
+Keep side conversations if you need them. Copy the decision into Checkit, because that is the record tied to the temperatures. A conclusion that exists only in a chat will not be the one that turns up in the audit.
+
+Short is fine. Coded is not.`,
+  },
+  {
+    title: 'A freezer full of samples needs an owner in the path',
+    excerpt: 'Shared lab freezers become everybody\'s and nobody\'s. The alert needs a named owner even when the boxes inside belong to several people.',
+    openings: [
+      'Four research groups used one freezer. The alert went to a mailbox none of them watched daily.',
+      'The technician who set the sensor up had left. Alerts still arrived in their name.',
+      'Everyone assumed the group with the most boxes would respond. That group was at a conference.',
+      'The excursion affected one shelf. The note did not say which, so every group spent a day checking.',
+    ],
+    body: `Give the asset an owner who is responsible for the first response, even if they do not own every sample inside it. Their job is to quarantine, to tell the groups affected, and to record which shelves were involved.
+
+Checkit cannot route an alert to "whoever cares about these boxes." Put a name on the path, and a second name for when they are away. Update it when people leave.
+
+The note should say which shelf or which labelled inventory was at risk. A freezer-level "all OK" helps nobody who had samples on the door.`,
+  },
+  {
+    title: 'Issue only from a freezer that was watched',
+    excerpt: 'If a unit dropped off monitoring, the gap is the event. Stock from a blind period needs the same quarantine as stock from an alarm.',
+    openings: [
+      'The sensor battery died on Friday. The freezer looked fine on Monday, with no history in between.',
+      'A gateway offline alert was cleared as an IT issue. The blood fridge on that gateway had no readings for six hours.',
+      'Someone unplugged a logger to borrow the socket. The asset showed a flat line that nobody opened.',
+      'The weekend data never arrived, and issue went ahead because the display on the door said the right number.',
+    ],
+    body: `A gap in the trace is not a quiet night. If Checkit stopped hearing from a sensor, treat the stock the way you would treat an excursion until you know why, and write that the data was missing.
+
+A door display is a comfort, not a history. It cannot show you the six hours the gateway was down. Get the monitoring back, then decide about the product with whatever readings you do have, and record the gap honestly.
+
+Clearing an offline alert without saying which assets went blind is how a missing night disappears.`,
+  },
+  {
+    title: 'The dining room and the medication room need different paths',
+    excerpt: 'One care home, two kinds of cold storage, two kinds of harm. Sending both alerts to the kitchen means one of them is late.',
+    openings: [
+      'The medication fridge alerted the chef, because the chef was the named user on the account.',
+      'Kitchen alerts woke the nurse on call, who had no reason to be in the kitchen at midnight.',
+      'A single group called "Home" received every alarm. The group had forty people and no rota.',
+      'The manager was on both paths and was the only person on both paths. They were on holiday.',
+    ],
+    body: `Split the paths. Food alerts go to the catering team on duty. Medication alerts go to the people responsible for medicines, with a manager behind them if nobody acknowledges. Being on one path does not qualify someone for the other.
+
+Checkit can run both in the same home without pretending they are the same asset. The names, the ranges, and the responders should all say which is which.
+
+If one person is the only name on every path, the home does not have cover. Add the second person before the holiday, not during the excursion.`,
+  },
+  {
+    title: 'Read the repeats before you buy another fridge',
+    excerpt: 'A fleet decision is easier when you can see which assets alarm, which sites, and whether the response is keeping up.',
+    openings: [
+      'Capital was requested for six new fridges. The history showed two of them produced almost all of the alarms.',
+      'A site with new equipment still alarmed nightly, and the comments all described a door that did not latch.',
+      'The quiet sites never came up in meetings. The loud site did, even though its alarms were acknowledged in minutes.',
+      'Replacement was justified by a feeling that "they\'re all old." The traces were not equally bad.',
+    ],
+    body: `Use the last quarter of alerts, not the last anecdote. Assets that alarm because they are failing belong on a replacement or repair list. Assets that alarm because of doors, loading, or a path that nobody answers need a different fix, and new equipment will not provide it.
+
+Checkit can show where the repeats sit across the estate. Pair that with whether those alerts were actually resolved. A site that alarms and responds is a different problem from a site that alarms into silence.
+
+Spend the money on the units the history indicts, and spend the training on the ones the comments indict.`,
   },
   {
     title: 'The third alert on the same unit is a repair',
-    excerpt: 'A repeat notification is not a request for a better reminder. It is the equipment saying the last reset did not fix anything.',
+    excerpt: 'The first alert can be a one-off. By the third, the corrective action should be a job raised, not another reminder to watch it.',
     openings: [
-      'The same reach-in had alerted four mornings. Each morning someone adjusted a dial, cleared the notification, and felt that the day had been managed.',
-      'A technician recharged the unit on a Wednesday. By the following Wednesday the overnight spike was back, and the closed work order was still closed.',
-      'The team knew which fridge not to trust. They kept the less important food in it, which filled the good fridge and left the bad one in service indefinitely.',
-      'The work order was closed because the temperature was fine while the technician was standing there, at 2 p.m. The failure had always been at 2 a.m.',
+      'The prep fridge had three alerts in ten days, each closed with "will monitor."',
+      'A ward fridge alarmed on the same shelf every Monday after the vaccine delivery. Nobody had looked at the seal.',
+      'The comments were getting longer. The fridge was not getting colder.',
+      'An engineer was finally called after a loss. The previous three alerts would have been enough.',
     ],
-    body: `Count the alerts on that sensor. Three separate days out of range is no longer a surprise, and it should stop being treated as one. Call for service, and keep the food decision separate: anything above 41°F that you cannot account for does not stay in that box while you wait.
+    body: `Count recent alerts on that asset before you write the same action again. On the third, raise the job and put the number on the alert. Monitoring a unit that cannot hold its range is not a corrective action. It is a delay.
 
-When the repair is finished, watch the next nights in Checkit. A reading taken while a technician is on site does not prove the overnight cycle is gone. If the spike returns, reopen the ticket and attach the trace. Moving the sensitive food into a different monitored fridge is a fair bridge. It is not a repair, and it fills the good unit faster than the week\'s plan assumed.
+Checkit has the three dates. The person closing the latest one is in the best position to connect them, instead of treating today as a fresh incident.
 
-The history is the work order. Writing another "adjusted" on it is how a failing compressor gets a diary instead of a technician.`,
+"Will monitor" on a repeating asset means the sensor is doing its job and the follow-up is not.`,
   },
   {
-    title: 'Walk a new opener through the round once, at the units',
-    excerpt: 'A new person cannot spot a drifting fridge from a screenshot. They need to see the sensor, the warm shelf, and the kind of note they are expected to write.',
+    title: 'A clinic fridge after a busy vaccination session',
+    excerpt: 'A door that was open for an hour of appointments can leave stock warm after the queue has gone. The end-of-clinic glance at the display will miss it.',
     openings: [
-      'On day one, a new hire was told to do the temps in the app. They submitted the sensor value for every unit, carefully, and never put a probe in anything.',
-      'They cleared an alert because the button was there and the alert felt like something that needed to be gone. They did not know what the comment was for.',
-      'Training had included a slide of the dashboard. It had not included a walk to the door where the warm milk actually lives.',
-      'The task names and the labels on the fridges were close, but not the same. The new opener checked the units they could identify and skipped the ones they could not, quietly.',
+      'Vaccination clinic ran all afternoon with the fridge opened for every patient. The sensor peaked after the last appointment, when nobody was looking.',
+      'Staff checked the fridge at lunch, before the busy session, and not again.',
+      'The outreach fridge came back to base warm. The paper sheet had been filled in before the team left.',
+      'Stock was restocked on top of stock that had sat in an open door all afternoon.',
     ],
-    body: `Walk the round with them once, in the kitchen, with Checkit open. Show the warm spot, the difference between the sensor and a probe in the food, and a note that would be acceptable if the reading were bad. Cold food at 41°F or below. Hot food at 135°F or above. If they find something else, they need to know they are allowed to stop prep. That permission is the part of training people forget, and it is the part that matters.
+    body: `A vaccination session is a long door-open event. Read the trace at the end of the clinic, not only the temperature once the door has been shut for a minute. If the stock left range, quarantine it and let the authorised person decide before the next session uses it.
 
-Have them write one practice action while you are standing there. "Soup at 52°F, moved to the other walk-in at 6:05" is the whole lesson. A policy document is not.
+Write the session on the alert: which clinic, how long the door was working, and what happened to the remaining stock. Checkit will show the curve. The note should show that someone acted on it.
 
-A week later, read the actions they actually submitted. Training that never appears in the record did not take, however well the shift shadowing seemed to go.`,
+Restocking a warm fridge with fresh stock does not cool what was already in there, and it puts the new stock at risk too.`,
   },
   {
-    title: 'A fridge with two teams and no owner will not be watched',
-    excerpt: 'When dietary and the kitchen share a cooler, each side assumes the other answered the alert. One name has to be on the sensor.',
+    title: 'Move the sensitive samples off a unit that is drifting',
+    excerpt: 'While you wait for a repair, the monitoring has already told you which freezer not to trust with work you cannot repeat.',
     openings: [
-      'The medication fridge also held staff food. Both groups believed the other group was responsible for it, which meant the sensor was admired by no one.',
-      'Two departments shared a walk-in and each kept a partial list. Together the lists almost covered the unit. Separately, each looked like someone else\'s job.',
-      'The alert went to a manager who did not work in that building. It was technically delivered. It was not practically received.',
-      'Someone unplugged the unit to free an outlet and plugged it back in after lunch. The offline stretch was nobody\'s task, because the unit itself was everybody\'s.',
+      'The freezer was booked for a service next week. The most fragile boxes were still on the shelf that ran warmest.',
+      'A spare freezer had capacity. Nobody moved anything, because the alarm had not quite become a failure.',
+      'The drift was known to the lab manager and not to the students loading new samples into that unit.',
+      'After the loss, the spare freezer turned out to have been empty.',
     ],
-    body: `Put one name on the unit in Checkit. That person owns the check and the alert, even if other teams store things there. Other people can be backups. "Also kind of responsible" is the arrangement in which a sensor goes unanswered and both teams feel the other one failed.
+    body: `If an asset is repeating or living on its limit, stop loading the irreplaceable stock into it before the repair date. Move those samples to a unit whose trace is dull, and record the move on the alert so everyone loading the lab knows.
 
-Be clear about what the fridge is for. A medication refrigerator between 2°C and 8°C is not a place for unlabeled lunches, and a food walk-in is not a place for product that needs a different range. Two ranges in one box means one of them is wrong, and the sensor can only be set for one truth.
+Checkit is the reason you can do this early. The alarm does not have to end in a loss to be a reason to change where the boxes sit.
 
-If two checklists exist, close one of them. Two partial records are harder to defend than a single history with a person\'s name on the alert.`,
+Tell the people who use the freezer, in the place they will see it, which is the asset record, not only a conversation with the manager.`,
   },
   {
-    title: 'The sensor in the kitchen cannot see the buffet',
-    excerpt: 'Food leaves the monitored building in a van, then sits on a table. Checkit only knows about that gap if someone records the temperature when it leaves and when it is served.',
+    title: 'A quiet blood fridge is a fridge someone checked',
+    excerpt: 'No alarm overnight is meaningful only if the sensor was reporting. The morning issue round should know the difference.',
     openings: [
-      'Pans left a kitchen full of sensors, hot and accounted for, and then sat in a van with no cabinet and no one assigned to write anything down.',
-      'The buffet was set early so photographs could be taken. The hold time started when the pans hit the table, which was not when anyone thought the event had started.',
-      'Leftovers came back and went into the walk-in. The walk-in sensor looked fine, which said nothing about the hours the food had spent in between.',
-      'The event lead thought the kitchen had logged the holding temperature. The kitchen thought the event lead had. The app contained neither.',
+      'The fridge had no alerts, and the gateway had been offline from midnight to five.',
+      'The night looked quiet because the alert limits had been widened after the last false scare.',
+      'Issue went ahead on the strength of a green dashboard that nobody had actually opened.',
+      'The sensor was reporting the whole night, in range, and that fact was never glanced at because nothing had buzzed.',
     ],
-    body: `Record the temperature in Checkit when the food leaves and again when it is served. Hot food should still be at 135°F or above at the moment it is eaten. If the trip is long enough that you are using time instead of temperature, the start time has to travel with the pans as a task, and the discard time has to be a real time rather than a feeling that the event is over.
+    body: `A morning with no alarms is a result, if the sensor was online and the range is still the real range for that product. Glance at the asset anyway before issue: last reading, no gap, no open alert. It takes less time than explaining a guess later.
 
-Do not bring warm leftovers back into a monitored cooler and treat the sensor there as absolution. If nobody knows how long the food was in the middle, the cleaner record is a discard with a reason. Name one person at the event who owns those readings.
+If there is a gap or a limit that was recently widened, you do not have a quiet night. You have a hole. Hold the stock and write why.
 
-A kitchen full of sensors is a good kitchen. It is not a record of a ballroom.`,
+Checkit\'s job overnight is to watch. The bench\'s job in the morning is to confirm that the watch held, and then issue.`,
   },
   {
-    title: 'A bad night in the fridge is a decision about the product',
-    excerpt: 'Clearing the alert makes the dashboard look calm. It does not decide whether the vaccines, the samples, or the food can still be used.',
+    title: 'Write the care note where the temperature already is',
+    excerpt: 'The diary, the communication book, and the alert should not be three competing versions of one night.',
     openings: [
-      'A clinic fridge spent the night at 10°C and was back at 5°C by the time anyone arrived. The morning reading was comforting. It was not the night.',
-      'Samples sat in a unit that alerted while a door was being repaired. The repair got a work order. The samples did not get a decision.',
-      'The food was kept because replacing it would have wrecked the week\'s food cost. The alert was cleared so the decision would not have to be looked at again.',
-      'Someone cleared the notification before a visit so the dashboard would look quiet. The visit went well. The product question was still open, and now it was also hidden.',
+      'The communication book said the medication fridge was checked. Checkit said it was out of range for two hours with no acknowledgement.',
+      'A carer wrote a careful note in the diary and a blank resolution on the phone, because the phone felt like admin.',
+      'The manager reviewed books on Mondays and alerts only when something buzzed during the day.',
+      'Two versions of the same night disagreed about whether doses were discarded.',
     ],
-    body: `Quarantine first. Leave the product where it is, or move it to a unit you have checked, and stop using it until someone with the authority to release or discard it has looked at the trace. For a vaccine refrigerator the range is generally 2°C to 8°C, and a morning reading back inside that range does not erase the excursion. For food, cold holding is 41°F or below, and the same principle applies.
+    body: `Put the decision on the alert, then point the diary at it if the home also keeps a book. One version has to win, and it should be the version sitting next to the temperatures.
 
-Write what was inside and what was decided, on the alert. Checkit already has the start and the end if the sensor was running. "Cleared" is a description of a screen. It is not a description of the product.
+Train the night team to write the sentence in Checkit first. A beautiful diary entry about a fridge, beside an empty alert, will lose an argument with the sensor.
 
-If you do not know how long it was out, say so. An honest gap is a better record than a time somebody guessed in order to make the form look finished.`,
+If the book and the alert disagree, correct the record the same day and say which one was wrong. Waiting until an inspection finds the contradiction is how small nights become findings.`,
   },
   {
-    title: 'Sometimes the compressor is fine and the door is not',
-    excerpt: 'A fridge that holds all day and climbs all night is often a seal or a hinge. It looks, on a single afternoon reading, exactly like a machine that cannot keep up.',
+    title: 'What good looks like on a monitored estate',
+    excerpt: 'The aim is not zero alerts. It is alerts that reach a person, a decision written down, and repeats that turn into maintenance.',
     openings: [
-      'A delivery cart caught the walk-in hinge, and the door has not sat right since. It still closes if you hip it. During service the temperature looks ordinary. After the building goes quiet, it does not.',
-      'You could see a line of light through the seal if you stood in the right place. The overnight trace had started to agree with the light.',
-      'Ice was building on one side of a freezer door the team had been complaining about without quite complaining. The sensor had been complaining more precisely.',
-      'The unit held whenever people were around to shove the door, and it climbed after the last shove of the evening. That is a seal problem wearing the costume of a failing compressor.',
+      'A regional review celebrated a site with no alarms. That site\'s sensors had been offline for nine days.',
+      'Another site had dozens of alarms, all acknowledged, all with a food or stock decision, and a short list of assets waiting on an engineer.',
+      'The leadership pack counted alerts. It did not count unresolved ones.',
+      'A quiet month followed a range change. The pack called it improvement.',
     ],
-    body: `Before you condemn the machine, close the door on a strip of paper and pull. If the paper slides out along the seal, the gasket is not doing the job. Look for tears, flattened spots, and a hinge that lets the door sag. Those are cheaper failures than a compressor, and on a Checkit trace they look like a fridge that cannot keep up: in range while the kitchen is staffed, out of range once everyone has gone home.
+    body: `Judge a site on whether monitoring is alive, whether alerts reach someone who answers, and whether the note says what happened to the product. A site with no alarms and no readings is not a calm site. A site with alarms, fast acknowledgements, and real resolutions is doing the work.
 
-Until it is fixed, probe the food near the door and do not keep the most sensitive product there. After the gasket or the hinge is replaced, look at the next two nights. The repair worked if the spike is gone. If the spike is still there, then you are looking at the machine, and you will know it with a trace rather than a theory.
+Use Checkit to see the unresolved alerts and the assets that repeat. Those two lists are the operating review. A count of alarms on its own will reward the team that widened the limits.
 
-A door that needs a hip to close is already a temperature incident. It is simply waiting for a quiet night to prove it.`,
-  },
-  {
-    title: 'The number on the dial is not the safe range',
-    excerpt: 'Setting a fridge to 35°F does not mean the food is at 35°F. Widening the alert until the phone goes quiet does not make a warmer fridge acceptable.',
-    openings: [
-      'The dial said 2. Nobody in the kitchen could say what temperature that was supposed to be, including the person who had set it.',
-      'The alert was widened because the unit "ran a little high" on delivery day. The phone got quieter. The food did not get colder.',
-      'A freezer setpoint was raised to save energy. The sensor showed the product softening over the following weeks, which is an expensive way to save on the electric bill.',
-      'The display matched the setpoint exactly. The door shelf, which had no sensor on it, did not match either number.',
-    ],
-    body: `The setpoint is the instruction you gave the machine. The safe range is the limit for the product, and it is the thing a Checkit alert should protect. Cold food is 41°F or below. Hot food is 135°F or above. A typical vaccine refrigerator is 2°C to 8°C. A unit can be obedient about its own air and still miss those numbers in the food.
-
-Set the alert inside the safe range, with enough room that a real drift reaches someone before the product is lost, and not so tight that every ordinary door opening becomes a page. If the only way to stop the noise is to widen the alert until it matches a weak fridge, the fridge is the problem. Moving the goalposts so the record looks calm is how the record stops being true.
-
-Write the range on the unit, in degrees. A dial with no units is not a control, and it is not what the sensor is measuring.`,
-  },
-  {
-    title: 'Write the note you would want to find in six months',
-    excerpt: 'A graph shows that something happened. A sentence says what you did about it. Without the sentence, the graph is a picture of a problem and not a record of a response.',
-    openings: [
-      'The comment said "see me." The person who wrote it had moved to another station by the time anyone needed to see them, and the comment had become a dead end.',
-      'The abbreviations made sense to the crew that invented them. They did not make sense to the inspector, who was reading Checkit without the benefit of that crew\'s dialect.',
-      'The alert comment was blank because the real note had been written on paper, in a binder, in an office. The two halves of the record had never been introduced.',
-      'The spike was obvious on the graph. The comment said "false alarm" and stopped there, which is what a shrug looks like when it is typed.',
-    ],
-    body: `Write for someone who was not on the shift. Use the unit\'s name as it appears in Checkit, and say what was decided in plain language. "Walk-in 2 reached 47°F at 1:12 a.m. The door was found ajar at 6:05. The milk and the cut melon were discarded. The gasket is torn on the hinge side. Service was called, ticket 4412." The sensor already drew the graph. The sentence is the response.
-
-"False alarm" needs a reason: a known defrost, back in range within ten minutes, food probed at 39°F. Without the reason, it reads as indifference sitting next to a spike, and indifference is a hard thing to defend later.
-
-Use the comment field. A beautiful trace with nothing written on it is half a record. Checkit can keep the temperatures forever. It cannot invent the decision you did not write down.`,
-  },
-  {
-    title: 'The fridge usually warns you before it fails',
-    excerpt: 'Units rarely go from fine to ruined in a single night. They run a degree warmer each week while every daily check still passes. The trend is the maintenance call.',
-    openings: [
-      'A fridge that used to sit at 35°F had settled at 40°F. Every daily task still passed. The pass line was 41°F, which meant the unit was one bad afternoon away from being the day\'s emergency.',
-      'Defrost recovery had started taking longer than it did a month ago. Nobody had changed a setting. The machine was asking for help in the only language it has, which is time.',
-      'On warm afternoons the compressor almost never rested, and the sensor showed the unit working harder for a worse result. The noise had become part of the kitchen.',
-      'The cooks had started probing that fridge first, because they did not trust it. Nobody had written the distrust down, so it existed as a folk habit rather than a work order.',
-    ],
-    body: `Compare this week with last month, not only with the limit. A unit living at 40°F is not a unit with margin. Clean the coil, look at the gasket, and schedule service while the food is still safe. Waiting for the alert means waiting until the product is already the incident. The alert is the last notice, not the first.
-
-How long defrost takes to recover tells the same story as a rising average. Write the drift down when you notice it. A work order is easier to justify with three weeks of a climbing Checkit line than with a single ruined morning and a theory about why it happened.
-
-The sensor was put there to see this early. It will keep seeing it whether or not anyone opens the trend. The maintenance call still requires a person who is willing to look at last month before this morning becomes the story.`,
+The record you want, later, is a dull trace or a trace with a decision attached. Anything else is unfinished.`,
   },
 ];

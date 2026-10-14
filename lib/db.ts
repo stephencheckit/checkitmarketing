@@ -4489,6 +4489,8 @@ export interface ContentDraft {
   excerpt: string | null;
   status: 'idea' | 'brief' | 'draft' | 'review' | 'approved' | 'published';
   published_url: string | null;
+  hubspot_post_id: string | null;
+  hubspot_url: string | null;
   created_at: Date;
   updated_at: Date;
   published_at: Date | null;
@@ -4511,12 +4513,16 @@ export async function initializeContentDraftsTables() {
       excerpt TEXT,
       status TEXT DEFAULT 'idea',
       published_url TEXT,
+      hubspot_post_id TEXT,
+      hubspot_url TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW(),
       published_at TIMESTAMPTZ
     )
   `;
 
+  await sql`ALTER TABLE content_drafts ADD COLUMN IF NOT EXISTS hubspot_post_id TEXT`;
+  await sql`ALTER TABLE content_drafts ADD COLUMN IF NOT EXISTS hubspot_url TEXT`;
   await sql`CREATE INDEX IF NOT EXISTS idx_content_drafts_status ON content_drafts(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_content_drafts_created ON content_drafts(created_at DESC)`;
 }
@@ -4574,6 +4580,119 @@ export async function updateDraftContent(id: number, data: {
     RETURNING *
   `;
   return result[0] as ContentDraft;
+}
+
+export async function setDraftHubspot(id: number, postId: string, url: string) {
+  const result = await sql`
+    UPDATE content_drafts SET
+      hubspot_post_id = ${postId},
+      hubspot_url = ${url},
+      updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return result[0] as ContentDraft;
+}
+
+export async function getPublishedMissingHubspot(limit = 1) {
+  return await sql`
+    SELECT * FROM content_drafts
+    WHERE status = 'published'
+      AND content IS NOT NULL
+      AND hubspot_post_id IS NULL
+      AND source_query NOT LIKE 'daily-note:%'
+    ORDER BY published_at ASC NULLS LAST, id ASC
+    LIMIT ${limit}
+  ` as ContentDraft[];
+}
+
+export async function countPublishedSinceDays(days: number) {
+  const result = await sql`
+    SELECT COUNT(*)::int AS n FROM content_drafts
+    WHERE status = 'published'
+      AND published_at > NOW() - make_interval(days => ${days})
+      AND source_query NOT LIKE 'daily-note:%'
+  `;
+  return Number(result[0]?.n) || 0;
+}
+
+export async function hasPublishedOnUtcDay(date: string) {
+  const result = await sql`
+    SELECT 1 FROM content_drafts
+    WHERE status = 'published'
+      AND published_at IS NOT NULL
+      AND (published_at AT TIME ZONE 'UTC')::date = ${date}::date
+    LIMIT 1
+  `;
+  return result.length > 0;
+}
+
+export async function listMissingPublishedDays(startDate: string, endDate: string) {
+  const rows = await sql`
+    WITH days AS (
+      SELECT generate_series(${startDate}::date, ${endDate}::date, interval '1 day')::date AS day
+    ),
+    published AS (
+      SELECT DISTINCT (published_at AT TIME ZONE 'UTC')::date AS day
+      FROM content_drafts
+      WHERE status = 'published' AND published_at IS NOT NULL
+    )
+    SELECT to_char(d.day, 'YYYY-MM-DD') AS day
+    FROM days d
+    LEFT JOIN published p ON p.day = d.day
+    WHERE p.day IS NULL
+    ORDER BY d.day
+  `;
+  return rows.map(row => String(row.day));
+}
+
+export async function getPublishedArticleTitles() {
+  const rows = await sql`
+    SELECT title FROM content_drafts WHERE status = 'published'
+  `;
+  return rows.map(row => String(row.title));
+}
+
+export async function insertPublishedDailyNote(data: {
+  date: string;
+  title: string;
+  slug: string;
+  content: string;
+  metaDescription: string;
+  excerpt: string;
+  keywords: string[];
+}) {
+  const sourceQuery = `daily-note:${data.date}`;
+  const existing = await sql`
+    SELECT id, slug FROM content_drafts WHERE source_query = ${sourceQuery} LIMIT 1
+  `;
+  if (existing[0]) return { id: Number(existing[0].id), slug: String(existing[0].slug), created: false };
+
+  const publishedAt = `${data.date}T15:00:00.000Z`;
+  const publishedUrl = `/resources/${data.slug}`;
+  const result = await sql`
+    INSERT INTO content_drafts (
+      source_query, title, slug, target_keywords,
+      content, meta_description, excerpt,
+      status, published_url, published_at
+    ) VALUES (
+      ${sourceQuery}, ${data.title}, ${data.slug}, ${JSON.stringify(data.keywords)},
+      ${data.content}, ${data.metaDescription}, ${data.excerpt},
+      'published', ${publishedUrl}, ${publishedAt}
+    )
+    RETURNING id, slug
+  `;
+  return { id: Number(result[0].id), slug: String(result[0].slug), created: true };
+}
+
+export async function getEarliestPublishedDay() {
+  const result = await sql`
+    SELECT to_char(MIN(published_at AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day
+    FROM content_drafts
+    WHERE status = 'published' AND published_at IS NOT NULL
+      AND source_query NOT LIKE 'daily-note:%'
+  `;
+  return result[0]?.day ? String(result[0].day) : null;
 }
 
 // Update draft status
@@ -4645,6 +4764,17 @@ export async function getContentDraftBySlug(slug: string) {
 // Delete draft
 export async function deleteContentDraft(id: number) {
   await sql`DELETE FROM content_drafts WHERE id = ${id}`;
+}
+
+// Card fields only. The index lists every day, so it should not pull full article bodies.
+export async function getPublishedArticleCards(limit = 500) {
+  return await sql`
+    SELECT id, title, slug, excerpt, target_keywords, published_at, meta_description
+    FROM content_drafts
+    WHERE status = 'published' AND content IS NOT NULL
+    ORDER BY published_at DESC
+    LIMIT ${limit}
+  ` as ContentDraft[];
 }
 
 // Get published articles (for public site)

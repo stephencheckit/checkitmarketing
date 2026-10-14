@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { FileText, ArrowRight, Calendar, Clock } from 'lucide-react';
-import { getPublishedArticles } from '@/lib/db';
+import { getPublishedArticleCards } from '@/lib/db';
 
 export const dynamic = 'force-dynamic'; // Always fetch fresh content from DB
 
 export default async function ResourcesPage() {
-  const articles = await getPublishedArticles(50);
+  const articles = await getPublishedArticleCards(500);
 
   return (
     <div className="min-h-screen bg-background">

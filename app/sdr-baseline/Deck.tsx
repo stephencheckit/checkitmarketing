@@ -1091,9 +1091,9 @@ const slides: Slide[] = [
           flagged, not removed.
         </Callout>
         <Callout tone="warning">
-          Facilities management now includes contract catering, food service and venue operators, with
-          customers excluded. Compass brands (Eurest, Chartwells, Medirest) remain on the lists: they buy
-          separately but count as expansion, not new logos.
+          Facilities management now includes contract catering, food service and venue operators. All lists
+          exclude accounts under 200 staff and existing customers; customer-group brands (Compass, Sodexo,
+          OVG and others) sit in a separate expansion list, so new-logo and expansion targets stay apart.
         </Callout>
       </div>
     ),

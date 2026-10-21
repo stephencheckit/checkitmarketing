@@ -15,6 +15,7 @@ import os
 import re
 from datetime import datetime, timezone
 
+from target_rules import RULES, customer_reason, load_customers, too_small
 from xlsx_writer import write_xlsx
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -297,7 +298,9 @@ EXPORT_SETS = {
     'FM, food service & venues - US': lambda r: r['list'] == 'FM, Food Service & Venues · US · 2026-10',
     'FM, food service & venues - UK': lambda r: r['list'] == 'FM, Food Service & Venues · UK · 2026-10',
 }
+customer_data = load_customers(DATA)
 export_rows = {}
+excluded_rows = []
 target_summary = []
 for label, pick in EXPORT_SETS.items():
     by_domain = {}
@@ -322,7 +325,7 @@ for label, pick in EXPORT_SETS.items():
             'State / region': r.get('state'),
             'Country': r.get('country'),
             'Apollo stage': stage,
-            'Existing customer': 'Yes' if stage == 'Current Client' else '',
+            'Customer match': customer_reason(r.get('name'), r.get('domain'), stage, customer_data) or '',
             'Owner': users.get(r.get('owner'), ''),
             'Contacts in Apollo': r.get('contacts'),
             'SDR outreach to date': 'Yes' if r.get('domain') in worked_domains else 'No',
@@ -330,13 +333,19 @@ for label, pick in EXPORT_SETS.items():
             'Source lists': '; '.join(sorted(r['lists'])),
             'LinkedIn': r.get('linkedin'),
         })
-    rows.sort(key=lambda x: (x['Existing customer'] == 'Yes', -(x['Employees'] or 0)))
-    export_rows[label] = rows
-    prospects = [x for x in rows if x['Existing customer'] != 'Yes']
+    rows.sort(key=lambda x: -(x['Employees'] or 0))
+    prospects = [x for x in rows if not x['Customer match'] and not too_small(x['Employees'])]
+    export_rows[label] = prospects
+    for x in rows:
+        if x['Customer match']:
+            excluded_rows.append({'List': label, 'Reason': x['Customer match'], **x})
+        elif too_small(x['Employees']):
+            excluded_rows.append({'List': label, 'Reason': f"Under {RULES['minEmployees']} staff", **x})
     target_summary.append({
         'list': label,
         'accounts': len(prospects),
-        'customersFlagged': len(rows) - len(prospects),
+        'customersFlagged': sum(1 for x in rows if x['Customer match']),
+        'smallExcluded': sum(1 for x in rows if not x['Customer match'] and too_small(x['Employees'])),
         'worked': sum(1 for x in prospects if x['SDR outreach to date'] == 'Yes'),
         'withContacts': sum(1 for x in prospects if (x['Contacts in Apollo'] or 0) > 0),
         'enterprise': sum(1 for x in prospects if (x['Employees'] or 0) >= 1000),
@@ -402,7 +411,7 @@ if os.path.exists(os.path.join(DATA, 'hs_contacts_2025.json')):
     }
 
 os.makedirs(EXPORTS, exist_ok=True)
-write_xlsx(os.path.join(EXPORTS, 'Checkit target accounts - US Healthcare and FM.xlsx'), export_rows)
+write_xlsx(os.path.join(EXPORTS, 'Checkit target accounts - US Healthcare and FM.xlsx'), {**export_rows, 'Customers and small (excluded)': excluded_rows})
 write_xlsx(os.path.join(EXPORTS, 'SDR baseline - raw tables.xlsx'), {
     'Activity by quarter': activity_rows,
     'Meetings booked (calls)': booked_rows,

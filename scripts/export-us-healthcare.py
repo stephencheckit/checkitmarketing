@@ -14,6 +14,7 @@ import json
 import os
 import re
 
+from target_rules import RULES, customer_reason, load_customers, too_small
 from xlsx_writer import write_xlsx
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -94,8 +95,12 @@ for r in accounts.values():
     })
 
 rows.sort(key=lambda x: (x['Segment'], -(x['Employees'] or 0)))
-prospects = [x for x in rows if x['Apollo stage'] != 'Current Client']
-customers = [x for x in rows if x['Apollo stage'] == 'Current Client']
+customer_data = load_customers(DATA)
+for x in rows:
+    x['Customer match'] = customer_reason(x['Account'], x['Domain'], x['Apollo stage'], customer_data) or ''
+customers = [x for x in rows if x['Customer match']]
+small = [x for x in rows if not x['Customer match'] and too_small(x['Employees'])]
+prospects = [x for x in rows if not x['Customer match'] and not too_small(x['Employees'])]
 
 summary = []
 for seg, n in C.Counter(x['Segment'] for x in prospects).most_common():
@@ -114,12 +119,14 @@ summary.append({
     '1,000+ employees': sum(s['1,000+ employees'] for s in summary),
     'With contacts in Apollo': sum(s['With contacts in Apollo'] for s in summary),
     'SDR outreach to date': sum(s['SDR outreach to date'] for s in summary),
-    'Largest accounts': f'{len(customers)} existing customers on their own tab; merged from 5 Apollo lists',
+    'Largest accounts': f"Merged from 5 Apollo lists; {len(customers)} customers and {len(small)} accounts under {RULES['minEmployees']} staff moved to their own tabs",
 })
 
 sheets = {'Summary': summary, 'US Healthcare targets': prospects}
 if customers:
     sheets['Existing customers'] = customers
+if small:
+    sheets[f"Under {RULES['minEmployees']} staff (excluded)"] = small
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 write_xlsx(OUT, sheets)
 print(OUT)

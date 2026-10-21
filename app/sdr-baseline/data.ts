@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-21T14:12+00:00",
+    "pulledAt": "2026-10-21T14:50+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1352,16 +1352,17 @@ export const snapshot = {
   "targets": [
     {
       "list": "US Healthcare",
-      "accounts": 312,
-      "customersFlagged": 2,
-      "worked": 24,
-      "withContacts": 169,
+      "accounts": 185,
+      "customersFlagged": 12,
+      "smallExcluded": 117,
+      "worked": 19,
+      "withContacts": 119,
       "enterprise": 59,
       "topIndustries": [
         "hospital & health care",
-        "medical practice",
         "research",
-        "pharmaceuticals"
+        "pharmaceuticals",
+        "medical devices"
       ],
       "topAccounts": [
         "Patheon",
@@ -1376,11 +1377,12 @@ export const snapshot = {
     },
     {
       "list": "FM, food service & venues - US",
-      "accounts": 356,
-      "customersFlagged": 0,
-      "worked": 15,
-      "withContacts": 67,
-      "enterprise": 120,
+      "accounts": 330,
+      "customersFlagged": 9,
+      "smallExcluded": 17,
+      "worked": 14,
+      "withContacts": 58,
+      "enterprise": 111,
       "topIndustries": [
         "sports",
         "entertainment",
@@ -1388,28 +1390,29 @@ export const snapshot = {
         "food & beverages"
       ],
       "topAccounts": [
-        "Compass Group USA",
         "Aramark Workplace Solutions Uk Ltd",
         "Delaware North United Kingdom",
         "Healthcare Services Group",
         "Ilitch Companies",
         "Live Nation",
         "HMSHost",
-        "SeaWorld"
+        "SeaWorld",
+        "Elior North America"
       ]
     },
     {
       "list": "FM, food service & venues - UK",
-      "accounts": 261,
-      "customersFlagged": 0,
+      "accounts": 210,
+      "customersFlagged": 4,
+      "smallExcluded": 47,
       "worked": 25,
-      "withContacts": 125,
-      "enterprise": 80,
+      "withContacts": 105,
+      "enterprise": 76,
       "topIndustries": [
-        "hospitality",
         "facilities services",
-        "food & beverages",
-        "sports"
+        "sports",
+        "hospitality",
+        "food & beverages"
       ],
       "topAccounts": [
         "Mitie",

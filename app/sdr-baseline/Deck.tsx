@@ -231,6 +231,7 @@ function MonthlyChart() {
 }
 
 const inbound = snapshot.inbound;
+const fmTargets = snapshot.targets.filter((t) => t.list.startsWith('FM'));
 
 const threatTone = {
   High: 'border-red-500/30 bg-red-500/10 text-red-300',
@@ -334,7 +335,7 @@ const okrs = [
     krs: [
       { kr: 'Per-client-site FM pack live with an FM customer', baseline: 'none', target: 'one live by Q2 2027' },
       { kr: 'SDR-sourced qualified opps from the FM target lists', baseline: 'not measurable', target: 'set after first clean quarter' },
-      { kr: 'FM accounts worked (US and UK lists)', baseline: `${(snapshot.targets.find((t) => t.list === 'FM - US')?.worked ?? 0) + (snapshot.targets.find((t) => t.list === 'FM - UK')?.worked ?? 0)} of ${(snapshot.targets.find((t) => t.list === 'FM - US')?.accounts ?? 0) + (snapshot.targets.find((t) => t.list === 'FM - UK')?.accounts ?? 0)}`, target: 'all, by end Q1 2027' },
+      { kr: 'FM, food service and venue accounts worked (US and UK lists)', baseline: `${fmTargets.reduce((a, t) => a + t.worked, 0)} of ${fmTargets.reduce((a, t) => a + t.accounts, 0)}`, target: 'top 100 by size, by end Q1 2027' },
     ],
   },
 ];
@@ -1090,9 +1091,9 @@ const slides: Slide[] = [
           flagged, not removed.
         </Callout>
         <Callout tone="warning">
-          The US FM list is mid-market FM firms. The tier-one groups (ISS, Compass, Sodexo) are handled as
-          named accounts or are already customers, and the UK FM list is thin at{' '}
-          {snapshot.targets.find((t) => t.list === 'FM - UK')?.accounts} accounts.
+          Facilities management now includes contract catering, food service and venue operators, with
+          customers excluded. Compass brands (Eurest, Chartwells, Medirest) remain on the lists: they buy
+          separately but count as expansion, not new logos.
         </Callout>
       </div>
     ),

@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-21T03:53+00:00",
+    "pulledAt": "2026-10-21T14:12+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1375,49 +1375,51 @@ export const snapshot = {
       ]
     },
     {
-      "list": "FM - US",
-      "accounts": 48,
+      "list": "FM, food service & venues - US",
+      "accounts": 356,
       "customersFlagged": 0,
-      "worked": 4,
-      "withContacts": 11,
-      "enterprise": 16,
+      "worked": 15,
+      "withContacts": 67,
+      "enterprise": 120,
       "topIndustries": [
-        "facilities services",
+        "sports",
+        "entertainment",
         "hospitality",
-        "food & beverages",
-        "real estate"
+        "food & beverages"
       ],
       "topAccounts": [
-        "ESFM® USA",
-        "Diversified Maintenance Systems LLC",
-        "Service Logic",
-        "Flagship Facility Services",
-        "GSH Group",
-        "DAVACO",
-        "Velociti Services",
-        "Quality Building Services (QBS)"
+        "Compass Group USA",
+        "Aramark Workplace Solutions Uk Ltd",
+        "Delaware North United Kingdom",
+        "Healthcare Services Group",
+        "Ilitch Companies",
+        "Live Nation",
+        "HMSHost",
+        "SeaWorld"
       ]
     },
     {
-      "list": "FM - UK",
-      "accounts": 13,
+      "list": "FM, food service & venues - UK",
+      "accounts": 261,
       "customersFlagged": 0,
-      "worked": 6,
-      "withContacts": 11,
-      "enterprise": 7,
+      "worked": 25,
+      "withContacts": 125,
+      "enterprise": 80,
       "topIndustries": [
+        "hospitality",
         "facilities services",
-        "construction"
+        "food & beverages",
+        "sports"
       ],
       "topAccounts": [
+        "Mitie",
+        "SSP Group",
+        "Bidvest Noonan",
+        "WSH Restaurants",
+        "ABM UK",
         "Churchill Group",
-        "Mears Group PLC",
-        "Wilson James",
-        "FirstPort",
-        "VINCI",
-        "Department for Environment, Food & Rural Affairs (DEFRA)",
-        "Integral Uk Ltd",
-        "Arthur McKay"
+        "Atlas",
+        "CH&CO"
       ]
     }
   ],

@@ -134,6 +134,8 @@ export const GTM_MARKETS: GtmMarket[] = [
       // accepts "food production" as an industry. A CAM target, but a
       // production/QA buyer rather than a facilities one.
       { id: '6aac233500f6cc001c1f809f', name: 'Lookalike · Food service & FM · 2026-09' },
+      // FM, contract catering and venue operators in one list; customers excluded.
+      { id: '6ad8b9ff8ff1d7001477f102', name: 'FM, Food Service & Venues · UK · 2026-10' },
     ],
   },
   {
@@ -174,6 +176,8 @@ export const GTM_MARKETS: GtmMarket[] = [
     apolloLists: [
       { id: '6ab1465d0bf79c001c3e8944', name: 'FM · US · 2026-09' },
       { id: '6aac24944ee6930018fcdfd7', name: 'Lookalike · Contract catering & FM · 2026-09' },
+      // FM, contract catering and venue operators in one list; customers excluded.
+      { id: '6ad8b9470082ae0010a432d2', name: 'FM, Food Service & Venues · US · 2026-10' },
     ],
   },
 ];

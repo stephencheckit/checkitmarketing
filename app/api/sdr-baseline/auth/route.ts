@@ -6,7 +6,7 @@ const MAX_AGE_SECONDS = 60 * 60 * 12;
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const submitted = String(form.get('password') ?? '');
-  const expected = process.env.DECK_2027_GTM_PASSWORD;
+  const expected = process.env.DECK_SDR_BASELINE_PASSWORD;
 
   const origin = new URL(req.url).origin;
 

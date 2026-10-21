@@ -45,3 +45,4 @@ next-env.d.ts
 # via scripts/import-customer-accounts.ts rather than committed.
 *.xlsx
 *.xls
+.sdr-data/

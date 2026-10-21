@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-21T14:50+00:00",
+    "pulledAt": "2026-10-21T15:13+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1352,12 +1352,12 @@ export const snapshot = {
   "targets": [
     {
       "list": "US Healthcare",
-      "accounts": 185,
-      "customersFlagged": 12,
-      "smallExcluded": 117,
-      "worked": 19,
-      "withContacts": 119,
-      "enterprise": 59,
+      "accounts": 244,
+      "customersFlagged": 0,
+      "smallExcluded": 0,
+      "worked": 20,
+      "withContacts": 150,
+      "enterprise": 101,
       "topIndustries": [
         "hospital & health care",
         "research",
@@ -1365,21 +1365,21 @@ export const snapshot = {
         "medical devices"
       ],
       "topAccounts": [
+        "CommonSpirit Health",
+        "Trinity Health",
+        "Providence Health & Services",
         "Patheon",
-        "Laboratory Corp. of America",
-        "Stanford Blood Center",
-        "CSL Plasma",
-        "Broward Health",
-        "Sonic Healthcare Limited",
-        "Natera",
-        "Sound Inpatient Physicians Inc"
+        "Ascension",
+        "UPMC",
+        "Tenet Healthcare Corporation",
+        "Laboratory Corp. of America"
       ]
     },
     {
       "list": "FM, food service & venues - US",
       "accounts": 330,
-      "customersFlagged": 9,
-      "smallExcluded": 17,
+      "customersFlagged": 0,
+      "smallExcluded": 0,
       "worked": 14,
       "withContacts": 58,
       "enterprise": 111,
@@ -1403,8 +1403,8 @@ export const snapshot = {
     {
       "list": "FM, food service & venues - UK",
       "accounts": 210,
-      "customersFlagged": 4,
-      "smallExcluded": 47,
+      "customersFlagged": 0,
+      "smallExcluded": 0,
       "worked": 25,
       "withContacts": 105,
       "enterprise": 76,

@@ -9,6 +9,7 @@
     "Grifols": "grifols|biomat|interstate blood bank",
     "Octapharma": "octapharma",
     "HCA": "\\bhca\\b",
-    "OVG": "oak view|\\bovg\\b|spectra"
+    "OVG": "oak view|\\bovg\\b|spectra",
+    "Kedrion": "kedrion|kedplasma"
   }
 }

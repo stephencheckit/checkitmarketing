@@ -294,7 +294,7 @@ acct_stage = {s['id']: (s.get('display_name') or s['name']) for s in load('accou
 targets = load('target_accounts.json')
 worked_domains = set(touches)
 EXPORT_SETS = {
-    'US Healthcare': lambda r: r['market'] == 'us-medical',
+    'US Healthcare': lambda r: r['list'] == 'US Healthcare targets · 2026-10',
     'FM, food service & venues - US': lambda r: r['list'] == 'FM, Food Service & Venues · US · 2026-10',
     'FM, food service & venues - UK': lambda r: r['list'] == 'FM, Food Service & Venues · UK · 2026-10',
 }

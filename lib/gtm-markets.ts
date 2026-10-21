@@ -84,6 +84,8 @@ export const GTM_MARKETS: GtmMarket[] = [
       { id: '6a9b068bdf35bc0018c46a88', name: 'Medical Monitoring - V1' },
       { id: '6aa04f209552770018dc6242', name: 'BioIVT Lookalikes List' },
       { id: '6aac2280849261001c7d61cb', name: 'Lookalike · Medical / labs · 2026-09' },
+      // Consolidated target list: the lists above, 200+ staff, customers excluded.
+      { id: '6ad8d5d602c70b00189187c0', name: 'US Healthcare targets · 2026-10' },
     ],
   },
   {

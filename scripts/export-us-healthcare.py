@@ -1,7 +1,8 @@
 """
-Consolidate the five US Healthcare Apollo lists into one deduplicated
-workbook: one row per account, a segment per account, the lists it came
-from, and existing customers on their own tab.
+Export the consolidated "US Healthcare targets" Apollo list (built by
+build-us-healthcare-list.ts) as a workbook: one row per account with a
+segment, plus customers and sub-threshold accounts from the source lists on
+their own tabs for reference.
 
     python3 scripts/export-us-healthcare.py
 
@@ -19,6 +20,7 @@ from xlsx_writer import write_xlsx
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, '.sdr-data')
+TARGET_LIST = 'US Healthcare targets · 2026-10'
 OUT = os.path.join(DATA, 'exports', 'Checkit - US Healthcare target accounts (consolidated).xlsx')
 
 
@@ -64,9 +66,11 @@ accounts = {}
 for r in load('target_accounts.json'):
     if r.get('market') != 'us-medical':
         continue
+    r = {**r, 'in_target': r['list'] == TARGET_LIST}
     key = (r.get('domain') or r.get('name') or '').lower()
     if key in accounts:
         accounts[key]['lists'].add(r['list'])
+        accounts[key]['in_target'] = accounts[key]['in_target'] or r['in_target']
         continue
     accounts[key] = {**r, 'lists': {r['list']}}
 
@@ -92,6 +96,7 @@ for r in accounts.values():
         'Domain': r.get('domain'),
         'LinkedIn': r.get('linkedin'),
         'Apollo account': f"https://app.apollo.io/#/accounts/{r['id']}",
+        '_in_target': r['in_target'],
     })
 
 rows.sort(key=lambda x: (x['Segment'], -(x['Employees'] or 0)))
@@ -99,8 +104,11 @@ customer_data = load_customers(DATA)
 for x in rows:
     x['Customer match'] = customer_reason(x['Account'], x['Domain'], x['Apollo stage'], customer_data) or ''
 customers = [x for x in rows if x['Customer match']]
-small = [x for x in rows if not x['Customer match'] and too_small(x['Employees'])]
-prospects = [x for x in rows if not x['Customer match'] and not too_small(x['Employees'])]
+small = [x for x in rows if not x['Customer match'] and not x['_in_target'] and too_small(x['Employees'])]
+prospects = [x for x in rows if x['_in_target'] and not x['Customer match']]
+for x in rows:
+    x.pop('_in_target')
+    x['Source lists'] = x['Source lists'].replace(TARGET_LIST + '; ', '').replace('; ' + TARGET_LIST, '').replace(TARGET_LIST, 'Apollo search (new)')
 
 summary = []
 for seg, n in C.Counter(x['Segment'] for x in prospects).most_common():
@@ -119,7 +127,7 @@ summary.append({
     '1,000+ employees': sum(s['1,000+ employees'] for s in summary),
     'With contacts in Apollo': sum(s['With contacts in Apollo'] for s in summary),
     'SDR outreach to date': sum(s['SDR outreach to date'] for s in summary),
-    'Largest accounts': f"Merged from 5 Apollo lists; {len(customers)} customers and {len(small)} accounts under {RULES['minEmployees']} staff moved to their own tabs",
+    'Largest accounts': f"Apollo list: US Healthcare targets · 2026-10; {len(customers)} customers and {len(small)} accounts under {RULES['minEmployees']} staff moved to their own tabs",
 })
 
 sheets = {'Summary': summary, 'US Healthcare targets': prospects}

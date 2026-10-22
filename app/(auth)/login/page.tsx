@@ -31,7 +31,9 @@ export default function LoginPage() {
         throw new Error(data.error || 'Login failed');
       }
 
-      router.push('/dashboard');
+      // Same-site paths only, so the parameter can't send someone off-site.
+      const next = new URLSearchParams(window.location.search).get('next');
+      router.push(next && /^\/(?![/\\])/.test(next) ? next : '/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {

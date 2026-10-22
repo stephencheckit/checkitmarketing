@@ -10,7 +10,6 @@ import {
   Flag,
   Gauge,
   Map as MapIcon,
-  Maximize2,
   ShieldAlert,
   SlidersHorizontal,
   Target,
@@ -98,6 +97,7 @@ const TOC: Record<string, { group: string; label: string }> = {
   levers: { group: 'The maths', label: 'Closing the gap' },
   planner: { group: 'The maths', label: 'GTM Strategy tool' },
   coverage: { group: 'Execution', label: 'Coverage' },
+  timeline: { group: 'Execution', label: 'Outreach timeline' },
   map: { group: 'Execution', label: 'GTM Map' },
   risk: { group: 'Risks & asks', label: 'Market risk' },
   measurement: { group: 'Risks & asks', label: 'Measurement' },
@@ -417,15 +417,25 @@ export default function ExecDeck({ data }: { data: ExecData }) {
               </div>
             ))}
           </div>
-          <button
-            onClick={() => live.open({ href: '/gtm-outreach', title: 'Outreach Plan' })}
-            className="inline-flex items-center gap-2 rounded-lg border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm text-blue-200 hover:bg-blue-500/20"
-          >
-            <Maximize2 className="h-4 w-4" />
-            Open the full outreach plan
-          </button>
           <div className="text-sm text-muted">
             Existing customers are excluded from every list. Target lists refresh from Apollo nightly (last sync {date(data.lastSync)}).
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'timeline',
+      eyebrow: 'Execution',
+      title: 'The 12-Month Outreach Timeline',
+      body: (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <LivePreview src="/decks/gtm-outreach.png" alt="Outreach plan timeline" target={{ href: '/gtm-outreach', title: 'Outreach Plan' }} onOpen={live.open} />
+          </div>
+          <div className="space-y-3 text-sm text-foreground/90">
+            <p>Each list is worked segment by segment at its weekly pace, so the timeline shows who is prospecting what, and when each list runs out.</p>
+            <p>The full plan adds the gaps and resource constraints, and the accounts in every segment.</p>
+            <p className="text-muted">Opens the live page full screen; Back returns here. Needs a GTM Tracker login.</p>
           </div>
         </div>
       ),

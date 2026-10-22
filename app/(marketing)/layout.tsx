@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
 import MainNav from '@/components/MainNav';
@@ -12,7 +13,8 @@ export default async function MarketingLayout({
   const session = await getSession();
 
   if (!session.isLoggedIn) {
-    redirect('/login');
+    const path = (await headers()).get('x-pathname');
+    redirect(path ? `/login?next=${encodeURIComponent(path)}` : '/login');
   }
 
   return (

@@ -53,7 +53,10 @@ export function middleware(request: NextRequest, event: NextFetchEvent) {
     );
   }
 
-  return NextResponse.next();
+  // Lets server layouts send a logged-out visitor back to this page after login.
+  const headers = new Headers(request.headers);
+  headers.set('x-pathname', request.nextUrl.pathname + request.nextUrl.search);
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

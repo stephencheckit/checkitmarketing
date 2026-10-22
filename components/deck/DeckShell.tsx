@@ -70,20 +70,16 @@ export default function DeckShell({
     <>
       <PrintStyles />
       <div className="deck-screen flex gap-6 pb-20">
-        <aside className="sticky top-6 hidden h-[calc(100vh-7.5rem)] w-48 flex-shrink-0 flex-col self-start lg:flex">
-          <div className="mb-5 px-2">
-            <Image
-              src="/checkit-logo-horizontal-standard-rgb-white.svg"
-              alt="Checkit"
-              width={140}
-              height={32}
-              priority
-              className="h-7 w-auto"
-            />
-            <div className="mt-3 text-sm font-semibold text-foreground">{title}</div>
-            <div className="text-xs text-muted">{subtitle}</div>
-          </div>
-          <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Slides">
+        <aside className="sticky top-6 hidden max-h-[calc(100vh-7.5rem)] w-48 flex-shrink-0 flex-col self-start overflow-y-auto [scrollbar-width:none] lg:flex [&::-webkit-scrollbar]:hidden">
+          <Image
+            src="/checkit-logo-horizontal-standard-rgb-white.svg"
+            alt="Checkit"
+            width={140}
+            height={32}
+            priority
+            className="mb-6 ml-2 h-7 w-auto self-start"
+          />
+          <nav aria-label="Slides">
             {Array.from(new Set(slides.map((s) => toc[s.id]?.group ?? 'Other'))).map((group) => (
               <div key={group} className="mb-3">
                 <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{group}</div>
@@ -107,13 +103,13 @@ export default function DeckShell({
               </div>
             ))}
           </nav>
-          <div className="mt-3 flex gap-2 border-t border-border/60 px-2 pt-3">
-            <button onClick={toggleFullscreen} title="Present (F)" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover flex-1">
-              {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          <div className="flex items-center gap-4 px-2 pt-1 text-xs text-muted">
+            <button onClick={toggleFullscreen} title="Present (F)" className="inline-flex items-center gap-1.5 hover:text-foreground">
+              {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
               {isFullscreen ? 'Exit' : 'Present'}
             </button>
-            <button onClick={() => window.print()} title="Print / Save as PDF (one slide per landscape page)" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
-              <Printer className="h-4 w-4" />
+            <button onClick={() => window.print()} title="Print / Save as PDF (one slide per landscape page)" className="inline-flex items-center gap-1.5 hover:text-foreground">
+              <Printer className="h-3.5 w-3.5" />
               PDF
             </button>
           </div>
@@ -165,7 +161,10 @@ export default function DeckShell({
 
       <div className="deck-controls fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1920px] gap-6 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="hidden w-48 flex-shrink-0 lg:block" />
+          <div className="hidden w-48 flex-shrink-0 flex-col justify-center px-2 leading-tight lg:flex">
+            <div className="truncate text-xs font-semibold text-foreground">{title}</div>
+            <div className="truncate text-[11px] text-muted">{subtitle}</div>
+          </div>
           <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
             <button
               onClick={prev}

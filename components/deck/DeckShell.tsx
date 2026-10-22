@@ -69,138 +69,140 @@ export default function DeckShell({
   return (
     <>
       <PrintStyles />
-      <div className="deck-screen flex gap-6">
-        <nav className="sticky top-4 hidden max-h-[calc(100vh-6rem)] w-48 flex-shrink-0 self-start overflow-y-auto pt-12 lg:block">
-          {Array.from(new Set(slides.map((s) => toc[s.id]?.group ?? 'Other'))).map((group) => (
-            <div key={group} className="mb-3">
-              <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{group}</div>
-              <ul className="space-y-0.5">
-                {slides.map((s, i) =>
-                  (toc[s.id]?.group ?? 'Other') === group ? (
-                    <li key={s.id}>
-                      <button
-                        onClick={() => setIndex(i)}
-                        className={`flex w-full items-center gap-2 rounded-md px-2 py-0.5 text-left text-[13px] transition-colors ${
-                          i === index ? 'bg-blue-500/15 text-blue-200' : 'text-foreground/70 hover:bg-surface hover:text-foreground'
-                        }`}
-                      >
-                        <span className="w-5 flex-shrink-0 text-[10px] tabular-nums text-muted">{String(i + 1).padStart(2, '0')}</span>
-                        <span className="truncate">{toc[s.id]?.label ?? s.title}</span>
-                      </button>
-                    </li>
-                  ) : null
-                )}
-              </ul>
-            </div>
-          ))}
-        </nav>
-        <div className="min-w-0 flex-1 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <div className="deck-screen flex gap-6 pb-20">
+        <aside className="sticky top-6 hidden h-[calc(100vh-7.5rem)] w-48 flex-shrink-0 flex-col self-start lg:flex">
+          <div className="mb-5 px-2">
             <Image
               src="/checkit-logo-horizontal-standard-rgb-white.svg"
               alt="Checkit"
               width={140}
               height={32}
               priority
-              className="h-8 w-auto"
+              className="h-7 w-auto"
             />
-            <div className="hidden sm:block border-l border-border pl-4">
-              <h1 className="text-lg font-semibold text-foreground">{title}</h1>
-              <p className="text-xs text-muted">{subtitle}</p>
-            </div>
+            <div className="mt-3 text-sm font-semibold text-foreground">{title}</div>
+            <div className="text-xs text-muted">{subtitle}</div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
-              title="Print / Save as PDF (one slide per landscape page)"
-            >
-              <Printer className="h-4 w-4" />
-              Print / PDF
-            </button>
-            <button
-              onClick={toggleFullscreen}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover"
-            >
+          <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Slides">
+            {Array.from(new Set(slides.map((s) => toc[s.id]?.group ?? 'Other'))).map((group) => (
+              <div key={group} className="mb-3">
+                <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{group}</div>
+                <ul className="space-y-0.5">
+                  {slides.map((s, i) =>
+                    (toc[s.id]?.group ?? 'Other') === group ? (
+                      <li key={s.id}>
+                        <button
+                          onClick={() => setIndex(i)}
+                          className={`flex w-full items-center gap-2 rounded-md px-2 py-0.5 text-left text-[13px] transition-colors ${
+                            i === index ? 'bg-blue-500/15 text-blue-200' : 'text-foreground/70 hover:bg-surface hover:text-foreground'
+                          }`}
+                        >
+                          <span className="w-5 flex-shrink-0 text-[10px] tabular-nums text-muted">{String(i + 1).padStart(2, '0')}</span>
+                          <span className="truncate">{toc[s.id]?.label ?? s.title}</span>
+                        </button>
+                      </li>
+                    ) : null
+                  )}
+                </ul>
+              </div>
+            ))}
+          </nav>
+          <div className="mt-3 flex gap-2 border-t border-border/60 px-2 pt-3">
+            <button onClick={toggleFullscreen} title="Present (F)" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover flex-1">
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               {isFullscreen ? 'Exit' : 'Present'}
             </button>
+            <button onClick={() => window.print()} title="Print / Save as PDF (one slide per landscape page)" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover">
+              <Printer className="h-4 w-4" />
+              PDF
+            </button>
           </div>
-        </div>
+        </aside>
 
-        <div
-          className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-surface to-background shadow-2xl"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 100% 0%, rgba(59,130,246,0.12), transparent 50%), radial-gradient(circle at 0% 100%, rgba(37,99,235,0.08), transparent 50%)',
-          }}
-        >
-          <div className="absolute left-0 top-0 h-1 w-full bg-border/40">
-            <div
-              className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="flex items-center justify-between lg:hidden">
+            <Image src="/checkit-logo-horizontal-standard-rgb-white.svg" alt="Checkit" width={140} height={32} className="h-7 w-auto" />
+            <span className="text-sm font-semibold text-foreground">{title}</span>
           </div>
 
-          <div className="min-h-[60vh] px-8 py-8 md:px-12 md:py-9">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs uppercase tracking-[0.2em] text-blue-300">{slide.eyebrow}</span>
-              <span className="text-xs uppercase tracking-widest text-muted">
-                {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
-              </span>
-            </div>
-            <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
-              <span className="text-gradient">{slide.title}</span>
-            </h2>
-            <div className="mt-6">{slide.body}</div>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-border/60 bg-background/40 px-6 py-3 text-xs text-muted">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-blue-400" />
-              Checkit · GTM Tracker
-            </div>
-            <div>Confidential · internal use only</div>
-          </div>
-        </div>
-
-        <div className="deck-controls flex items-center justify-between gap-3">
-          <button
-            onClick={prev}
-            disabled={index === 0}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+          <div
+            className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-surface to-background shadow-2xl"
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 100% 0%, rgba(59,130,246,0.12), transparent 50%), radial-gradient(circle at 0% 100%, rgba(37,99,235,0.08), transparent 50%)',
+            }}
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back
-          </button>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {slides.map((s, i) => (
-              <button
-                key={s.id}
-                onClick={() => setIndex(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className={`h-2.5 rounded-full transition-all ${
-                  i === index ? 'w-8 bg-blue-400' : 'w-2.5 bg-border hover:bg-surface-hover'
-                }`}
+            <div className="absolute left-0 top-0 h-1 w-full bg-border/40">
+              <div
+                className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300"
+                style={{ width: `${progress}%` }}
               />
-            ))}
+            </div>
+
+            <div className="min-h-[60vh] px-8 py-8 md:px-12 md:py-9">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="text-xs uppercase tracking-[0.2em] text-blue-300">{slide.eyebrow}</span>
+                <span className="text-xs uppercase tracking-widest text-muted">
+                  {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+                </span>
+              </div>
+              <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
+                <span className="text-gradient">{slide.title}</span>
+              </h2>
+              <div className="mt-6">{slide.body}</div>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-border/60 bg-background/40 px-6 py-3 text-xs text-muted">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-blue-400" />
+                Checkit · GTM Tracker
+              </div>
+              <div>Confidential · internal use only</div>
+            </div>
           </div>
-
-          <button
-            onClick={next}
-            disabled={index === total - 1}
-            className="inline-flex items-center gap-2 rounded-lg btn-gradient px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
+      </div>
 
-        <p className="pb-4 text-center text-xs text-muted">
-          Tip: use ← / → keys to navigate, F to present, Home / End to jump.
-        </p>
+      <div className="deck-controls fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-[1920px] gap-6 px-4 py-3 sm:px-6 lg:px-8">
+          <div className="hidden w-48 flex-shrink-0 lg:block" />
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+            <button
+              onClick={prev}
+              disabled={index === 0}
+              title="Previous (←)"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-foreground hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </button>
+            <div className="hidden flex-wrap items-center justify-center gap-2 sm:flex">
+              {slides.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => setIndex(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  className={`h-2.5 rounded-full transition-all ${
+                    i === index ? 'w-8 bg-blue-400' : 'w-2.5 bg-border hover:bg-surface-hover'
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={toggleFullscreen} title="Present (F)" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground hover:bg-surface-hover lg:hidden">
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
+              <button
+                onClick={next}
+                disabled={index === total - 1}
+                title="Next (→ or space)"
+                className="inline-flex items-center gap-2 rounded-lg btn-gradient px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

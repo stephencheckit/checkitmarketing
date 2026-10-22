@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { APOLLO_NAV_LISTS, apolloListUrl } from '@/lib/gtm-targets';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
@@ -94,7 +95,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     };
   }, [isAdmin]);
 
-
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
@@ -112,7 +112,6 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
-    { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },
     { href: '/industries', label: 'Microsite', icon: Globe, external: true },
   ];
 
@@ -229,7 +228,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   </div>
                 </div>
               )}
-            </div>
+</div>
 
             {/* Marketing Dropdown */}
             <div 
@@ -287,50 +286,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Channels Dropdown */}
-            <div 
-              className="relative"
-              onMouseEnter={() => setChannelsOpen(true)}
-              onMouseLeave={() => setChannelsOpen(false)}
-            >
-              <button
-                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                  isChannelsActive
-                    ? 'btn-gradient text-white'
-                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                }`}
-              >
-                <Radio className="w-4 h-4" />
-                <span className="hidden lg:inline">Channels</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${channelsOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {channelsOpen && (
-                <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
-                    {channelsItems.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
-                            isActive(item.href)
-                              ? 'bg-accent/20 text-accent'
-                              : 'text-muted hover:text-foreground hover:bg-surface'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
+</div>
 
             {/* Biz Dev Dropdown */}
             <div 
@@ -373,7 +329,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   </div>
                 </div>
               )}
-            </div>
+</div>
 
             {/* Sales Dropdown */}
             <div 
@@ -416,7 +372,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   </div>
                 </div>
               )}
-            </div>
+</div>
 
             {/* Accounts Dropdown */}
             <div 
@@ -438,8 +394,64 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
 
               {accountsOpen && (
                 <div className="absolute top-full left-0 pt-1 z-50">
-                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                  <div className="w-64 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
                     {accountItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                    <p className="mt-1 border-t border-border px-4 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted">Apollo lists</p>
+                    {APOLLO_NAV_LISTS.map((l) => (
+                      <a
+                        key={l.id}
+                        href={apolloListUrl(l.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex w-full items-center gap-2 px-4 py-1.5 text-sm transition-colors cursor-pointer text-muted hover:text-foreground hover:bg-surface"
+                      >
+                        <span className="truncate">{l.label}</span>
+                        <ExternalLink className="w-3 h-3 opacity-50 ml-auto shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+</div>
+
+            {/* Channels Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setChannelsOpen(true)}
+              onMouseLeave={() => setChannelsOpen(false)}
+            >
+              <button
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  isChannelsActive
+                    ? 'btn-gradient text-white'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                <Radio className="w-4 h-4" />
+                <span className="hidden lg:inline">Channels</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${channelsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {channelsOpen && (
+                <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                    {channelsItems.map((item) => {
                       const Icon = item.icon;
                       return (
                         <Link
@@ -459,7 +471,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                   </div>
                 </div>
               )}
-            </div>
+</div>
 
             {/* Training Dropdown */}
             <div 
@@ -633,7 +645,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
+</div>
 
               {/* Marketing Section */}
               <div className="pt-2 mt-2 border-t border-border">
@@ -671,30 +683,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
-
-              {/* Channels Section */}
-              <div className="pt-2 mt-2 border-t border-border">
-                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Channels</p>
-                {channelsItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                        isActive(item.href)
-                          ? 'bg-accent text-white'
-                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
+</div>
 
               {/* Biz Dev Section */}
               <div className="pt-2 mt-2 border-t border-border">
@@ -717,7 +706,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
+</div>
 
               {/* Sales Section */}
               <div className="pt-2 mt-2 border-t border-border">
@@ -740,7 +729,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
+</div>
 
               {/* Accounts Section */}
               <div className="pt-2 mt-2 border-t border-border">
@@ -763,7 +752,42 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                     </Link>
                   );
                 })}
-              </div>
+                {APOLLO_NAV_LISTS.map((l) => (
+                  <a
+                    key={l.id}
+                    href={apolloListUrl(l.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer text-muted hover:text-foreground hover:bg-surface-elevated"
+                  >
+                    {l.label}
+                    <ExternalLink className="w-3 h-3 opacity-50 ml-auto" />
+                  </a>
+                ))}
+</div>
+
+              {/* Channels Section */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">Channels</p>
+                {channelsItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                        isActive(item.href)
+                          ? 'bg-accent text-white'
+                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+</div>
 
               {/* Training Section */}
               <div className="pt-2 mt-2 border-t border-border">

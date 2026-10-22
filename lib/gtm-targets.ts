@@ -31,6 +31,19 @@ export const TARGET_LISTS: TargetList[] = [
   { id: '6ad8b9ff8ff1d7001477f102', name: 'Food service · UK', region: 'UK', marketId: 'uk-foodservice', segmenter: 'food-service' },
 ];
 
+/** Opens an Apollo account list in the Apollo web app. */
+export function apolloListUrl(listId: string) {
+  return `https://app.apollo.io/#/lists/${listId}`;
+}
+
+/** Account lists linked from the tracker's Accounts menu. */
+export const APOLLO_NAV_LISTS: { id: string; label: string }[] = [
+  ...TARGET_LISTS.map((l) => ({ id: l.id, label: `${l.name}${l.name.includes(l.region) ? '' : ` · ${l.region}`}` })),
+  { id: '6877e7cd5f3f7c0019db6424', label: 'All customers' },
+  { id: '6ada12c09bcdcf000c0c3fe6', label: 'Expansion · Customers · US' },
+  { id: '6ada12bfbf6e80001013dbb0', label: 'Expansion · Customers · UK' },
+];
+
 /** US senior living lists; membership marks a food-service account as senior living. */
 export const SENIOR_LIVING_LIST_IDS = ['6876afcd1cacdc001d7e7a9c', '6aac24157e513d00101ea3e2'];
 

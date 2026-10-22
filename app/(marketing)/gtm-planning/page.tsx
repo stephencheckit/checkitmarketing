@@ -72,6 +72,12 @@ type PlanState = {
   meetingsPerSdrPerMonth: number;
   meetingToOppPct: number;
   reps: Rep[];
+  /**
+   * UK share (%) of each ARR type. null follows the data: net new from the
+   * region tags on focused markets, expansion and renewal from where today's
+   * customer ARR sits.
+   */
+  regionSplit: { netNew: number | null; expansion: number | null; renewal: number | null };
 };
 
 interface MarketArr {
@@ -284,6 +290,7 @@ const DEFAULT_STATE: PlanState = {
   meetingsPerSdrPerMonth: 11,
   meetingToOppPct: 50,
   reps: buildReps(true, 2_400_000),
+  regionSplit: { netNew: null, expansion: null, renewal: null },
 };
 
 const SCENARIOS: {
@@ -788,6 +795,7 @@ export default function GtmPlanningPage() {
           reps: parsed.reps,
           markets: parsed.markets,
           marketPipeline: { ...DEFAULT_STATE.marketPipeline, ...parsed.marketPipeline },
+          regionSplit: { ...DEFAULT_STATE.regionSplit, ...parsed.regionSplit },
         });
         return true;
       }
@@ -897,11 +905,37 @@ export default function GtmPlanningPage() {
   const ukArr = marketRows
     .filter((m) => m.region === 'uk')
     .reduce((s, m) => s + m.arr, 0);
-  const usArr = marketRows
-    .filter((m) => m.region === 'us')
-    .reduce((s, m) => s + m.arr, 0);
   const ukPct = totalArr > 0 ? Math.round((ukArr / totalArr) * 100) : 0;
-  const usPct = 100 - ukPct;
+
+  // Where today's customer ARR sits, as the default for expansion and renewal:
+  // both come from the installed base, so they follow it rather than focus.
+  const installedUkPct = useMemo(() => {
+    let uk = 0;
+    let all = 0;
+    for (const m of GTM_MARKETS) {
+      const arr = arrByMarket[m.id] || 0;
+      all += arr;
+      if (m.region === 'uk') uk += arr;
+    }
+    return all > 0 ? Math.round((uk / all) * 100) : null;
+  }, [arrByMarket]);
+
+  const split = {
+    netNew: state.regionSplit.netNew ?? ukPct,
+    expansion: state.regionSplit.expansion ?? installedUkPct ?? ukPct,
+    renewal: state.regionSplit.renewal ?? installedUkPct ?? ukPct,
+  };
+  const byRegion = (['uk', 'us'] as const).map((region) => {
+    const share = (pct: number) => (region === 'uk' ? pct : 100 - pct) / 100;
+    const netNew = state.netNew * share(split.netNew);
+    return {
+      region,
+      netNew,
+      logos: state.avgDealSize > 0 ? netNew / state.avgDealSize : 0,
+      expansion: state.expansion * share(split.expansion),
+      renewal: state.renewal * share(split.renewal),
+    };
+  });
 
   const closeRate = Math.max(state.closeRatePct, 1) / 100;
   const coverageMultiple = 100 / Math.max(state.closeRatePct, 1);
@@ -924,6 +958,9 @@ export default function GtmPlanningPage() {
 
   const markCustom = (prev: PlanState): PlanState =>
     prev.scenario === 'custom' ? prev : { ...prev, scenario: 'custom' };
+
+  const setRegionSplit = (key: 'netNew' | 'expansion' | 'renewal', value: number | null) =>
+    setState((p) => markCustom({ ...p, regionSplit: { ...p.regionSplit, [key]: value } }));
 
   const applyScenario = (id: Exclude<ScenarioId, 'custom'>) => {
     const scenario = SCENARIOS.find((s) => s.id === id);
@@ -1082,6 +1119,7 @@ export default function GtmPlanningPage() {
       `Medical ${medicalPct}% / Commercial ${commercialPct}%`,
       `Opp→close ${state.closeRatePct}% ≈ ${coverageMultiple.toFixed(1)}:1 coverage`,
       `SDR: ${state.sdrCount} × ${state.meetingsPerSdrPerMonth} mtgs/mo → ${state.meetingToOppPct}% opp`,
+      `New logos: UK ${Math.round(byRegion[0].logos)} · US ${Math.round(byRegion[1].logos)} (net new UK ${split.netNew}% / US ${100 - split.netNew}%)`,
     ],
     [
       activeReps.length,
@@ -1092,6 +1130,8 @@ export default function GtmPlanningPage() {
       state.sdrCount,
       state.meetingsPerSdrPerMonth,
       state.meetingToOppPct,
+      byRegion,
+      split.netNew,
     ]
   );
 
@@ -1374,33 +1414,78 @@ export default function GtmPlanningPage() {
             />
           </section>
 
-          {/* Region — derived from market tags */}
+          {/* Region — net new, expansion and renewal by UK / US */}
           <section className="bg-surface border border-border rounded-xl p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Region (derived)</h2>
-            </div>
-            <p className="text-xs text-muted">
-              From each industry&apos;s UK/US tag — not a separate planning slider.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
-                <div className="text-xs text-muted">UK / RoW</div>
-                <div className="text-lg font-bold tabular-nums">{ukPct}%</div>
-                <div className="text-sm tabular-nums">{formatCompact(ukArr)}</div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-accent" />
+                <h2 className="font-semibold text-foreground">By region</h2>
               </div>
-              <div className="rounded-lg bg-rose-500/10 border border-rose-500/20 p-3">
-                <div className="text-xs text-muted">US</div>
-                <div className="text-lg font-bold tabular-nums">{usPct}%</div>
-                <div className="text-sm tabular-nums">{formatCompact(usArr)}</div>
-              </div>
+              {state.regionSplit.netNew !== null || state.regionSplit.expansion !== null || state.regionSplit.renewal !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setState((p) => markCustom({ ...p, regionSplit: { netNew: null, expansion: null, renewal: null } }))}
+                  className="text-xs text-muted hover:text-foreground"
+                >
+                  Reset to data
+                </button>
+              ) : null}
             </div>
-            <StackBar
-              segments={[
-                { label: 'UK/RoW', value: ukArr, className: 'bg-blue-500' },
-                { label: 'US', value: usArr, className: 'bg-rose-500' },
-              ]}
+            <SliderRow
+              label="Net new · UK share"
+              value={split.netNew}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('netNew', v)}
+              display={`UK ${split.netNew}% · US ${100 - split.netNew}%`}
+              hint={state.regionSplit.netNew === null ? 'From market focus' : `Set manually · market focus says UK ${ukPct}%`}
             />
+            <SliderRow
+              label="Expansion · UK share"
+              value={split.expansion}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('expansion', v)}
+              display={`UK ${split.expansion}% · US ${100 - split.expansion}%`}
+              hint={state.regionSplit.expansion === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
+            />
+            <SliderRow
+              label="Renewal · UK share"
+              value={split.renewal}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('renewal', v)}
+              display={`UK ${split.renewal}% · US ${100 - split.renewal}%`}
+              hint={state.regionSplit.renewal === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
+            />
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-muted">
+                  <th className="py-1 font-medium">Region</th>
+                  <th className="py-1 font-medium text-right">Net new</th>
+                  <th className="py-1 font-medium text-right">New logos</th>
+                  <th className="py-1 font-medium text-right">Expansion</th>
+                  <th className="py-1 font-medium text-right">Renewal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {byRegion.map((r) => (
+                  <tr key={r.region}>
+                    <td className="py-1.5 font-medium text-foreground">{r.region === 'uk' ? 'UK / RoW' : 'US'}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.netNew)}</td>
+                    <td className="py-1.5 text-right tabular-nums font-semibold text-foreground">{Math.round(r.logos)}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.expansion)}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.renewal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[11px] text-muted">
+              New logos = regional net new ÷ {formatCompact(state.avgDealSize)} average deal size.
+            </p>
           </section>
 
           <section className="bg-surface border border-border rounded-xl p-5 space-y-4">

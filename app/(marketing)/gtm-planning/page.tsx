@@ -78,6 +78,10 @@ type PlanState = {
    * customer ARR sits.
    */
   regionSplit: { netNew: number | null; expansion: number | null; renewal: number | null };
+  /** Target accounts prospected in a year; null follows the outreach plan's 12-month reach. */
+  accountsWorked: number | null;
+  /** Share of prospected accounts that take a first meeting. */
+  accountToMeetingPct: number;
 };
 
 interface MarketArr {
@@ -291,6 +295,8 @@ const DEFAULT_STATE: PlanState = {
   meetingToOppPct: 50,
   reps: buildReps(true, 2_400_000),
   regionSplit: { netNew: null, expansion: null, renewal: null },
+  accountsWorked: null,
+  accountToMeetingPct: 25,
 };
 
 const SCENARIOS: {
@@ -784,6 +790,16 @@ export default function GtmPlanningPage() {
     outreach: Record<string, OutreachSettings>;
   } | null>(null);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [outreachReach, setOutreachReach] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('/api/gtm-outreach')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { lists?: { coverage: { coveredIn12m: number } }[] } | null) => {
+        if (body?.lists) setOutreachReach(body.lists.reduce((sum, l) => sum + l.coverage.coveredIn12m, 0));
+      })
+      .catch(() => {});
+  }, []);
   const lastSaved = useRef<string>('');
 
   useEffect(() => {
@@ -948,13 +964,25 @@ export default function GtmPlanningPage() {
   const oppsNeeded =
     state.avgDealSize > 0 ? Math.ceil(state.netNew / state.avgDealSize / closeRate) : 0;
 
-  const sdrOppsPerYear =
-    state.sdrCount *
-    state.meetingsPerSdrPerMonth *
-    12 *
-    (state.meetingToOppPct / 100);
-  const sdrArrCapacity = sdrOppsPerYear * state.avgDealSize * closeRate;
+  // End-to-end funnel: accounts worked -> meetings -> opps -> wins -> revenue.
+  // Meetings are the lower of demand (accounts x meeting rate) and SDR capacity.
+  const accountsWorked = state.accountsWorked ?? outreachReach ?? 0;
+  const meetingRate = state.accountToMeetingPct / 100;
+  const meetingToOpp = state.meetingToOppPct / 100;
+  const demandMeetings = accountsWorked * meetingRate;
+  const capacityMeetings = state.sdrCount * state.meetingsPerSdrPerMonth * 12;
+  const meetingsPerYear = Math.min(demandMeetings, capacityMeetings);
+  const meetingsLimitedBy = demandMeetings <= capacityMeetings ? 'accounts' : 'SDR capacity';
+  const sdrOppsPerYear = meetingsPerYear * meetingToOpp;
+  const winsPerYear = sdrOppsPerYear * closeRate;
+  const sdrArrCapacity = winsPerYear * state.avgDealSize;
   const sdrGap = state.netNew - sdrArrCapacity;
+  // What closing the gap would take, holding the other rates fixed.
+  const winsNeeded = state.avgDealSize > 0 ? state.netNew / state.avgDealSize : 0;
+  const meetingsNeeded = winsNeeded / Math.max(closeRate, 0.01) / Math.max(meetingToOpp, 0.01);
+  const meetingRateNeeded = accountsWorked > 0 ? meetingsNeeded / accountsWorked : null;
+  const accountsNeeded = meetingsNeeded / Math.max(meetingRate, 0.01);
+  const sdrsNeeded = meetingsNeeded / Math.max(1, state.meetingsPerSdrPerMonth * 12);
 
   const markCustom = (prev: PlanState): PlanState =>
     prev.scenario === 'custom' ? prev : { ...prev, scenario: 'custom' };
@@ -1615,16 +1643,16 @@ export default function GtmPlanningPage() {
           </div>
         </section>
 
-        {/* SDR capacity */}
+        {/* Funnel: accounts -> revenue */}
         <section className="bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <Zap className="w-5 h-5 text-accent" />
-                SDR capacity → net-new
+                Funnel · accounts → revenue
               </h2>
               <p className="text-xs text-muted mt-1">
-                Meetings/mo × opp conversion × ACV × close rate vs net-new target.
+                Accounts worked × meeting rate (capped by SDR capacity) × opp rate × win rate × deal size, against the net-new target.
               </p>
             </div>
             <div
@@ -1635,31 +1663,58 @@ export default function GtmPlanningPage() {
               }`}
             >
               {sdrGap <= 0
-                ? `Capacity covers net-new (+${formatCompact(Math.abs(sdrGap))})`
+                ? `Funnel covers net-new (+${formatCompact(Math.abs(sdrGap))})`
                 : `Shortfall ${formatCompact(sdrGap)} vs net-new`}
             </div>
           </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+            {[
+              { label: 'Accounts worked', value: Math.round(accountsWorked).toLocaleString(), sub: state.accountsWorked === null ? 'From the outreach plan' : 'Set manually' },
+              { label: 'Meetings', value: Math.round(meetingsPerYear).toLocaleString(), sub: `Limited by ${meetingsLimitedBy}` },
+              { label: 'Opportunities', value: Math.round(sdrOppsPerYear).toLocaleString(), sub: `${state.meetingToOppPct}% of meetings` },
+              { label: 'Wins (new logos)', value: Math.round(winsPerYear).toLocaleString(), sub: `${state.closeRatePct}% of opps` },
+              { label: 'Net-new ARR', value: formatCompact(sdrArrCapacity), sub: `${state.netNew > 0 ? Math.round((sdrArrCapacity / state.netNew) * 100) : 0}% of ${formatCompact(state.netNew)} target` },
+            ].map((stage, i) => (
+              <div key={stage.label} className="relative rounded-lg bg-surface-elevated p-3">
+                <div className="text-xs text-muted">{i + 1}. {stage.label}</div>
+                <div className="text-xl font-semibold tabular-nums text-foreground">{stage.value}</div>
+                <div className="text-[11px] text-muted">{stage.sub}</div>
+              </div>
+            ))}
+          </div>
+
           <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <SliderRow
+                label="Accounts worked / year"
+                value={Math.round(accountsWorked)}
+                min={0}
+                max={3000}
+                step={25}
+                onChange={(v) => setState((p) => markCustom({ ...p, accountsWorked: v }))}
+                display={`${Math.round(accountsWorked).toLocaleString()}`}
+                hint={outreachReach !== null ? `Outreach plan reaches ${outreachReach.toLocaleString()} in 12 months` : 'Outreach plan not loaded'}
+              />
+              {state.accountsWorked !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setState((p) => markCustom({ ...p, accountsWorked: null }))}
+                  className="mt-1 text-xs text-muted hover:text-foreground"
+                >
+                  Use outreach plan
+                </button>
+              ) : null}
+            </div>
             <SliderRow
-              label="SDR headcount"
-              value={state.sdrCount}
-              min={1}
-              max={8}
+              label="Account → meeting %"
+              value={state.accountToMeetingPct}
+              min={5}
+              max={60}
               step={1}
-              onChange={(v) => setState((p) => markCustom({ ...p, sdrCount: v }))}
-              display={`${state.sdrCount}`}
-            />
-            <SliderRow
-              label="Meetings / SDR / month"
-              value={state.meetingsPerSdrPerMonth}
-              min={3}
-              max={15}
-              step={1}
-              onChange={(v) =>
-                setState((p) => markCustom({ ...p, meetingsPerSdrPerMonth: v }))
-              }
-              display={`${state.meetingsPerSdrPerMonth}`}
-              hint="Target 10–12 when stacked"
+              onChange={(v) => setState((p) => markCustom({ ...p, accountToMeetingPct: v }))}
+              display={`${state.accountToMeetingPct}%`}
+              hint="Assumption until SDR meetings are logged; see the SDR baseline"
             />
             <SliderRow
               label="Meeting → opp %"
@@ -1670,35 +1725,58 @@ export default function GtmPlanningPage() {
               onChange={(v) => setState((p) => markCustom({ ...p, meetingToOppPct: v }))}
               display={`${state.meetingToOppPct}%`}
             />
+            <SliderRow
+              label="Opp → win %"
+              value={state.closeRatePct}
+              min={5}
+              max={40}
+              step={1}
+              onChange={(v) => setState((p) => markCustom({ ...p, closeRatePct: v }))}
+              display={`${state.closeRatePct}%`}
+              hint="Same setting as the pipeline check"
+            />
+            <SliderRow
+              label="Avg deal size (ACV)"
+              value={state.avgDealSize}
+              min={20_000}
+              max={100_000}
+              step={2_500}
+              onChange={(v) => setState((p) => markCustom({ ...p, avgDealSize: v }))}
+              display={formatGBP(state.avgDealSize)}
+              hint="Same setting as the pipeline check"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <SliderRow
+                label="SDR headcount"
+                value={state.sdrCount}
+                min={1}
+                max={8}
+                step={1}
+                onChange={(v) => setState((p) => markCustom({ ...p, sdrCount: v }))}
+                display={`${state.sdrCount}`}
+              />
+              <SliderRow
+                label="Meetings / SDR / mo"
+                value={state.meetingsPerSdrPerMonth}
+                min={3}
+                max={15}
+                step={1}
+                onChange={(v) => setState((p) => markCustom({ ...p, meetingsPerSdrPerMonth: v }))}
+                display={`${state.meetingsPerSdrPerMonth}`}
+                hint={`Capacity ${Math.round(capacityMeetings)} meetings / yr`}
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <div className="rounded-lg bg-surface-elevated p-3">
-              <div className="text-xs text-muted">Opps / year</div>
-              <div className="text-lg font-semibold tabular-nums">
-                {Math.round(sdrOppsPerYear)}
-              </div>
+
+          {sdrGap > 0 ? (
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-foreground/90">
+              <strong>To hit {formatCompact(state.netNew)}:</strong> {Math.round(winsNeeded)} wins from {Math.round(meetingsNeeded)} meetings a year. Any one of:{' '}
+              {meetingRateNeeded !== null ? `a ${Math.round(meetingRateNeeded * 100)}% account → meeting rate, ` : ''}
+              {Math.round(accountsNeeded).toLocaleString()} accounts worked at {state.accountToMeetingPct}%, or{' '}
+              {Math.ceil(sdrsNeeded)} SDRs at {state.meetingsPerSdrPerMonth} meetings a month
+              {meetingsLimitedBy === 'SDR capacity' ? ' (SDR capacity is the binding limit today)' : ''}.
             </div>
-            <div className="rounded-lg bg-surface-elevated p-3">
-              <div className="text-xs text-muted">ARR capacity</div>
-              <div className="text-lg font-semibold tabular-nums">
-                {formatCompact(sdrArrCapacity)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-surface-elevated p-3">
-              <div className="text-xs text-muted">Net-new target</div>
-              <div className="text-lg font-semibold tabular-nums">
-                {formatCompact(state.netNew)}
-              </div>
-            </div>
-            <div className="rounded-lg bg-surface-elevated p-3">
-              <div className="text-xs text-muted">Coverage of target</div>
-              <div className="text-lg font-semibold tabular-nums">
-                {state.netNew > 0
-                  ? `${Math.round((sdrArrCapacity / state.netNew) * 100)}%`
-                  : '—'}
-              </div>
-            </div>
-          </div>
+          ) : null}
         </section>
 
         {/* Pipeline by market */}

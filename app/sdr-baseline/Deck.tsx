@@ -340,6 +340,32 @@ const okrs = [
   },
 ];
 
+const TOC: Record<string, { group: string; label: string }> = {
+  cover: { group: 'SDR baseline', label: 'Overview' },
+  answer: { group: 'SDR baseline', label: 'Short answer' },
+  request: { group: 'SDR baseline', label: 'The ask' },
+  team: { group: 'SDR baseline', label: 'Who did what' },
+  quarterly: { group: 'SDR baseline', label: 'Activity by quarter' },
+  trend: { group: 'SDR baseline', label: 'Activity trend' },
+  funnels: { group: 'SDR baseline', label: 'Funnels' },
+  markets: { group: 'SDR baseline', label: 'Effort by market' },
+  rules: { group: 'SDR baseline', label: 'Attribution rules' },
+  examples: { group: 'SDR baseline', label: 'Rules applied' },
+  cost: { group: 'SDR baseline', label: 'Cost per opp' },
+  gaps: { group: 'SDR baseline', label: 'Data gaps' },
+  plan: { group: 'SDR baseline', label: '90-day plan' },
+  inbound: { group: 'Market & product', label: 'Inbound demand' },
+  landscape: { group: 'Market & product', label: 'Competitors' },
+  market: { group: 'Market & product', label: 'Market direction' },
+  dt: { group: 'Market & product', label: 'Disruptive Technologies' },
+  roadmap: { group: 'Market & product', label: 'Product roadmap' },
+  okrs: { group: 'Market & product', label: 'Proposed OKRs' },
+  targets: { group: 'Targets & next steps', label: 'Target accounts' },
+  'healthcare-plan': { group: 'Targets & next steps', label: 'Healthcare coverage' },
+  asks: { group: 'Targets & next steps', label: 'Decisions needed' },
+  appendix: { group: 'Targets & next steps', label: 'Method' },
+};
+
 // Coverage plan for the US Healthcare list. Pace is the stated assumption for
 // Bryan's seat; segment order puts the buyers closest to existing medical
 // wins (Grifols, Octapharma, BioIVT: plasma, blood and labs) first.
@@ -1313,7 +1339,32 @@ export default function SdrBaselineDeck() {
   return (
     <>
       <PrintStyles />
-      <div className="space-y-4 deck-screen">
+      <div className="deck-screen flex gap-6">
+        <nav className="sticky top-4 hidden max-h-[calc(100vh-6rem)] w-48 flex-shrink-0 self-start overflow-y-auto pt-12 lg:block">
+          {Array.from(new Set(slides.map((s) => TOC[s.id]?.group ?? 'Other'))).map((group) => (
+            <div key={group} className="mb-3">
+              <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{group}</div>
+              <ul className="space-y-0.5">
+                {slides.map((s, i) =>
+                  (TOC[s.id]?.group ?? 'Other') === group ? (
+                    <li key={s.id}>
+                      <button
+                        onClick={() => setIndex(i)}
+                        className={`flex w-full items-center gap-2 rounded-md px-2 py-0.5 text-left text-[13px] transition-colors ${
+                          i === index ? 'bg-blue-500/15 text-blue-200' : 'text-foreground/70 hover:bg-surface hover:text-foreground'
+                        }`}
+                      >
+                        <span className="w-5 flex-shrink-0 text-[10px] tabular-nums text-muted">{String(i + 1).padStart(2, '0')}</span>
+                        <span className="truncate">{TOC[s.id]?.label ?? s.title}</span>
+                      </button>
+                    </li>
+                  ) : null
+                )}
+              </ul>
+            </div>
+          ))}
+        </nav>
+        <div className="min-w-0 flex-1 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Image
@@ -1362,17 +1413,17 @@ export default function SdrBaselineDeck() {
             />
           </div>
 
-          <div className="min-h-[60vh] px-8 py-10 md:px-14 md:py-14">
+          <div className="min-h-[60vh] px-8 py-8 md:px-12 md:py-9">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs uppercase tracking-[0.2em] text-blue-300">{slide.eyebrow}</span>
               <span className="text-xs uppercase tracking-widest text-muted">
                 {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
               </span>
             </div>
-            <h2 className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-5xl">
+            <h2 className="text-3xl font-bold leading-tight tracking-tight text-foreground md:text-4xl">
               <span className="text-gradient">{slide.title}</span>
             </h2>
-            <div className="mt-8">{slide.body}</div>
+            <div className="mt-6">{slide.body}</div>
           </div>
 
           <div className="flex items-center justify-between border-t border-border/60 bg-background/40 px-6 py-3 text-xs text-muted">
@@ -1384,15 +1435,7 @@ export default function SdrBaselineDeck() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted">
-          Tip: use ← / → keys to navigate, F to present, Home / End to jump.
-        </p>
-
-        <div className="h-24" aria-hidden />
-      </div>
-
-      <div className="deck-controls fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <div className="deck-controls flex items-center justify-between gap-3">
           <button
             onClick={prev}
             disabled={index === 0}
@@ -1423,6 +1466,11 @@ export default function SdrBaselineDeck() {
             Next
             <ChevronRight className="h-4 w-4" />
           </button>
+        </div>
+
+        <p className="pb-4 text-center text-xs text-muted">
+          Tip: use ← / → keys to navigate, F to present, Home / End to jump.
+        </p>
         </div>
       </div>
 

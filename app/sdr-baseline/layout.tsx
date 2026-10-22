@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function SdrBaselineLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-background">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
+      <main className="mx-auto max-w-[1920px] px-4 py-6 sm:px-6 lg:px-8">{children}</main>
     </div>
   );
 }

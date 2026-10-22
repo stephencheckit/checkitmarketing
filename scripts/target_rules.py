@@ -42,3 +42,22 @@ def too_small(employees):
     if not employees:
         return RULES['dropUnknownSize']
     return employees < RULES['minEmployees']
+
+
+def segment(name, industry):
+    n, i = (name or '').lower(), (industry or '').lower()
+    if re.search(r'plasma|blood|tissue|biobank|bio bank|donor|cord|transfusion', n):
+        return 'Plasma, blood & tissue'
+    if re.search(r'\blab|diagnostic|patholog|reference', n):
+        return 'Labs & diagnostics'
+    if i in ('pharmaceuticals', 'biotechnology'):
+        return 'Pharma & biotech'
+    if i == 'research':
+        return 'Research & life sciences'
+    if i == 'medical devices':
+        return 'Medical devices'
+    if i == 'hospital & health care':
+        return 'Hospitals & health systems'
+    if i == 'medical practice':
+        return 'Clinics & medical practices'
+    return 'Other'

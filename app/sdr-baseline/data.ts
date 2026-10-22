@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-21T15:13+00:00",
+    "pulledAt": "2026-10-22T13:02+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1352,16 +1352,16 @@ export const snapshot = {
   "targets": [
     {
       "list": "US Healthcare",
-      "accounts": 244,
+      "accounts": 239,
       "customersFlagged": 0,
       "smallExcluded": 0,
-      "worked": 20,
-      "withContacts": 150,
-      "enterprise": 101,
+      "worked": 19,
+      "withContacts": 146,
+      "enterprise": 100,
       "topIndustries": [
         "hospital & health care",
-        "research",
         "pharmaceuticals",
+        "research",
         "medical devices"
       ],
       "topAccounts": [
@@ -1530,5 +1530,150 @@ export const snapshot = {
         "junk": 6
       }
     ]
+  },
+  "healthcare": {
+    "list": "US Healthcare targets · 2026-10",
+    "accounts": 239,
+    "segments": [
+      {
+        "segment": "Hospitals & health systems",
+        "accounts": 66,
+        "enterprise": 36,
+        "worked": 5,
+        "activeOpp": 3,
+        "examples": [
+          "CommonSpirit Health",
+          "Trinity Health",
+          "Providence Health & Services",
+          "Ascension"
+        ]
+      },
+      {
+        "segment": "Pharma & biotech",
+        "accounts": 41,
+        "enterprise": 22,
+        "worked": 1,
+        "activeOpp": 0,
+        "examples": [
+          "Patheon",
+          "Bristol-Myers Squibb",
+          "Pharmaron",
+          "Catalent"
+        ]
+      },
+      {
+        "segment": "Plasma, blood & tissue",
+        "accounts": 33,
+        "enterprise": 9,
+        "worked": 1,
+        "activeOpp": 10,
+        "examples": [
+          "Stanford Blood Center",
+          "CSL Plasma",
+          "BioLife Plasma Services",
+          "United Blood Services"
+        ]
+      },
+      {
+        "segment": "Research & life sciences",
+        "accounts": 33,
+        "enterprise": 14,
+        "worked": 8,
+        "activeOpp": 0,
+        "examples": [
+          "Charles River",
+          "Gilead",
+          "Cytiva",
+          "Natera"
+        ]
+      },
+      {
+        "segment": "Labs & diagnostics",
+        "accounts": 26,
+        "enterprise": 12,
+        "worked": 3,
+        "activeOpp": 4,
+        "examples": [
+          "Laboratory Corp. of America",
+          "ARUP Laboratories Inc",
+          "BioReference Health LLC",
+          "Clinical Pathology Laboratories"
+        ]
+      },
+      {
+        "segment": "Medical devices",
+        "accounts": 16,
+        "enterprise": 7,
+        "worked": 1,
+        "activeOpp": 0,
+        "examples": [
+          "CONMED Corporation",
+          "Haemonetics",
+          "Advanced Sterilization Products",
+          "MTF Biologics"
+        ]
+      },
+      {
+        "segment": "Other",
+        "accounts": 13,
+        "enterprise": 0,
+        "worked": 0,
+        "activeOpp": 1,
+        "examples": [
+          "LifeCenter Northwest",
+          "Mid-America Transplant",
+          "University of Nebraska Medical Center",
+          "Boston IVF"
+        ]
+      },
+      {
+        "segment": "Clinics & medical practices",
+        "accounts": 11,
+        "enterprise": 0,
+        "worked": 0,
+        "activeOpp": 1,
+        "examples": [
+          "Southeast Orthopedic Specialists",
+          "VIO Med Spa",
+          "Orlin & Cohen Orthopedics",
+          "HRC Fertility Management LLC"
+        ]
+      }
+    ],
+    "sizeBands": {
+      "200 to 999": 124,
+      "1,000 to 9,999": 75,
+      "10,000+": 25,
+      "Unknown": 15
+    },
+    "topStates": [
+      {
+        "state": "California",
+        "accounts": 31
+      },
+      {
+        "state": "Texas",
+        "accounts": 21
+      },
+      {
+        "state": "New Jersey",
+        "accounts": 18
+      },
+      {
+        "state": "Florida",
+        "accounts": 16
+      },
+      {
+        "state": "New York",
+        "accounts": 13
+      },
+      {
+        "state": "Massachusetts",
+        "accounts": 12
+      }
+    ],
+    "worked": 19,
+    "activeOpp": 19,
+    "withContacts": 146
   }
 } as const;

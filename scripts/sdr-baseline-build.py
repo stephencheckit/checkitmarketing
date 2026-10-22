@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime, timezone
 
-from target_rules import RULES, customer_reason, load_customers, too_small
+from target_rules import RULES, customer_reason, load_customers, segment, too_small
 from xlsx_writer import write_xlsx
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -354,6 +354,46 @@ for label, pick in EXPORT_SETS.items():
     })
 
 
+# --- US Healthcare target list breakdown -----------------------------------
+hc_rows = [x for x in export_rows.get('US Healthcare', [])]
+for x in hc_rows:
+    x['_segment'] = segment(x['Account'], x['Industry'])
+
+
+def size_band(e):
+    if not e:
+        return 'Unknown'
+    if e >= 10000:
+        return '10,000+'
+    if e >= 1000:
+        return '1,000 to 9,999'
+    return '200 to 999'
+
+
+healthcare = {
+    'list': 'US Healthcare targets · 2026-10',
+    'accounts': len(hc_rows),
+    'segments': [
+        {
+            'segment': seg,
+            'accounts': n,
+            'enterprise': sum(1 for x in hc_rows if x['_segment'] == seg and (x['Employees'] or 0) >= 1000),
+            'worked': sum(1 for x in hc_rows if x['_segment'] == seg and x['SDR outreach to date'] == 'Yes'),
+            'activeOpp': sum(1 for x in hc_rows if x['_segment'] == seg and x['Apollo stage'] == 'Active Opportunity'),
+            'examples': [x['Account'] for x in sorted((x for x in hc_rows if x['_segment'] == seg), key=lambda x: -(x['Employees'] or 0))[:4]],
+        }
+        for seg, n in C.Counter(x['_segment'] for x in hc_rows).most_common()
+    ],
+    'sizeBands': dict(C.Counter(size_band(x['Employees']) for x in hc_rows).most_common()),
+    'topStates': [{'state': s, 'accounts': n} for s, n in C.Counter(x['State / region'] for x in hc_rows if x['State / region']).most_common(6)],
+    'worked': sum(1 for x in hc_rows if x['SDR outreach to date'] == 'Yes'),
+    'activeOpp': sum(1 for x in hc_rows if x['Apollo stage'] == 'Active Opportunity'),
+    'withContacts': sum(1 for x in hc_rows if (x['Contacts in Apollo'] or 0) > 0),
+}
+for x in hc_rows:
+    x.pop('_segment')
+
+
 # --- HubSpot inbound (contacts created since 2025) ---------------------------
 def form_kind(name):
     n = (name or '').lower()
@@ -445,6 +485,7 @@ snapshot = {
     'dataQuality': data_quality,
     'targets': target_summary,
     'inbound': inbound,
+    'healthcare': healthcare,
 }
 
 os.makedirs(os.path.dirname(OUT_TS), exist_ok=True)

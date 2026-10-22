@@ -15,7 +15,7 @@ import json
 import os
 import re
 
-from target_rules import RULES, customer_reason, load_customers, too_small
+from target_rules import RULES, customer_reason, load_customers, segment, too_small
 from xlsx_writer import write_xlsx
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,25 +27,6 @@ OUT = os.path.join(DATA, 'exports', 'Checkit - US Healthcare target accounts (co
 def load(name):
     with open(os.path.join(DATA, name)) as f:
         return json.load(f)
-
-
-def segment(name, industry):
-    n, i = (name or '').lower(), (industry or '').lower()
-    if re.search(r'plasma|blood|tissue|biobank|bio bank|donor|cord|transfusion', n):
-        return 'Plasma, blood & tissue'
-    if re.search(r'\blab|diagnostic|patholog|reference', n):
-        return 'Labs & diagnostics'
-    if i in ('pharmaceuticals', 'biotechnology'):
-        return 'Pharma & biotech'
-    if i == 'research':
-        return 'Research & life sciences'
-    if i == 'medical devices':
-        return 'Medical devices'
-    if i == 'hospital & health care':
-        return 'Hospitals & health systems'
-    if i == 'medical practice':
-        return 'Clinics & medical practices'
-    return 'Other'
 
 
 users = {u['id']: (u['name'] or u['email'].split('@')[0].replace('.', ' ').title()) for u in load('users.json')}

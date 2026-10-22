@@ -340,6 +340,47 @@ const okrs = [
   },
 ];
 
+// Coverage plan for the US Healthcare list. Pace is the stated assumption for
+// Bryan's seat; segment order puts the buyers closest to existing medical
+// wins (Grifols, Octapharma, BioIVT: plasma, blood and labs) first.
+const ACCOUNTS_PER_WEEK = 10;
+const SEGMENT_ORDER = [
+  'Plasma, blood & tissue',
+  'Labs & diagnostics',
+  'Hospitals & health systems',
+  'Research & life sciences',
+  'Pharma & biotech',
+  'Medical devices',
+  'Other',
+  'Clinics & medical practices',
+];
+const hc = snapshot.healthcare;
+const planStart = (() => {
+  const d = new Date(`${snapshot.meta.pulledAt.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7));
+  return d;
+})();
+const weekDate = (w: number) => {
+  const d = new Date(planStart);
+  d.setUTCDate(d.getUTCDate() + w * 7);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit', timeZone: 'UTC' });
+};
+const plan = (() => {
+  const ordered = [...hc.segments].sort((a, b) => {
+    const ia = SEGMENT_ORDER.indexOf(a.segment);
+    const ib = SEGMENT_ORDER.indexOf(b.segment);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  let done = 0;
+  return ordered.map((s) => {
+    const startWeek = Math.floor(done / ACCOUNTS_PER_WEEK);
+    done += s.accounts;
+    const endWeek = Math.ceil(done / ACCOUNTS_PER_WEEK);
+    return { ...s, startWeek, endWeek, cumulative: done };
+  });
+})();
+const planWeeks = Math.ceil(hc.accounts / ACCOUNTS_PER_WEEK);
+
 const slides: Slide[] = [
   {
     id: 'cover',
@@ -1099,6 +1140,75 @@ const slides: Slide[] = [
     ),
   },
   {
+    id: 'healthcare-plan',
+    eyebrow: 'US Healthcare · Coverage plan',
+    title: `${fmt(hc.accounts)} Accounts, Covered in ${planWeeks} Weeks at ${ACCOUNTS_PER_WEEK} a Week`,
+    body: (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <StatCard label="Accounts on the list" value={fmt(hc.accounts)} sub={`${fmt((hc.sizeBands as Record<string, number>)['10,000+'] ?? 0)} with 10,000+ staff · 200+ staff, no customers`} />
+          <StatCard label="Full coverage" value={weekDate(planWeeks - 1)} sub={`Starting w/c ${weekDate(0)} · Bryan, ${ACCOUNTS_PER_WEEK} accounts a week`} tone="accent" />
+          <StatCard label="Already worked" value={fmt(hc.worked)} sub={`${fmt(hc.withContacts)} accounts already have contacts in Apollo`} tone="success" />
+          <StatCard label="Check before outreach" value={fmt(hc.activeOpp)} sub="Marked Active Opportunity; confirm in Salesforce" tone="warning" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+          <div className="overflow-hidden rounded-xl border border-border md:col-span-2">
+            <table className="w-full">
+              <thead className="bg-surface/80">
+                <tr>
+                  {['Segment', 'Accts', '1k+', 'Largest'].map((h) => (
+                    <th key={h} className="px-2 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {plan.map((s) => (
+                  <tr key={s.segment}>
+                    <td className="px-2 py-1.5 text-xs font-medium text-foreground">{s.segment}</td>
+                    <td className="px-2 py-1.5 text-xs text-foreground/90">{s.accounts}</td>
+                    <td className="px-2 py-1.5 text-xs text-foreground/90">{s.enterprise}</td>
+                    <td className="px-2 py-1.5 text-[11px] text-muted">{s.examples.slice(0, 2).join(', ')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="rounded-xl border border-border bg-surface/60 p-4 md:col-span-3">
+            <div className="mb-2 flex justify-between text-[11px] text-muted">
+              <span>w/c {weekDate(0)}</span>
+              <span>w/c {weekDate(Math.floor(planWeeks / 2))}</span>
+              <span>w/c {weekDate(planWeeks - 1)}</span>
+            </div>
+            <div className="space-y-1.5">
+              {plan.map((s) => (
+                <div key={s.segment} className="flex items-center gap-2">
+                  <span className="w-36 flex-shrink-0 truncate text-[11px] text-foreground/90">{s.segment}</span>
+                  <div className="relative h-4 flex-1 rounded bg-border/40">
+                    <div
+                      className="absolute h-4 rounded bg-blue-500/70"
+                      style={{ left: `${(s.startWeek / planWeeks) * 100}%`, width: `${(Math.max(1, s.endWeek - s.startWeek) / planWeeks) * 100}%` }}
+                      title={`Weeks ${s.startWeek + 1} to ${s.endWeek}`}
+                    />
+                  </div>
+                  <span className="w-24 flex-shrink-0 text-right text-[11px] text-muted">by {weekDate(s.endWeek - 1)}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] text-muted">
+              Order: plasma, blood and labs first, closest to existing medical wins; clinics last. Top states:{' '}
+              {hc.topStates.map((s) => `${s.state} (${s.accounts})`).join(', ')}.
+            </p>
+          </div>
+        </div>
+        <Callout tone="accent">
+          “Prospected” here means contacts found, enrolled in a sequence and called within the week. At{' '}
+          {ACCOUNTS_PER_WEEK} a week the list lasts about {Math.round(planWeeks / 4.33)} months; a refill from the
+          lookalike search is needed before then if the pace holds.
+        </Callout>
+      </div>
+    ),
+  },
+  {
     id: 'asks',
     eyebrow: 'Decisions',
     title: 'What I Need to Finish This',
@@ -1428,6 +1538,15 @@ const PRINT_CSS = `
         }
         .print-body .md\\:grid-cols-4 {
           grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+        .print-body .md\\:grid-cols-5 {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+        .print-body .md\\:col-span-2 {
+          grid-column: span 2 / span 2;
+        }
+        .print-body .md\\:col-span-3 {
+          grid-column: span 3 / span 3;
         }
         .print-footer {
           margin-top: 12px;

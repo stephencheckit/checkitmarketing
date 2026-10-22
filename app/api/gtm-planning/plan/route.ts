@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
+import { GTM_DECK_COOKIE, hasDeckAccess } from '@/lib/deck-auth';
 import { getSharedPlan, initializeGtmPlanTables, saveSharedPlan } from '@/lib/gtm-plan-db';
 import { resolveOutreach, type OutreachSettings } from '@/lib/gtm-plan';
 
 /** The shared GTM plan: everyone logged in reads it, admins save it. */
 export async function GET() {
   const session = await getSession();
-  if (!session.isLoggedIn) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session.isLoggedIn && !(await hasDeckAccess(GTM_DECK_COOKIE))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   await initializeGtmPlanTables();
   const plan = await getSharedPlan();
   return NextResponse.json({

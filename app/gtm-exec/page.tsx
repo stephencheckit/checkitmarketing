@@ -1,5 +1,5 @@
-import { cookies } from 'next/headers';
 import PasswordGate from '@/components/deck/PasswordGate';
+import { GTM_DECK_COOKIE, hasDeckAccess } from '@/lib/deck-auth';
 import { getCustomerArrByMarket } from '@/lib/db';
 import { GTM_MARKETS } from '@/lib/gtm-markets';
 import { getOutreachPlan } from '@/lib/gtm-outreach-data';
@@ -9,8 +9,6 @@ import { snapshot } from '../sdr-baseline/data';
 import Deck, { type ExecData } from './Deck';
 
 export const dynamic = 'force-dynamic';
-
-const COOKIE_NAME = 'deck_gtm_exec';
 
 async function loadData(): Promise<ExecData> {
   const [arrRows, outreach] = await Promise.all([getCustomerArrByMarket(), getOutreachPlan()]);
@@ -67,8 +65,7 @@ async function loadData(): Promise<ExecData> {
 }
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
-  const cookieStore = await cookies();
-  const authed = cookieStore.get(COOKIE_NAME)?.value === 'ok';
+  const authed = await hasDeckAccess(GTM_DECK_COOKIE);
   const params = await searchParams;
   const bypass = process.env.NODE_ENV !== 'production';
 

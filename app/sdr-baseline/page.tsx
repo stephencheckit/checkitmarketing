@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers';
 import Deck from './Deck';
 import PasswordGate from '@/components/deck/PasswordGate';
+import { hasDeckAccess } from '@/lib/deck-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +11,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const cookieStore = await cookies();
-  const authed = cookieStore.get(COOKIE_NAME)?.value === 'ok';
+  const authed = await hasDeckAccess(COOKIE_NAME);
   const params = await searchParams;
 
   const bypass = process.env.NODE_ENV !== 'production';

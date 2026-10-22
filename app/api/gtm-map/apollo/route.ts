@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
+import { GTM_DECK_COOKIE, hasDeckAccess } from '@/lib/deck-auth';
 import { getAccountDetailsForLabel, getAccountStages, getLabels } from '@/lib/apollo';
 import { EXCLUDED_APOLLO_LISTS, mappedApolloLists, segmentNodeId } from '@/lib/gtm-markets';
 
@@ -171,7 +172,7 @@ async function build(): Promise<Payload> {
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn && !(await hasDeckAccess(GTM_DECK_COOKIE))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

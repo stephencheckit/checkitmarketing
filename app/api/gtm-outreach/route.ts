@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
+import { GTM_DECK_COOKIE, hasDeckAccess } from '@/lib/deck-auth';
 import { getOutreachPlan } from '@/lib/gtm-outreach-data';
 
 /** The outreach plan. Also read by the GTM map. */
 export async function GET() {
   const session = await getSession();
-  if (!session.isLoggedIn) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session.isLoggedIn && !(await hasDeckAccess(GTM_DECK_COOKIE))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { plan, lists, lastSync, hasData } = await getOutreachPlan();
 
   return NextResponse.json({

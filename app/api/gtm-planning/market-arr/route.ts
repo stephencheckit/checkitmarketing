@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
+import { GTM_DECK_COOKIE, hasDeckAccess } from '@/lib/deck-auth';
 import { getCustomerArrByMarket } from '@/lib/db';
 import { GTM_MARKETS } from '@/lib/gtm-markets';
 
@@ -11,7 +12,7 @@ import { GTM_MARKETS } from '@/lib/gtm-markets';
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session.isLoggedIn) {
+    if (!session.isLoggedIn && !(await hasDeckAccess(GTM_DECK_COOKIE))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

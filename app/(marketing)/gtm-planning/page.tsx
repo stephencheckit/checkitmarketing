@@ -1275,7 +1275,7 @@ export default function GtmPlanningPage() {
         <div className="flex gap-8">
           <PlannerContents />
           <div className="min-w-0 flex-1">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Target className="w-7 h-7 text-accent" />

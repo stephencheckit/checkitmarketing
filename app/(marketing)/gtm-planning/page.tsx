@@ -754,6 +754,86 @@ function ApolloCapacityCells({
   );
 }
 
+// Sections of the planner, grouped, each with a stable anchor so other
+// material can link straight to it (e.g. /gtm-planning#funnel).
+const PLANNER_SECTIONS: { group: string; items: { id: string; label: string }[] }[] = [
+  {
+    group: 'Plan',
+    items: [
+      { id: 'scenario', label: 'Scenario & targets' },
+      { id: 'arr-mix', label: 'ARR mix' },
+      { id: 'reps', label: 'Rep quotas' },
+    ],
+  },
+  {
+    group: 'Shape',
+    items: [
+      { id: 'medical-commercial', label: 'Medical vs commercial' },
+      { id: 'region', label: 'By region' },
+      { id: 'industry-focus', label: 'Industry focus' },
+    ],
+  },
+  {
+    group: 'Pipeline',
+    items: [
+      { id: 'pipeline-check', label: 'Pipeline check' },
+      { id: 'funnel', label: 'Funnel' },
+      { id: 'pipeline-by-market', label: 'Pipeline by market' },
+    ],
+  },
+  {
+    group: 'Execution',
+    items: [
+      { id: 'outreach', label: 'Outreach plan' },
+      { id: 'assumptions', label: 'Model assumptions' },
+    ],
+  },
+];
+
+function PlannerContents() {
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ids = PLANNER_SECTIONS.flatMap((g) => g.items.map((i) => i.id));
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-80px 0px -60% 0px' }
+    );
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <nav className="sticky top-20 hidden w-48 flex-shrink-0 self-start lg:block" aria-label="Planner sections">
+      {PLANNER_SECTIONS.map((g) => (
+        <div key={g.group} className="mb-4">
+          <div className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">{g.group}</div>
+          <ul className="space-y-0.5">
+            {g.items.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={`#${item.id}`}
+                  className={`block rounded-md px-2 py-1 text-sm transition-colors ${
+                    active === item.id ? 'bg-accent/15 text-accent' : 'text-muted hover:bg-surface hover:text-foreground'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
 export default function GtmPlanningPage() {
   const [state, setState] = useState<PlanState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
@@ -1165,7 +1245,10 @@ export default function GtmPlanningPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex gap-8">
+          <PlannerContents />
+          <div className="min-w-0 flex-1">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
@@ -1202,7 +1285,7 @@ export default function GtmPlanningPage() {
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-3 mb-6">
+        <div id="scenario" className="scroll-mt-24 flex flex-col lg:flex-row gap-3 mb-6">
           <div className="flex-1 flex flex-wrap gap-2">
             {SCENARIOS.map((s) => (
               <button
@@ -1264,7 +1347,7 @@ export default function GtmPlanningPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          <section className="bg-surface border border-border rounded-xl p-5 space-y-5 lg:col-span-1">
+          <section id="arr-mix" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-5 lg:col-span-1">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-5 h-5 text-accent" />
               <h2 className="font-semibold text-foreground">ARR mix</h2>
@@ -1308,7 +1391,7 @@ export default function GtmPlanningPage() {
             />
           </section>
 
-          <section className="bg-surface border border-border rounded-xl p-5 space-y-4 lg:col-span-2">
+          <section id="reps" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4 lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-accent" />
@@ -1409,7 +1492,7 @@ export default function GtmPlanningPage() {
 
         <div className="grid lg:grid-cols-3 gap-6 mb-6">
           {/* Medical vs commercial — primary driver */}
-          <section className="bg-surface border border-border rounded-xl p-5 space-y-4">
+          <section id="medical-commercial" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" />
               <h2 className="font-semibold text-foreground">Medical vs commercial</h2>
@@ -1443,7 +1526,7 @@ export default function GtmPlanningPage() {
           </section>
 
           {/* Region — net new, expansion and renewal by UK / US */}
-          <section className="bg-surface border border-border rounded-xl p-5 space-y-4">
+          <section id="region" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Globe className="w-5 h-5 text-accent" />
@@ -1516,7 +1599,7 @@ export default function GtmPlanningPage() {
             </p>
           </section>
 
-          <section className="bg-surface border border-border rounded-xl p-5 space-y-4">
+          <section id="pipeline-check" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-accent" />
               <h2 className="font-semibold text-foreground">Pipeline check</h2>
@@ -1565,7 +1648,7 @@ export default function GtmPlanningPage() {
         </div>
 
         {/* Industry focus under medical / commercial */}
-        <section className="mb-6 space-y-4">
+        <section id="industry-focus" className="scroll-mt-24 mb-6 space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <MapPin className="w-5 h-5 text-accent" />
@@ -1644,7 +1727,7 @@ export default function GtmPlanningPage() {
         </section>
 
         {/* Funnel: accounts -> revenue */}
-        <section className="bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
+        <section id="funnel" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-foreground flex items-center gap-2">
@@ -1780,7 +1863,7 @@ export default function GtmPlanningPage() {
         </section>
 
         {/* Pipeline by market */}
-        <section className="bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
+        <section id="pipeline-by-market" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-semibold text-foreground">Pipeline by market</h2>
@@ -1898,9 +1981,11 @@ export default function GtmPlanningPage() {
           </div>
         </section>
 
+        <div id="outreach" className="scroll-mt-24">
         <OutreachPanel outreach={shared?.outreach ?? null} canEdit={Boolean(shared?.canEdit)} onChange={setOutreach} />
+        </div>
 
-        <section className="bg-accent/5 border border-accent/20 rounded-xl p-5">
+        <section id="assumptions" className="scroll-mt-24 bg-accent/5 border border-accent/20 rounded-xl p-5">
           <h2 className="font-semibold text-foreground mb-3">Model assumptions</h2>
           <ul className="grid sm:grid-cols-2 gap-2 text-sm text-muted">
             {assumptions.map((a) => (
@@ -1911,6 +1996,8 @@ export default function GtmPlanningPage() {
             ))}
           </ul>
         </section>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1102,7 +1102,7 @@ export default function GtmPlanningPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
               <Target className="w-7 h-7 text-accent" />
-              GTM Planning
+              GTM Strategy
             </h1>
             <p className="text-sm text-muted mt-1 max-w-2xl">
               FY28 ARR scenario — medical vs commercial first, then industry focus, with

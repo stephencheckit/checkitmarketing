@@ -240,11 +240,11 @@ export default function GtmOutreachPage() {
           <div>
             <h1 className="flex items-center gap-3 text-2xl font-bold text-foreground">
               <CalendarRange className="h-7 w-7 text-accent" />
-              GTM Outreach Plan
+              Outreach Plan
             </h1>
             <p className="mt-1 max-w-3xl text-sm text-muted">
               Who prospects which target list, in what order, and when each is covered. Set in{' '}
-              <Link href="/gtm-planning" className="text-accent hover:underline">GTM Planning</Link>; accounts sync from Apollo nightly.
+              <Link href="/gtm-planning" className="text-accent hover:underline">GTM Strategy</Link>; accounts sync from Apollo nightly.
             </p>
             {data ? (
               <p className="mt-2 text-xs text-muted">

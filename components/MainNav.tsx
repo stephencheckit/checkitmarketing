@@ -53,6 +53,7 @@ interface MainNavProps {
 export default function MainNav({ userName, userRole }: MainNavProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [gtmOpen, setGtmOpen] = useState(false);
   const [marketingOpen, setMarketingOpen] = useState(false);
   const [channelsOpen, setChannelsOpen] = useState(false);
   const [bizDevOpen, setBizDevOpen] = useState(false);
@@ -99,12 +100,16 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     router.push('/login');
   };
 
+  // GTM: strategy, map and outreach plan, all reading the shared plan
+  const gtmItems = [
+    { href: '/gtm-planning', label: 'GTM Strategy', icon: Briefcase },
+    { href: '/gtm-map', label: 'GTM Map', icon: Network },
+    { href: '/gtm-outreach', label: 'Outreach Plan', icon: CalendarRange },
+  ];
+
   // Marketing: Strategy, content, budget
   const marketingItems = [
     { href: '/positioning', label: 'Positioning', icon: Target },
-    { href: '/gtm-planning', label: 'GTM Planning', icon: Briefcase },
-    { href: '/gtm-map', label: 'GTM Map', icon: Network },
-    { href: '/gtm-outreach', label: 'GTM Outreach', icon: CalendarRange },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
     { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },
@@ -147,6 +152,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
   ];
 
   const isActive = (href: string) => pathname.startsWith(href);
+  const isGtmActive = gtmItems.some(item => pathname.startsWith(item.href));
   const isMarketingActive = marketingItems.some(item => pathname.startsWith(item.href));
   const isChannelsActive = channelsItems.some(item => pathname.startsWith(item.href));
   const isBizDevActive = bizDevItems.some(item => pathname.startsWith(item.href));
@@ -181,6 +187,49 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
               <LayoutDashboard className="w-4 h-4" />
               <span className="hidden xl:inline">Dashboard</span>
             </Link>
+
+            {/* GTM Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setGtmOpen(true)}
+              onMouseLeave={() => setGtmOpen(false)}
+            >
+              <button
+                className={`flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                  isGtmActive
+                    ? 'btn-gradient text-white'
+                    : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                }`}
+              >
+                <Network className="w-4 h-4" />
+                <span className="hidden lg:inline">GTM</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${gtmOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {gtmOpen && (
+                <div className="absolute top-full left-0 pt-1 z-50">
+                  <div className="w-44 bg-surface-elevated border border-border rounded-lg shadow-xl py-1">
+                    {gtmItems.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={`flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors cursor-pointer ${
+                            isActive(item.href)
+                              ? 'bg-accent/20 text-accent'
+                              : 'text-muted hover:text-foreground hover:bg-surface'
+                          }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Marketing Dropdown */}
             <div 
@@ -562,6 +611,29 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </Link>
+
+              {/* GTM Section */}
+              <div className="pt-2 mt-2 border-t border-border">
+                <p className="px-4 py-2 text-xs text-muted uppercase tracking-wider">GTM</p>
+                {gtmItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                        isActive(item.href)
+                          ? 'bg-accent text-white'
+                          : 'text-muted hover:text-foreground hover:bg-surface-elevated'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
 
               {/* Marketing Section */}
               <div className="pt-2 mt-2 border-t border-border">

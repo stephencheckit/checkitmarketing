@@ -22,6 +22,7 @@ import {
 import { nodeTypes } from './nodes';
 import { CurrencyProvider, type Currency } from './currency';
 import { ApolloProvider, useApolloSnapshot } from './apollo-context';
+import { PlanProvider, usePlanOverlay } from './plan-context';
 import { useApolloLists } from '@/lib/apollo-lists';
 
 const LEGEND: { label: string; className: string }[] = [
@@ -49,6 +50,7 @@ export default function GtmMap({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currency, setCurrency] = useState<Currency>('GBP');
   const apollo = useApolloLists(liveApollo);
+  const planOverlay = usePlanOverlay(liveApollo);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -70,6 +72,7 @@ export default function GtmMap({
     <div ref={shellRef} className={`w-full bg-background ${height}`}>
       <CurrencyProvider value={currency}>
         <ApolloProvider value={apollo}>
+        <PlanProvider value={planOverlay}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -175,6 +178,7 @@ export default function GtmMap({
               </Panel>
             ) : null}
           </ReactFlow>
+        </PlanProvider>
         </ApolloProvider>
       </CurrencyProvider>
     </div>

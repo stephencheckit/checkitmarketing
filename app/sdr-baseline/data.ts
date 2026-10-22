@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-22T13:48+00:00",
+    "pulledAt": "2026-10-22T14:25+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1686,49 +1686,104 @@ export const snapshot = {
         "type": "Health boards (Scotland, Wales, NI)",
         "targets": 3,
         "customers": 4,
-        "largest": "NHS Grampian, HSCNI, Cwm Taf Morgannwg University Health Board"
+        "largest": "NHS Grampian, HSCNI, Cwm Taf Morgannwg University Health Board",
+        "enterprise": 1,
+        "examples": [
+          "NHS Grampian",
+          "HSCNI",
+          "Cwm Taf Morgannwg University Health Board"
+        ]
       },
       {
         "type": "Pathology networks & national bodies",
         "targets": 11,
         "customers": 0,
-        "largest": "NHS Education for Scotland, NHS England, NHS Blood and Transplant - Colindale, NHS Supply Chain"
+        "largest": "NHS Education for Scotland, NHS England, NHS Blood and Transplant - Colindale, NHS Supply Chain",
+        "enterprise": 7,
+        "examples": [
+          "NHS Education for Scotland",
+          "NHS England",
+          "NHS Blood and Transplant - Colindale",
+          "NHS Supply Chain"
+        ]
       },
       {
         "type": "Independent labs & diagnostics",
         "targets": 7,
         "customers": 0,
-        "largest": "InHealth Group, The Doctors Laboratory, Randox Laboratories Ltd., SYNLAB UK & Ireland"
+        "largest": "InHealth Group, The Doctors Laboratory, Randox Laboratories Ltd., SYNLAB UK & Ireland",
+        "enterprise": 4,
+        "examples": [
+          "InHealth Group",
+          "The Doctors Laboratory",
+          "Randox Laboratories Ltd.",
+          "SYNLAB UK & Ireland"
+        ]
       },
       {
         "type": "Pharmacy groups & distribution",
         "targets": 11,
         "customers": 0,
-        "largest": "Day Lewis Pharmacy, LloydsPharmacy, Knights Pharmacy, Pharmacy2U"
+        "largest": "Day Lewis Pharmacy, LloydsPharmacy, Knights Pharmacy, Pharmacy2U",
+        "enterprise": 2,
+        "examples": [
+          "Day Lewis Pharmacy",
+          "LloydsPharmacy",
+          "Knights Pharmacy",
+          "Pharmacy2U"
+        ]
       },
       {
         "type": "Private hospitals",
         "targets": 10,
         "customers": 3,
-        "largest": "Ramsey Health Care, Practice Plus Group, The London Clinic, Bupa Cromwell Hospital"
+        "largest": "Ramsey Health Care, Practice Plus Group, The London Clinic, Bupa Cromwell Hospital",
+        "enterprise": 3,
+        "examples": [
+          "Ramsey Health Care",
+          "Practice Plus Group",
+          "The London Clinic",
+          "Bupa Cromwell Hospital"
+        ]
       },
       {
         "type": "NHS acute trusts",
         "targets": 109,
         "customers": 49,
-        "largest": "University Hospital of Wales, Blackpool Teaching Hospitals NHS Foundation Trust, Royal Free London NHS Foundation Trust, Newcastle Hospitals NHS Trust"
+        "largest": "University Hospital of Wales, Blackpool Teaching Hospitals NHS Foundation Trust, Royal Free London NHS Foundation Trust, Newcastle Hospitals NHS Trust",
+        "enterprise": 82,
+        "examples": [
+          "University Hospital of Wales",
+          "Blackpool Teaching Hospitals NHS Foundation Trust",
+          "Royal Free London NHS Foundation Trust",
+          "Newcastle Hospitals NHS Trust"
+        ]
       },
       {
         "type": "NHS hospital sites",
         "targets": 32,
         "customers": 6,
-        "largest": "Prince Charles Hospital, Royal Infirmary Edinburgh, Belfast City Hospital, Yale Hospital"
+        "largest": "Prince Charles Hospital, Royal Infirmary Edinburgh, Belfast City Hospital, Yale Hospital",
+        "enterprise": 20,
+        "examples": [
+          "Prince Charles Hospital",
+          "Royal Infirmary Edinburgh",
+          "Belfast City Hospital",
+          "Yale Hospital"
+        ]
       },
       {
         "type": "Life sciences (pharma, biotech, devices)",
         "targets": 42,
         "customers": 1,
-        "largest": "Sanofi, Hikma Pharmaceuticals, ALMAC, BTL Industries"
+        "largest": "Sanofi, Hikma Pharmaceuticals, ALMAC, BTL Industries",
+        "enterprise": 15,
+        "examples": [
+          "Sanofi",
+          "Hikma Pharmaceuticals",
+          "ALMAC",
+          "BTL Industries"
+        ]
       }
     ],
     "excludedBy": {

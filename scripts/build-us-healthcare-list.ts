@@ -20,7 +20,7 @@ const TARGET = 250;
 const LABEL = `US Healthcare targets · ${new Date().toISOString().slice(0, 7)}`;
 const APOLLO = 'https://api.apollo.io/api/v1';
 const HEADERS = { 'x-api-key': process.env.APOLLO_API_KEY || '', 'Content-Type': 'application/json' };
-const RULES = JSON.parse(fs.readFileSync(path.join(__dirname, 'target-list-rules.json'), 'utf8')) as {
+const RULES = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'lib', 'gtm-target-rules.json'), 'utf8')) as {
   minEmployees: number;
   dropUnknownSize: boolean;
   expansionLists: Record<'US' | 'UK', string>;

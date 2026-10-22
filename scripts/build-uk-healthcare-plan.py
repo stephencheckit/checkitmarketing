@@ -30,12 +30,12 @@ EXPANSION_LIST = f'Expansion · Customers · UK · {STAMP}'
 KIND_RULES = [
     ('Exclude: duplicate record', r'do not use|duplicate'),
     ('Exclude: not a healthcare operator', r'microsoft|shred-?it|care quality commission|nmc-uk|^website$|siemens healthcare'),
-    ('Exclude: care homes (UK food service)', r'care uk|barchester|hc-one|avery healthcare|voyage|priory|elysium|craegmoor|partnerships in care|methodist homes|\\bmha\\b|care homes|lifeways|caremark|helping hands|county healthcare|achieve together|creative support|cygnet|home care'),
+    ('Exclude: care homes (UK food service)', r'care uk|barchester|hc-one|avery healthcare|voyage|priory|elysium|craegmoor|partnerships in care|methodist homes|\bmha\b|care homes|lifeways|caremark|helping hands|county healthcare|achieve together|creative support|cygnet|home care'),
     ('Exclude: ambulance', r'ambulance'),
     ('Exclude: mental health & community', r'mental|community health|community healthcare|partnership nhs|care partnership|psychiatr|learning disab|community hospital'),
     ('Health boards (Scotland, Wales, NI)', r'health board|health and social care|hscni|nhs (lothian|greater glasgow|grampian|tayside|fife|highland|lanarkshire|ayrshire|borders|dumfries|forth valley|orkney|shetland|western isles)|velindre|public health wales'),
-    ('Pathology networks & national bodies', r'pathology|synnovis|blood and transplant|nhsbt|ukhsa|health security|supply chain|specialist pharmacy|nhs england|education for scotland|health education|integrated care board|\\bicb\\b|genomics service'),
-    ('Independent labs & diagnostics', r'laborator|\\blabs?\\b|diagnostic|synlab|randox|lumiradx|inhealth'),
+    ('Pathology networks & national bodies', r'pathology|synnovis|blood and transplant|nhsbt|ukhsa|health security|supply chain|specialist pharmacy|nhs england|education for scotland|health education|integrated care board|\bicb\b|genomics service'),
+    ('Independent labs & diagnostics', r'laborator|\blabs?\b|diagnostic|synlab|randox|lumiradx|inhealth'),
     ('Pharmacy groups & distribution', r'pharmacy|pharmacist|alloga|medicines'),
     ('Private hospitals', r'spire|nuffield|circle health|circle bath|ramsey health|\bbmi\b|\bhca\b|ramsay|bupa|british united provident|london clinic|cromwell|king edward|practice plus|benenden|aspen|one healthcare|horder|private hospital|parkside hospital|highgate|the holly'),
     ('NHS acute trusts', r'^(uhbw|uhsm|sath|chsft|lhch)$|nhs|foundation trust|university hospital|teaching hospital|children.?s hospital|hospitals? trust'),
@@ -142,7 +142,18 @@ def main():
         'targets': len(tgt),
         'customers': len(cus),
         'excluded': len(exc),
-        'types': [{'type': s['Type'], 'targets': s['Targets'], 'customers': s['Customers'], 'largest': s['Largest targets']} for s in summary[:-1] if s['Targets'] or s['Customers']],
+        'types': [
+            {
+                'type': s['Type'],
+                'targets': s['Targets'],
+                'customers': s['Customers'],
+                'largest': s['Largest targets'],
+                'enterprise': sum(1 for x in tgt if x['Type'] == s['Type'] and (x['Employees'] or 0) >= 1000),
+                'examples': [x['Account'] for x in sorted((x for x in tgt if x['Type'] == s['Type']), key=lambda x: -(x['Employees'] or 0))[:4]],
+            }
+            for s in summary[:-1]
+            if s['Targets'] or s['Customers']
+        ],
         'excludedBy': dict(C.Counter(x['Type'] if x['Type'].startswith('Exclude') else x['Status'] for x in exc).most_common()),
         'regions': [{'region': r, 'targets': n} for r, n in C.Counter(x['Region'] for x in tgt if x['Region']).most_common(5)],
     }

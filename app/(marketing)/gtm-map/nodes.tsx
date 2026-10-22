@@ -15,6 +15,7 @@ import {
 import { FY26, type Pillar } from './gtm-data';
 import { useMoneyM } from './currency';
 import { useSegmentLists } from './apollo-context';
+import { useMarketPlan } from './plan-context';
 import {
   BUCKET_COLOR,
   BUCKET_LABEL,
@@ -258,6 +259,7 @@ export function SegmentNode({ id, data }: NodeProps) {
     accounts: string[];
   };
   const { status, lists, market } = useSegmentLists(id);
+  const plan = useMarketPlan(id);
   const mix = bucketMarketStages(market);
   // Distinct accounts, not the sum of the list counts below — a market's lists
   // overlap, so the per-list figures add up to more than the market holds.
@@ -287,6 +289,25 @@ export function SegmentNode({ id, data }: NodeProps) {
           <span className="text-[9px] italic text-muted">Beachhead TBD</span>
         )}
       </div>
+
+      {plan && (plan.focusPct !== null || plan.outreach.length > 0) ? (
+        <div className="mt-2 border-t border-border pt-2">
+          <div className="flex items-baseline justify-between gap-1">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-accent">Plan</span>
+            {plan.focusPct !== null ? (
+              <span className="text-[10px] tabular-nums text-foreground">
+                {plan.focusPct}% focus{plan.plannedArr ? ` · £${Math.round(plan.plannedArr / 1000).toLocaleString()}k` : ''}
+              </span>
+            ) : null}
+          </div>
+          {plan.outreach.map((o) => (
+            <div key={o.list} className="mt-1 text-[9px] leading-snug text-foreground/80">
+              {o.owner || 'No SDR'} · {o.perWeek}/wk → {o.closer || <span className="text-rose-300">no closer</span>}
+              <span className={`ml-1 ${o.behind ? 'text-amber-300' : 'text-muted'}`}>· {o.accounts} acct · {o.status}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {status !== 'off' ? (
         <div className="mt-2 border-t border-border pt-2">

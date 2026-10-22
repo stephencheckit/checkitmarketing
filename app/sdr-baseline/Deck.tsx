@@ -1399,7 +1399,8 @@ const slides: Slide[] = [
         </div>
         <p className="text-xs text-muted">
           Pace per list is a proposal to agree. Customers sit in the regional expansion lists (owned by Jen, Meg and
-          April), not in SDR outreach. List detail and live counts by market: GTM map in the tracker.
+          April), not in SDR outreach. Live version, updated nightly from Apollo and as the plan changes:{' '}
+          <a href="https://checkitv6.com/gtm-outreach" className="text-blue-300 underline">checkitv6.com/gtm-outreach</a>.
         </p>
         <SectionCard title="Gaps and resource constraints" icon={AlertTriangle}>
           <ul className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm text-foreground/90 md:grid-cols-2">

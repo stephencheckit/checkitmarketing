@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/prospecting-snapshot",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/gtm-target-sync",
+      "schedule": "0 5 * * *"
     }
   ]
 }

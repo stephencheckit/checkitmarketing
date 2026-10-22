@@ -237,6 +237,90 @@ export async function getAccountDetailsForLabel(
 }
 
 // ---------------------------------------------------------------------------
+// Target-list accounts with location and list membership, for the nightly
+// GTM target sync. Kept separate from getAccountDetailsForLabel so the
+// prospecting snapshot's shape stays untouched.
+
+export interface ApolloTargetAccount {
+  id: string;
+  name: string;
+  domain: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  ownerId: string | null;
+  accountStageId: string | null;
+  numContacts: number;
+  lastActivityDate: string | null;
+  labelIds: string[];
+}
+
+export async function getTargetListAccounts(labelId: string, maxPages = 20): Promise<ApolloTargetAccount[]> {
+  const out: ApolloTargetAccount[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await apolloFetch('/accounts/search', {
+      method: 'POST',
+      body: { account_label_ids: [labelId], page, per_page: 100 },
+    });
+    if (!res.ok) throw new Error(`Apollo accounts/search failed for ${labelId}: ${res.error}`);
+    const d = res.data as { accounts?: Record<string, unknown>[]; pagination?: { total_pages?: number } };
+    for (const a of d.accounts || []) {
+      out.push({
+        id: String(a.id),
+        name: String(a.name || ''),
+        domain: a.domain ? String(a.domain).toLowerCase() : a.primary_domain ? String(a.primary_domain).toLowerCase() : null,
+        country: a.country ? String(a.country) : a.organization_country ? String(a.organization_country) : null,
+        state: a.state ? String(a.state) : a.organization_state ? String(a.organization_state) : null,
+        city: a.city ? String(a.city) : a.organization_city ? String(a.organization_city) : null,
+        ownerId: a.owner_id ? String(a.owner_id) : null,
+        accountStageId: a.account_stage_id ? String(a.account_stage_id) : null,
+        numContacts: Number(a.num_contacts) || 0,
+        lastActivityDate: a.last_activity_date ? String(a.last_activity_date) : null,
+        labelIds: Array.isArray(a.label_ids) ? a.label_ids.map(String) : [],
+      });
+    }
+    if (!d.pagination?.total_pages || page >= d.pagination.total_pages) break;
+  }
+  return out;
+}
+
+/**
+ * Headcount and industry by domain. Apollo's account records carry neither,
+ * so they come from the company search: the combined search first (25 domains
+ * a call), then organisation search for anything it missed.
+ */
+export async function lookupOrgSizes(domains: string[]) {
+  const found = new Map<string, { employees: number | null; industry: string | null }>();
+  const take = (o: Record<string, unknown>) => {
+    const dom = String(o.primary_domain || o.domain || '').toLowerCase();
+    if (!dom) return;
+    const employees = o.estimated_num_employees ? Number(o.estimated_num_employees) : null;
+    const industry = o.industry ? String(o.industry) : null;
+    const prev = found.get(dom);
+    if (!prev || (prev.employees === null && employees !== null)) found.set(dom, { employees, industry: industry ?? prev?.industry ?? null });
+  };
+  for (let i = 0; i < domains.length; i += 25) {
+    const res = await apolloFetch('/mixed_companies/search', {
+      method: 'POST',
+      body: { q_organization_domains_list: domains.slice(i, i + 25), page: 1, per_page: 100 },
+    });
+    if (!res.ok) continue;
+    const d = res.data as { organizations?: Record<string, unknown>[]; accounts?: Record<string, unknown>[] };
+    [...(d.organizations || []), ...(d.accounts || [])].forEach(take);
+  }
+  const missing = domains.filter((dm) => !found.get(dm)?.employees);
+  for (let i = 0; i < missing.length; i += 10) {
+    const res = await apolloFetch('/organizations/search', {
+      method: 'POST',
+      body: { q_organization_domains_list: missing.slice(i, i + 10), page: 1, per_page: 100 },
+    });
+    if (!res.ok) continue;
+    ((res.data as { organizations?: Record<string, unknown>[] }).organizations || []).forEach(take);
+  }
+  return found;
+}
+
+// ---------------------------------------------------------------------------
 // Contacts in a list of accounts — used to see which personas (job titles)
 // were actually worked, not just which companies.
 

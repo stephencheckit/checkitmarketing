@@ -5,7 +5,7 @@ import os
 import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RULES = json.load(open(os.path.join(HERE, 'target-list-rules.json')))
+RULES = json.load(open(os.path.join(HERE, '..', 'lib', 'gtm-target-rules.json')))
 GROUPS = [(g, re.compile(rx, re.I)) for g, rx in RULES['customerGroups'].items()]
 
 

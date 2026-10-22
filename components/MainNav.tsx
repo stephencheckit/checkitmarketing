@@ -35,6 +35,7 @@ import {
   MousePointerClick,
   Mail,
   Network,
+  CalendarRange,
 } from 'lucide-react';
 
 // Reddit icon component
@@ -103,6 +104,7 @@ export default function MainNav({ userName, userRole }: MainNavProps) {
     { href: '/positioning', label: 'Positioning', icon: Target },
     { href: '/gtm-planning', label: 'GTM Planning', icon: Briefcase },
     { href: '/gtm-map', label: 'GTM Map', icon: Network },
+    { href: '/gtm-outreach', label: 'GTM Outreach', icon: CalendarRange },
     { href: '/content', label: 'Content Lab', icon: FileText },
     { href: '/channels', label: 'Budget', icon: DollarSign },
     { href: '/ppc-performance', label: 'PPC Leads', icon: MousePointerClick },

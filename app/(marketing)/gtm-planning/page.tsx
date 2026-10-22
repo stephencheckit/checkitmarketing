@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Target,
   Users,
@@ -18,6 +18,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { GTM_MARKETS } from '@/lib/gtm-markets';
+import type { OutreachSettings } from '@/lib/gtm-plan';
+import OutreachPanel from './OutreachPanel';
 import {
   bucketMarketStages,
   marketsById,
@@ -766,34 +768,96 @@ export default function GtmPlanningPage() {
     return out;
   }, [apollo.markets]);
 
+  // The plan is shared: loaded from the database, saved there by admins only.
+  // localStorage is kept as a fallback for when the database can't be reached.
+  const [shared, setShared] = useState<{
+    canEdit: boolean;
+    updatedBy: string | null;
+    updatedAt: string | null;
+    outreach: Record<string, OutreachSettings>;
+  } | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const lastSaved = useRef<string>('');
+
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<PlanState>;
-        if (parsed?.reps?.length === 4 && Array.isArray(parsed.markets)) {
-          setState({
-            ...DEFAULT_STATE,
-            ...parsed,
-            reps: parsed.reps,
-            markets: parsed.markets,
-            marketPipeline: {
-              ...DEFAULT_STATE.marketPipeline,
-              ...parsed.marketPipeline,
-            },
-          });
-        }
+    const restore = (parsed: Partial<PlanState> | null) => {
+      if (parsed?.reps?.length === 4 && Array.isArray(parsed.markets)) {
+        setState({
+          ...DEFAULT_STATE,
+          ...parsed,
+          reps: parsed.reps,
+          markets: parsed.markets,
+          marketPipeline: { ...DEFAULT_STATE.marketPipeline, ...parsed.marketPipeline },
+        });
+        return true;
       }
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
+      return false;
+    };
+    fetch('/api/gtm-planning/plan')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+      })
+      .then((body) => {
+        setShared({ canEdit: body.canEdit, updatedBy: body.updatedBy, updatedAt: body.updatedAt, outreach: body.outreach });
+        if (restore(body.planner as Partial<PlanState> | null)) {
+          lastSaved.current = JSON.stringify(body.planner);
+          return;
+        }
+        // Nothing shared yet: start from the plan this browser already holds, so
+        // the first admin save carries existing work over rather than defaults.
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) restore(JSON.parse(raw) as Partial<PlanState>);
+        } catch {
+          /* ignore */
+        }
+      })
+      .catch(() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) restore(JSON.parse(raw) as Partial<PlanState>);
+        } catch {
+          /* ignore */
+        }
+      })
+      .finally(() => setHydrated(true));
   }, []);
+
+  const savePlan = async (patch: { planner?: PlanState; outreach?: Record<string, OutreachSettings> }) => {
+    setSaveState('saving');
+    try {
+      const res = await fetch('/api/gtm-planning/plan', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const body = await res.json();
+      setShared((prev) => (prev ? { ...prev, updatedBy: body.updatedBy, updatedAt: body.updatedAt, outreach: body.outreach } : prev));
+      setSaveState('saved');
+    } catch {
+      setSaveState('error');
+    }
+  };
 
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, hydrated]);
+    if (!shared?.canEdit) return;
+    const json = JSON.stringify(state);
+    if (json === lastSaved.current) return;
+    const t = setTimeout(() => {
+      lastSaved.current = json;
+      void savePlan({ planner: state });
+    }, 1200);
+    return () => clearTimeout(t);
+  }, [state, hydrated, shared?.canEdit]);
+
+  const setOutreach = (next: Record<string, OutreachSettings>) => {
+    setShared((prev) => (prev ? { ...prev, outreach: next } : prev));
+    if (shared?.canEdit) void savePlan({ outreach: next });
+  };
 
   const activeReps = state.reps.filter((r) => state.includeOpenHire || !r.isOpen);
   const newPlusExpansion = state.netNew + state.expansion;
@@ -1044,6 +1108,21 @@ export default function GtmPlanningPage() {
               FY28 ARR scenario — medical vs commercial first, then industry focus, with
               beachhead markets you can add or remove.
             </p>
+            {shared ? (
+              <p className={`mt-2 text-xs ${shared.canEdit ? 'text-muted' : 'text-amber-300'}`}>
+                {shared.canEdit
+                  ? `Shared plan · ${
+                      saveState === 'saving'
+                        ? 'saving…'
+                        : saveState === 'error'
+                          ? 'save failed; edit again to retry'
+                          : shared.updatedAt
+                            ? `saved by ${shared.updatedBy ?? 'admin'}, ${new Date(shared.updatedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`
+                            : 'not saved yet'
+                    }`
+                  : `Viewing the shared plan${shared.updatedBy ? ` (last saved by ${shared.updatedBy})` : ''} · your changes aren’t saved`}
+              </p>
+            ) : null}
           </div>
           <button
             type="button"
@@ -1655,6 +1734,8 @@ export default function GtmPlanningPage() {
             </table>
           </div>
         </section>
+
+        <OutreachPanel outreach={shared?.outreach ?? null} canEdit={Boolean(shared?.canEdit)} onChange={setOutreach} />
 
         <section className="bg-accent/5 border border-accent/20 rounded-xl p-5">
           <h2 className="font-semibold text-foreground mb-3">Model assumptions</h2>

@@ -364,6 +364,7 @@ const TOC: Record<string, { group: string; label: string }> = {
   'healthcare-plan': { group: 'Targets & next steps', label: 'Healthcare coverage' },
   nhs: { group: 'Targets & next steps', label: 'NHS target map' },
   'food-service': { group: 'Targets & next steps', label: 'Food service map' },
+  outreach: { group: 'Targets & next steps', label: '12-month outreach' },
   asks: { group: 'Targets & next steps', label: 'Decisions needed' },
   appendix: { group: 'Targets & next steps', label: 'Method' },
 };
@@ -408,6 +409,22 @@ const plan = (() => {
   });
 })();
 const planWeeks = Math.ceil(hc.accounts / ACCOUNTS_PER_WEEK);
+
+// 12-month outreach plan. Weekly pace per list is proposed, to agree with
+// Steve: Bryan's 10 is the stated assumption; Jordan's lower pace reflects his
+// account-management time; Tom's 10 is split across his two UK lists.
+const PLAN_WEEKS = 52;
+const outreach = [
+  { list: 'US Healthcare targets', region: 'US', owner: 'Bryan', closer: 'Jen (account-led)', perWeek: 10, accounts: snapshot.healthcare.accounts },
+  { list: 'Food service · US', region: 'US', owner: 'Jordan (hybrid)', closer: 'None since Albert left', perWeek: 5, accounts: snapshot.foodService?.regions.find((r) => r.region === 'US')?.targets ?? 0 },
+  { list: 'NHS & UK Healthcare targets', region: 'UK', owner: 'Tom', closer: 'Meg', perWeek: 6, accounts: snapshot.ukHealthcare?.targets ?? 0 },
+  { list: 'Food service · UK', region: 'UK', owner: 'Tom', closer: 'April', perWeek: 4, accounts: snapshot.foodService?.regions.find((r) => r.region === 'UK')?.targets ?? 0 },
+].map((o) => {
+  const weeksToCover = Math.ceil(o.accounts / o.perWeek);
+  return { ...o, weeksToCover, coveredIn12m: Math.min(o.accounts, o.perWeek * PLAN_WEEKS) };
+});
+const outreachTotal = outreach.reduce((a, o) => a + o.accounts, 0);
+const outreachCovered = outreach.reduce((a, o) => a + o.coveredIn12m, 0);
 
 const slides: Slide[] = [
   {
@@ -1336,6 +1353,65 @@ const slides: Slide[] = [
       </div>
     ) : (
       <p className="text-sm text-muted">Food service data not built.</p>
+    ),
+  },
+  {
+    id: 'outreach',
+    eyebrow: 'Outreach plan · Next 12 months',
+    title: `${fmt(outreachTotal)} Target Accounts, ${fmt(outreachCovered)} Reachable in 12 Months`,
+    body: (
+      <div className="space-y-4">
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full">
+            <thead className="bg-surface/80">
+              <tr>
+                {['List (Apollo)', 'Accounts', 'SDR · pace', 'Closer', '12-month coverage', 'Covered by'].map((h) => (
+                  <th key={h} className="px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {outreach.map((o) => (
+                <tr key={o.list}>
+                  <td className="px-3 py-2 text-sm font-medium text-foreground">
+                    <span className="mr-2 rounded border border-border px-1.5 py-0.5 text-[10px] text-muted">{o.region}</span>
+                    {o.list}
+                  </td>
+                  <td className="px-3 py-2 text-sm text-foreground/90">{fmt(o.accounts)}</td>
+                  <td className="px-3 py-2 text-sm text-foreground/90">{o.owner} · {o.perWeek}/wk</td>
+                  <td className={`px-3 py-2 text-sm ${o.closer.startsWith('None') ? 'text-red-300' : 'text-foreground/90'}`}>{o.closer}</td>
+                  <td className="w-[28%] px-3 py-2">
+                    <div className="relative h-3 rounded bg-border/40">
+                      <div
+                        className={`absolute h-3 rounded ${o.weeksToCover > PLAN_WEEKS ? 'bg-yellow-500/70' : 'bg-blue-500/70'}`}
+                        style={{ width: `${(Math.min(o.weeksToCover, PLAN_WEEKS) / PLAN_WEEKS) * 100}%` }}
+                      />
+                    </div>
+                    <div className="mt-0.5 text-[11px] text-muted">{pct(o.coveredIn12m, o.accounts)} of list</div>
+                  </td>
+                  <td className="px-3 py-2 text-sm text-foreground/90">
+                    {o.weeksToCover > PLAN_WEEKS ? <span className="text-yellow-300">{Math.round(o.weeksToCover / 4.33)} months</span> : `w/c ${weekDate(o.weeksToCover - 1)}`}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted">
+          Pace per list is a proposal to agree. Customers sit in the regional expansion lists (owned by Jen, Meg and
+          April), not in SDR outreach. List detail and live counts by market: GTM map in the tracker.
+        </p>
+        <SectionCard title="Gaps and resource constraints" icon={AlertTriangle}>
+          <ul className="grid grid-cols-1 gap-x-6 gap-y-1.5 text-sm text-foreground/90 md:grid-cols-2">
+            <li><strong>No US food-service closer.</strong> Jordan’s meetings have nowhere to go since Albert left; this is the hunter hire.</li>
+            <li><strong>US food service is too big for a hybrid seat:</strong> {pct(outreach[1].coveredIn12m, outreach[1].accounts)} covered in 12 months at {outreach[1].perWeek} a week.</li>
+            <li><strong>Bryan’s list runs out</strong> by w/c {weekDate(outreach[0].weeksToCover - 1)}: a refill is needed by Q2.</li>
+            <li><strong>US healthcare closing is account-led.</strong> Jen’s strength is renewals; new logos need acquisition capacity.</li>
+            <li><strong>Tom is split two ways</strong> across NHS and UK food service, pairing with both Meg and April.</li>
+            <li><strong>Systems:</strong> the Salesforce–HubSpot sync is broken and Apollo isn’t linked, so the plan can’t yet be measured end to end.</li>
+          </ul>
+        </SectionCard>
+      </div>
     ),
   },
   {

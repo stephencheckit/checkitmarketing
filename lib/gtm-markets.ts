@@ -64,6 +64,8 @@ export const GTM_MARKETS: GtmMarket[] = [
       { id: '692036668212e30021509339', name: "children's hospitals uk" },
       { id: '6894c87336eecf000d2976ab', name: 'First 2 pages of healthcare - none customers' },
       { id: '6aac21f9c26b4800181c20c0', name: 'Lookalike · Healthcare / NHS hospitals · 2026-09' },
+      // Consolidated target list for Meg and Tom: UK only, 200+ staff, customers excluded.
+      { id: '6ada12d70709160020f98f7a', name: 'NHS & UK Healthcare targets · 2026-10' },
     ],
   },
   {
@@ -120,8 +122,8 @@ export const GTM_MARKETS: GtmMarket[] = [
   },
   {
     id: 'uk-foodservice',
-    label: 'Food service & FM',
-    detail: 'Coffee shops, food-to-go, facilities mgmt',
+    label: 'Food service',
+    detail: 'Contract catering, facilities services, venues, care',
     region: 'uk',
     pillar: 'commercial',
     category: 'commercial',
@@ -169,8 +171,8 @@ export const GTM_MARKETS: GtmMarket[] = [
   },
   {
     id: 'us-facilities',
-    label: 'Contract catering & FM',
-    detail: 'Outsourced food service at scale',
+    label: 'Food service',
+    detail: 'Contract catering, facilities services, senior living',
     region: 'us',
     pillar: 'commercial',
     category: 'commercial',
@@ -205,6 +207,11 @@ export const EXCLUDED_APOLLO_LISTS: Record<string, string> = {
   // UK water utilities was dropped as a market. Kept here rather than deleted
   // in Apollo so the work survives if it is ever picked back up.
   '6927063e1e2d2f0015cc748a': 'water companies UK — UK water dropped as a market',
+  // Customers held apart from prospecting so expansion is counted separately
+  // from new-logo pipeline. Regions never mixed.
+  '6ada12c09bcdcf000c0c3fe6': 'Expansion · Customers · US — existing customers, not a target list',
+  '6ada12bfbf6e80001013dbb0': 'Expansion · Customers · UK — existing customers, not a target list',
+  '6ad8cf4b8cc556000c43b7ce': 'Expansion · Customer groups — superseded by the regional expansion lists (empty)',
   '6aac236d5a2fa300107fdf5d': 'Lookalike · Water utilities — UK water dropped as a market',
 };
 

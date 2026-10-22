@@ -18,7 +18,21 @@ import {
   Trash2,
   CalendarRange,
 } from 'lucide-react';
-import { GTM_MARKETS } from '@/lib/gtm-markets';
+import {
+  DEFAULT_STATE,
+  buildReps,
+  computePlan,
+  distributePipeline,
+  equalFocus,
+  installedUkShare,
+  normalizePlan,
+  type Beachhead,
+  type Category,
+  type Market,
+  type PlanState,
+  type Region,
+  type ScenarioId,
+} from '@/lib/gtm-plan-math';
 import type { OutreachSettings } from '@/lib/gtm-plan';
 import OutreachPanel from './OutreachPanel';
 import {
@@ -33,57 +47,6 @@ import {
 // would reinstate a market that has since been dropped — v7 drops UK water —
 // along with the focus percentage it was holding.
 const STORAGE_KEY = 'checkit-gtm-planning-v7';
-
-type ScenarioId = 'base' | 'upside' | 'conservative' | 'custom';
-type Category = 'medical' | 'commercial';
-type Region = 'uk' | 'us';
-
-type Rep = {
-  id: string;
-  name: string;
-  quota: number;
-  isOpen: boolean;
-};
-
-type Beachhead = { name: string; logo?: string };
-
-type Market = {
-  id: string;
-  label: string;
-  detail?: string;
-  category: Category;
-  region: Region;
-  beachheads: Beachhead[];
-  focusPct: number; // within category; category markets sum to 100
-};
-
-type PlanState = {
-  scenario: ScenarioId;
-  includeOpenHire: boolean;
-  netNew: number;
-  expansion: number;
-  renewal: number;
-  medicalPct: number;
-  closeRatePct: number;
-  avgDealSize: number;
-  currentPipeline: number;
-  marketPipeline: Record<string, number>;
-  markets: Market[];
-  sdrCount: number;
-  meetingsPerSdrPerMonth: number;
-  meetingToOppPct: number;
-  reps: Rep[];
-  /**
-   * UK share (%) of each ARR type. null follows the data: net new from the
-   * region tags on focused markets, expansion and renewal from where today's
-   * customer ARR sits.
-   */
-  regionSplit: { netNew: number | null; expansion: number | null; renewal: number | null };
-  /** Target accounts prospected in a year; null follows the outreach plan's 12-month reach. */
-  accountsWorked: number | null;
-  /** Share of prospected accounts that take a first meeting. */
-  accountToMeetingPct: number;
-};
 
 interface MarketArr {
   marketId: string;
@@ -140,21 +103,6 @@ function useMarketArr(): ArrSnapshot {
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
-}
-
-function equalFocus(markets: Market[], category: Category): Market[] {
-  const inCat = markets.filter((m) => m.category === category);
-  if (inCat.length === 0) return markets;
-  const each = Math.floor(100 / inCat.length);
-  let used = 0;
-  const focusById: Record<string, number> = {};
-  inCat.forEach((m, i) => {
-    focusById[m.id] = i === inCat.length - 1 ? 100 - used : each;
-    if (i < inCat.length - 1) used += each;
-  });
-  return markets.map((m) =>
-    m.category === category ? { ...m, focusPct: focusById[m.id] ?? 0 } : m
-  );
 }
 
 /**
@@ -214,91 +162,6 @@ function setFocusPct(markets: Market[], id: string, nextVal: number): Market[] {
     nextFocus[m.id] !== undefined ? { ...m, focusPct: nextFocus[m.id] } : m
   );
 }
-
-function distributePipeline(
-  total: number,
-  markets: Market[],
-  weights: Record<string, number>
-): Record<string, number> {
-  const ids = markets.map((m) => m.id);
-  if (ids.length === 0) return {};
-  const weightSum = ids.reduce((s, id) => s + (weights[id] || 0), 0) || ids.length;
-  const out: Record<string, number> = {};
-  let allocated = 0;
-  ids.forEach((id, i) => {
-    if (i === ids.length - 1) {
-      out[id] = Math.max(0, total - allocated);
-    } else {
-      const v = Math.round(total * ((weights[id] || 0) / weightSum));
-      out[id] = v;
-      allocated += v;
-    }
-  });
-  return out;
-}
-
-function buildReps(includeOpen: boolean, targetNewExp: number): Rep[] {
-  const base: Rep[] = [
-    { id: 'jen', name: 'Jen', quota: 0, isOpen: false },
-    { id: 'ae-2', name: 'AE 2', quota: 0, isOpen: false },
-    { id: 'ae-3', name: 'AE 3', quota: 0, isOpen: false },
-    { id: 'open', name: 'Open hire', quota: 0, isOpen: true },
-  ];
-  const active = includeOpen ? base : base.filter((r) => !r.isOpen);
-  const each = Math.round(targetNewExp / active.length);
-  return base.map((r) => {
-    if (!includeOpen && r.isOpen) return { ...r, quota: 0 };
-    const idx = active.findIndex((a) => a.id === r.id);
-    if (idx < 0) return { ...r, quota: 0 };
-    const quota =
-      idx === active.length - 1 ? targetNewExp - each * (active.length - 1) : each;
-    return { ...r, quota };
-  });
-}
-
-// Markets are defined once in lib/gtm-markets.ts and shared with the GTM map,
-// so the two pages cannot drift apart again. `pillar` and `apolloLists` are
-// dropped here — the planner only needs the revenue category.
-function seedMarkets(): Market[] {
-  const withZero: Market[] = GTM_MARKETS.map((m) => ({
-    id: m.id,
-    label: m.label,
-    detail: m.detail,
-    category: m.category,
-    region: m.region,
-    beachheads: m.beachheads,
-    focusPct: 0,
-  }));
-  return equalFocus(equalFocus(withZero, 'medical'), 'commercial');
-}
-
-const DEFAULT_PIPELINE = 1_900_000;
-const DEFAULT_MARKETS = seedMarkets();
-
-const DEFAULT_STATE: PlanState = {
-  scenario: 'base',
-  includeOpenHire: true,
-  netNew: 1_800_000,
-  expansion: 600_000,
-  renewal: 0,
-  medicalPct: 50,
-  closeRatePct: 20,
-  avgDealSize: 50_000,
-  currentPipeline: DEFAULT_PIPELINE,
-  marketPipeline: distributePipeline(
-    DEFAULT_PIPELINE,
-    DEFAULT_MARKETS,
-    Object.fromEntries(DEFAULT_MARKETS.map((m) => [m.id, 1]))
-  ),
-  markets: DEFAULT_MARKETS,
-  sdrCount: 2,
-  meetingsPerSdrPerMonth: 11,
-  meetingToOppPct: 50,
-  reps: buildReps(true, 2_400_000),
-  regionSplit: { netNew: null, expansion: null, renewal: null },
-  accountsWorked: null,
-  accountToMeetingPct: 25,
-};
 
 const SCENARIOS: {
   id: Exclude<ScenarioId, 'custom'>;
@@ -426,9 +289,9 @@ function StackBar({
   return (
     <div className="space-y-2">
       <div className="h-3 rounded-full overflow-hidden flex bg-surface-elevated">
-        {segments.map((seg) => (
+        {segments.map((seg, i) => (
           <div
-            key={seg.label}
+            key={`${seg.label}-${i}`}
             className={`h-full ${seg.className}`}
             style={{ width: `${(seg.value / total) * 100}%` }}
             title={`${seg.label}: ${formatGBP(seg.value)}`}
@@ -436,8 +299,8 @@ function StackBar({
         ))}
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-        {segments.map((seg) => (
-          <span key={seg.label} className="flex items-center gap-1.5">
+        {segments.map((seg, i) => (
+          <span key={`${seg.label}-${i}`} className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${seg.className}`} />
             {seg.label} {formatCompact(seg.value)}
           </span>
@@ -910,18 +773,9 @@ export default function GtmPlanningPage() {
 
   useEffect(() => {
     const restore = (parsed: Partial<PlanState> | null) => {
-      if (parsed?.reps?.length === 4 && Array.isArray(parsed.markets)) {
-        setState({
-          ...DEFAULT_STATE,
-          ...parsed,
-          reps: parsed.reps,
-          markets: parsed.markets,
-          marketPipeline: { ...DEFAULT_STATE.marketPipeline, ...parsed.marketPipeline },
-          regionSplit: { ...DEFAULT_STATE.regionSplit, ...parsed.regionSplit },
-        });
-        return true;
-      }
-      return false;
+      const plan = normalizePlan(parsed);
+      if (plan) setState(plan);
+      return Boolean(plan);
     };
     fetch('/api/gtm-planning/plan')
       .then(async (res) => {
@@ -989,22 +843,40 @@ export default function GtmPlanningPage() {
     if (shared?.canEdit) void savePlan({ outreach: next });
   };
 
-  const activeReps = state.reps.filter((r) => state.includeOpenHire || !r.isOpen);
-  const newPlusExpansion = state.netNew + state.expansion;
-  const totalArr = newPlusExpansion + state.renewal;
-  const repTotal = activeReps.reduce((s, r) => s + r.quota, 0);
-  const repDelta = repTotal - newPlusExpansion;
-  const repsBalanced = Math.abs(repDelta) < 1;
-
-  const medicalPct = state.medicalPct;
-  const commercialPct = 100 - medicalPct;
-  const medicalArr = totalArr * (medicalPct / 100);
-  const commercialArr = totalArr * (commercialPct / 100);
-
-  const marketRows = state.markets.map((m) => {
-    const catArr = m.category === 'medical' ? medicalArr : commercialArr;
-    return { ...m, arr: catArr * (m.focusPct / 100) };
-  });
+  const installedUkPct = useMemo(() => installedUkShare(arrByMarket), [arrByMarket]);
+  const {
+    activeReps,
+    newPlusExpansion,
+    totalArr,
+    repDelta,
+    repsBalanced,
+    medicalPct,
+    commercialPct,
+    medicalArr,
+    commercialArr,
+    marketRows,
+    ukPct,
+    split,
+    byRegion,
+    coverageMultiple,
+    currentPipeline,
+    pipelineNeeded,
+    pipelineGap,
+    oppsNeeded,
+    accountsWorked,
+    capacityMeetings,
+    meetingsPerYear,
+    meetingsLimitedBy,
+    sdrOppsPerYear,
+    winsPerYear,
+    sdrArrCapacity,
+    sdrGap,
+    winsNeeded,
+    meetingsNeeded,
+    meetingRateNeeded,
+    accountsNeeded,
+    sdrsNeeded,
+  } = computePlan(state, { installedUkPct, outreachReach });
   const medicalMarkets = marketRows.filter((m) => m.category === 'medical');
   const commercialMarkets = marketRows.filter((m) => m.category === 'commercial');
 
@@ -1023,72 +895,6 @@ export default function GtmPlanningPage() {
     }
     return out;
   }, [state.markets, arrByMarket]);
-
-  const ukArr = marketRows
-    .filter((m) => m.region === 'uk')
-    .reduce((s, m) => s + m.arr, 0);
-  const ukPct = totalArr > 0 ? Math.round((ukArr / totalArr) * 100) : 0;
-
-  // Where today's customer ARR sits, as the default for expansion and renewal:
-  // both come from the installed base, so they follow it rather than focus.
-  const installedUkPct = useMemo(() => {
-    let uk = 0;
-    let all = 0;
-    for (const m of GTM_MARKETS) {
-      const arr = arrByMarket[m.id] || 0;
-      all += arr;
-      if (m.region === 'uk') uk += arr;
-    }
-    return all > 0 ? Math.round((uk / all) * 100) : null;
-  }, [arrByMarket]);
-
-  const split = {
-    netNew: state.regionSplit.netNew ?? ukPct,
-    expansion: state.regionSplit.expansion ?? installedUkPct ?? ukPct,
-    renewal: state.regionSplit.renewal ?? installedUkPct ?? ukPct,
-  };
-  const byRegion = (['uk', 'us'] as const).map((region) => {
-    const share = (pct: number) => (region === 'uk' ? pct : 100 - pct) / 100;
-    const netNew = state.netNew * share(split.netNew);
-    return {
-      region,
-      netNew,
-      logos: state.avgDealSize > 0 ? netNew / state.avgDealSize : 0,
-      expansion: state.expansion * share(split.expansion),
-      renewal: state.renewal * share(split.renewal),
-    };
-  });
-
-  const closeRate = Math.max(state.closeRatePct, 1) / 100;
-  const coverageMultiple = 100 / Math.max(state.closeRatePct, 1);
-  const currentPipeline = state.markets.reduce(
-    (s, m) => s + (state.marketPipeline[m.id] || 0),
-    0
-  );
-  const pipelineNeeded = state.netNew * coverageMultiple;
-  const pipelineGap = Math.max(0, pipelineNeeded - currentPipeline);
-  const oppsNeeded =
-    state.avgDealSize > 0 ? Math.ceil(state.netNew / state.avgDealSize / closeRate) : 0;
-
-  // End-to-end funnel: accounts worked -> meetings -> opps -> wins -> revenue.
-  // Meetings are the lower of demand (accounts x meeting rate) and SDR capacity.
-  const accountsWorked = state.accountsWorked ?? outreachReach ?? 0;
-  const meetingRate = state.accountToMeetingPct / 100;
-  const meetingToOpp = state.meetingToOppPct / 100;
-  const demandMeetings = accountsWorked * meetingRate;
-  const capacityMeetings = state.sdrCount * state.meetingsPerSdrPerMonth * 12;
-  const meetingsPerYear = Math.min(demandMeetings, capacityMeetings);
-  const meetingsLimitedBy = demandMeetings <= capacityMeetings ? 'accounts' : 'SDR capacity';
-  const sdrOppsPerYear = meetingsPerYear * meetingToOpp;
-  const winsPerYear = sdrOppsPerYear * closeRate;
-  const sdrArrCapacity = winsPerYear * state.avgDealSize;
-  const sdrGap = state.netNew - sdrArrCapacity;
-  // What closing the gap would take, holding the other rates fixed.
-  const winsNeeded = state.avgDealSize > 0 ? state.netNew / state.avgDealSize : 0;
-  const meetingsNeeded = winsNeeded / Math.max(closeRate, 0.01) / Math.max(meetingToOpp, 0.01);
-  const meetingRateNeeded = accountsWorked > 0 ? meetingsNeeded / accountsWorked : null;
-  const accountsNeeded = meetingsNeeded / Math.max(meetingRate, 0.01);
-  const sdrsNeeded = meetingsNeeded / Math.max(1, state.meetingsPerSdrPerMonth * 12);
 
   const markCustom = (prev: PlanState): PlanState =>
     prev.scenario === 'custom' ? prev : { ...prev, scenario: 'custom' };

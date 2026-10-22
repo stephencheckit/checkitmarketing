@@ -1,6 +1,6 @@
 import { Lock } from 'lucide-react';
 
-export default function PasswordGate({ error }: { error?: boolean }) {
+export default function PasswordGate({ title, action, error }: { title: string; action: string; error?: boolean }) {
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface/60 p-8 shadow-2xl backdrop-blur">
@@ -10,13 +10,13 @@ export default function PasswordGate({ error }: { error?: boolean }) {
           </div>
           <div>
             <div className="text-xs uppercase tracking-widest text-blue-300">Restricted</div>
-            <h1 className="text-xl font-semibold text-foreground">SDR Baseline</h1>
+            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
           </div>
         </div>
         <p className="mb-6 text-sm text-muted">
           This deck is private. Enter the access password to continue.
         </p>
-        <form method="POST" action="/api/sdr-baseline/auth" className="space-y-3">
+        <form method="POST" action={action} className="space-y-3">
           <input
             type="password"
             name="password"

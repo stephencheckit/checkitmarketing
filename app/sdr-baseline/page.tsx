@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import Deck from './Deck';
-import PasswordGate from './PasswordGate';
+import PasswordGate from '@/components/deck/PasswordGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,7 @@ export default async function Page({
   const bypass = process.env.NODE_ENV !== 'production';
 
   if (!authed && !bypass) {
-    return <PasswordGate error={params.error === '1'} />;
+    return <PasswordGate title="SDR Baseline" action="/api/sdr-baseline/auth" error={params.error === '1'} />;
   }
 
   return <Deck />;

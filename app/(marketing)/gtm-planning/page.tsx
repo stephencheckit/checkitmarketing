@@ -16,6 +16,7 @@ import {
   Zap,
   Plus,
   Trash2,
+  CalendarRange,
 } from 'lucide-react';
 import { GTM_MARKETS } from '@/lib/gtm-markets';
 import type { OutreachSettings } from '@/lib/gtm-plan';
@@ -768,27 +769,52 @@ const PLANNER_SECTIONS: { group: string; items: { id: string; label: string }[] 
   {
     group: 'Shape',
     items: [
-      { id: 'medical-commercial', label: 'Medical vs commercial' },
+      { id: 'medical-commercial', label: 'Market mix' },
       { id: 'region', label: 'By region' },
-      { id: 'industry-focus', label: 'Industry focus' },
     ],
   },
   {
     group: 'Pipeline',
     items: [
-      { id: 'pipeline-check', label: 'Pipeline check' },
+      { id: 'pipeline-check', label: 'Pipeline' },
       { id: 'funnel', label: 'Funnel' },
-      { id: 'pipeline-by-market', label: 'Pipeline by market' },
     ],
   },
   {
     group: 'Execution',
     items: [
       { id: 'outreach', label: 'Outreach plan' },
-      { id: 'assumptions', label: 'Model assumptions' },
+      { id: 'assumptions', label: 'Assumptions' },
     ],
   },
 ];
+
+function PlanSection({
+  id,
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section id={id} className="scroll-mt-24 mb-10">
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Icon className="w-5 h-5 text-accent" />
+          {title}
+        </h2>
+        {description ? <p className="text-sm text-muted mt-1">{description}</p> : null}
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
 
 function PlannerContents() {
   const [active, setActive] = useState<string | null>(null);
@@ -1285,7 +1311,8 @@ export default function GtmPlanningPage() {
           </button>
         </div>
 
-        <div id="scenario" className="scroll-mt-24 flex flex-col lg:flex-row gap-3 mb-6">
+        <PlanSection id="scenario" icon={Target} title="Scenario & targets" description="Pick a scenario, then fine-tune below. Changes flow to the GTM map and the outreach plan.">
+        <div className="flex flex-col lg:flex-row gap-3 mb-6">
           <div className="flex-1 flex flex-wrap gap-2">
             {SCENARIOS.map((s) => (
               <button
@@ -1322,7 +1349,6 @@ export default function GtmPlanningPage() {
             {state.includeOpenHire ? 'Open hire ON · 4 AEs' : 'Open hire OFF · 3 AEs'}
           </button>
         </div>
-
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
           {[
             { label: 'Total ARR', value: totalArr, accent: true },
@@ -1345,13 +1371,10 @@ export default function GtmPlanningPage() {
             </div>
           ))}
         </div>
+        </PlanSection>
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          <section id="arr-mix" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-5 lg:col-span-1">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-foreground">ARR mix</h2>
-            </div>
+        <PlanSection id="arr-mix" icon={SlidersHorizontal} title="ARR mix" description="Net new, expansion and renewal targets for the year.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-5">
             <SliderRow
               label="Net new (new logo)"
               value={state.netNew}
@@ -1389,14 +1412,12 @@ export default function GtmPlanningPage() {
                 { label: 'Renewal', value: state.renewal, className: 'bg-emerald-500' },
               ]}
             />
-          </section>
+          </div>
+        </PlanSection>
 
-          <section id="reps" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4 lg:col-span-2">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-accent" />
-                <h2 className="font-semibold text-foreground">By rep (new + expansion)</h2>
-              </div>
+        <PlanSection id="reps" icon={Users} title="Rep quotas" description="New plus expansion quota by AE seat; quotas should add up to the ARR mix.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={equalizeReps}
@@ -1487,19 +1508,11 @@ export default function GtmPlanningPage() {
                 );
               })}
             </div>
-          </section>
-        </div>
+          </div>
+        </PlanSection>
 
-        <div className="grid lg:grid-cols-3 gap-6 mb-6">
-          {/* Medical vs commercial — primary driver */}
-          <section id="medical-commercial" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Medical vs commercial</h2>
-            </div>
-            <p className="text-xs text-muted">
-              Primary split of total ARR. Industry focus below allocates within each side.
-            </p>
+        <PlanSection id="medical-commercial" icon={Building2} title="Market mix" description="Split total ARR between medical and commercial, then set focus by industry within each side.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
             <SliderRow
               label="Medical %"
               value={medicalPct}
@@ -1523,137 +1536,14 @@ export default function GtmPlanningPage() {
                 { label: 'Commercial', value: commercialArr, className: 'bg-orange-500' },
               ]}
             />
-          </section>
+          </div>
 
-          {/* Region — net new, expansion and renewal by UK / US */}
-          <section id="region" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-accent" />
-                <h2 className="font-semibold text-foreground">By region</h2>
-              </div>
-              {state.regionSplit.netNew !== null || state.regionSplit.expansion !== null || state.regionSplit.renewal !== null ? (
-                <button
-                  type="button"
-                  onClick={() => setState((p) => markCustom({ ...p, regionSplit: { netNew: null, expansion: null, renewal: null } }))}
-                  className="text-xs text-muted hover:text-foreground"
-                >
-                  Reset to data
-                </button>
-              ) : null}
-            </div>
-            <SliderRow
-              label="Net new · UK share"
-              value={split.netNew}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(v) => setRegionSplit('netNew', v)}
-              display={`UK ${split.netNew}% · US ${100 - split.netNew}%`}
-              hint={state.regionSplit.netNew === null ? 'From market focus' : `Set manually · market focus says UK ${ukPct}%`}
-            />
-            <SliderRow
-              label="Expansion · UK share"
-              value={split.expansion}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(v) => setRegionSplit('expansion', v)}
-              display={`UK ${split.expansion}% · US ${100 - split.expansion}%`}
-              hint={state.regionSplit.expansion === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
-            />
-            <SliderRow
-              label="Renewal · UK share"
-              value={split.renewal}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(v) => setRegionSplit('renewal', v)}
-              display={`UK ${split.renewal}% · US ${100 - split.renewal}%`}
-              hint={state.regionSplit.renewal === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
-            />
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-muted">
-                  <th className="py-1 font-medium">Region</th>
-                  <th className="py-1 font-medium text-right">Net new</th>
-                  <th className="py-1 font-medium text-right">New logos</th>
-                  <th className="py-1 font-medium text-right">Expansion</th>
-                  <th className="py-1 font-medium text-right">Renewal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {byRegion.map((r) => (
-                  <tr key={r.region}>
-                    <td className="py-1.5 font-medium text-foreground">{r.region === 'uk' ? 'UK / RoW' : 'US'}</td>
-                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.netNew)}</td>
-                    <td className="py-1.5 text-right tabular-nums font-semibold text-foreground">{Math.round(r.logos)}</td>
-                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.expansion)}</td>
-                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.renewal)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="text-[11px] text-muted">
-              New logos = regional net new ÷ {formatCompact(state.avgDealSize)} average deal size.
-            </p>
-          </section>
-
-          <section id="pipeline-check" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-accent" />
-              <h2 className="font-semibold text-foreground">Pipeline check</h2>
-            </div>
-            <SliderRow
-              label="Opp → close conversion"
-              value={state.closeRatePct}
-              min={5}
-              max={40}
-              step={1}
-              onChange={(v) => setState((p) => markCustom({ ...p, closeRatePct: v }))}
-              display={`${state.closeRatePct}% → ${coverageMultiple.toFixed(1)}:1`}
-              hint="Steve model: ~20–23% (5:1 coverage)"
-            />
-            <SliderRow
-              label="Avg deal size (ACV)"
-              value={state.avgDealSize}
-              min={20_000}
-              max={100_000}
-              step={5_000}
-              onChange={(v) => setState((p) => markCustom({ ...p, avgDealSize: v }))}
-              display={formatGBP(state.avgDealSize)}
-              hint="YTD ~£40–46k · target ~£50k"
-            />
-            <div className="space-y-3 text-sm pt-1 border-t border-border">
-              <div className="flex justify-between gap-2">
-                <span className="text-muted">Qualified now</span>
-                <span className="font-medium tabular-nums">{formatGBP(currentPipeline)}</span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted">Pipeline needed</span>
-                <span className="font-medium tabular-nums">{formatGBP(pipelineNeeded)}</span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted">Gap to fill</span>
-                <span className="font-semibold text-amber-400 tabular-nums">
-                  {formatGBP(pipelineGap)}
-                </span>
-              </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted">Opps needed</span>
-                <span className="font-medium tabular-nums">{oppsNeeded}</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* Industry focus under medical / commercial */}
-        <section id="industry-focus" className="scroll-mt-24 mb-6 space-y-4">
+        <div id="industry-focus" className="scroll-mt-24 space-y-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
               <MapPin className="w-5 h-5 text-accent" />
               Industry focus
-            </h2>
+            </h3>
             <p className="text-sm text-muted mt-1">
               Set focus within medical and commercial. Add or remove markets; UK/US is a tag
               on each market (drives region totals above).
@@ -1724,20 +1614,246 @@ export default function GtmPlanningPage() {
               onAdd={(draft) => addMarket('commercial', draft)}
             />
           </div>
-        </section>
+        </div>
+        </PlanSection>
 
-        {/* Funnel: accounts -> revenue */}
-        <section id="funnel" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
+        <PlanSection id="region" icon={Globe} title="By region" description="UK and US share of net new, expansion and renewal, and the new logos each region needs.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-end gap-2">
+              {state.regionSplit.netNew !== null || state.regionSplit.expansion !== null || state.regionSplit.renewal !== null ? (
+                <button
+                  type="button"
+                  onClick={() => setState((p) => markCustom({ ...p, regionSplit: { netNew: null, expansion: null, renewal: null } }))}
+                  className="text-xs text-muted hover:text-foreground"
+                >
+                  Reset to data
+                </button>
+              ) : null}
+            </div>
+            <SliderRow
+              label="Net new · UK share"
+              value={split.netNew}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('netNew', v)}
+              display={`UK ${split.netNew}% · US ${100 - split.netNew}%`}
+              hint={state.regionSplit.netNew === null ? 'From market focus' : `Set manually · market focus says UK ${ukPct}%`}
+            />
+            <SliderRow
+              label="Expansion · UK share"
+              value={split.expansion}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('expansion', v)}
+              display={`UK ${split.expansion}% · US ${100 - split.expansion}%`}
+              hint={state.regionSplit.expansion === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
+            />
+            <SliderRow
+              label="Renewal · UK share"
+              value={split.renewal}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => setRegionSplit('renewal', v)}
+              display={`UK ${split.renewal}% · US ${100 - split.renewal}%`}
+              hint={state.regionSplit.renewal === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
+            />
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-muted">
+                  <th className="py-1 font-medium">Region</th>
+                  <th className="py-1 font-medium text-right">Net new</th>
+                  <th className="py-1 font-medium text-right">New logos</th>
+                  <th className="py-1 font-medium text-right">Expansion</th>
+                  <th className="py-1 font-medium text-right">Renewal</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {byRegion.map((r) => (
+                  <tr key={r.region}>
+                    <td className="py-1.5 font-medium text-foreground">{r.region === 'uk' ? 'UK / RoW' : 'US'}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.netNew)}</td>
+                    <td className="py-1.5 text-right tabular-nums font-semibold text-foreground">{Math.round(r.logos)}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.expansion)}</td>
+                    <td className="py-1.5 text-right tabular-nums">{formatCompact(r.renewal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[11px] text-muted">
+              New logos = regional net new ÷ {formatCompact(state.avgDealSize)} average deal size.
+            </p>
+          </div>
+        </PlanSection>
+
+        <PlanSection id="pipeline-check" icon={TrendingUp} title="Pipeline" description="Win rate and deal size set the pipeline needed; enter qualified pipeline by market to see the gap.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+            <SliderRow
+              label="Opp → close conversion"
+              value={state.closeRatePct}
+              min={5}
+              max={40}
+              step={1}
+              onChange={(v) => setState((p) => markCustom({ ...p, closeRatePct: v }))}
+              display={`${state.closeRatePct}% → ${coverageMultiple.toFixed(1)}:1`}
+              hint="Steve model: ~20–23% (5:1 coverage)"
+            />
+            <SliderRow
+              label="Avg deal size (ACV)"
+              value={state.avgDealSize}
+              min={20_000}
+              max={100_000}
+              step={5_000}
+              onChange={(v) => setState((p) => markCustom({ ...p, avgDealSize: v }))}
+              display={formatGBP(state.avgDealSize)}
+              hint="YTD ~£40–46k · target ~£50k"
+            />
+            <div className="space-y-3 text-sm pt-1 border-t border-border">
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Qualified now</span>
+                <span className="font-medium tabular-nums">{formatGBP(currentPipeline)}</span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Pipeline needed</span>
+                <span className="font-medium tabular-nums">{formatGBP(pipelineNeeded)}</span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Gap to fill</span>
+                <span className="font-semibold text-amber-400 tabular-nums">
+                  {formatGBP(pipelineGap)}
+                </span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted">Opps needed</span>
+                <span className="font-medium tabular-nums">{oppsNeeded}</span>
+              </div>
+            </div>
+          </div>
+
+        <div id="pipeline-by-market" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="font-semibold text-foreground flex items-center gap-2">
-                <Zap className="w-5 h-5 text-accent" />
-                Funnel · accounts → revenue
-              </h2>
+              <h3 className="font-semibold text-foreground">Pipeline by market</h3>
               <p className="text-xs text-muted mt-1">
-                Accounts worked × meeting rate (capped by SDR capacity) × opp rate × win rate × deal size, against the net-new target.
+                Manual qualified pipeline — SF sync later. Needed = market ARR share ×
+                pipeline required for net-new.
               </p>
             </div>
+            <button
+              type="button"
+              onClick={redistributePipelineByArr}
+              className="text-xs px-3 py-1.5 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
+            >
+              Fill to needed by ARR mix
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="text-left text-muted border-b border-border">
+                  <th className="py-2 pr-3 font-medium">Market</th>
+                  <th className="py-2 pr-3 font-medium">Category</th>
+                  <th className="py-2 pr-3 font-medium">Region</th>
+                  <th className="py-2 pr-3 font-medium">Plan ARR</th>
+                  <th className="py-2 pr-3 font-medium">Needed</th>
+                  <th className="py-2 pr-3 font-medium" title="Apollo accounts excluding current clients and do-not-prospect">
+                    Prospectable
+                  </th>
+                  <th
+                    className="py-2 pr-3 font-medium"
+                    title="Share of prospectable accounts that must become opportunities to hit the needed pipeline"
+                  >
+                    Conv. req.
+                  </th>
+                  <th className="py-2 pr-3 font-medium">Qualified</th>
+                  <th className="py-2 font-medium text-right">Gap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {marketRows.map((row) => {
+                  const share = totalArr > 0 ? row.arr / totalArr : 0;
+                  const needed = pipelineNeeded * share;
+                  const have = state.marketPipeline[row.id] || 0;
+                  const gap = needed - have;
+                  return (
+                    <tr key={row.id} className="border-b border-border/60">
+                      <td className="py-2.5 pr-3 text-foreground">{row.label}</td>
+                      <td className="py-2.5 pr-3 text-muted capitalize">{row.category}</td>
+                      <td className="py-2.5 pr-3 text-muted">
+                        {row.region === 'uk' ? 'UK / RoW' : 'US'}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">{formatCompact(row.arr)}</td>
+                      <td className="py-2.5 pr-3 tabular-nums text-muted">
+                        {formatCompact(needed)}
+                      </td>
+                      <ApolloCapacityCells
+                        mix={apolloByMarket[row.id]}
+                        status={apollo.status}
+                        pipelineNeeded={needed}
+                        avgDealSize={state.avgDealSize}
+                      />
+                      <td className="py-2.5 pr-3">
+                        <input
+                          type="number"
+                          value={have}
+                          step={50_000}
+                          min={0}
+                          onChange={(e) =>
+                            setMarketPipeline(row.id, parseInt(e.target.value) || 0)
+                          }
+                          className="w-28 px-2 py-1 rounded-md bg-surface-elevated border border-border tabular-nums text-sm"
+                        />
+                      </td>
+                      <td
+                        className={`py-2.5 tabular-nums text-right font-medium ${
+                          gap > 0 ? 'text-amber-400' : 'text-emerald-400'
+                        }`}
+                      >
+                        {gap > 0 ? formatCompact(gap) : `+${formatCompact(Math.abs(gap))}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <td colSpan={3} className="py-3 text-muted">
+                    Total
+                  </td>
+                  <td className="py-3 tabular-nums font-semibold">
+                    {formatCompact(totalArr)}
+                  </td>
+                  <td className="py-3 tabular-nums text-muted">
+                    {formatCompact(pipelineNeeded)}
+                  </td>
+                  <td className="py-3 tabular-nums text-muted">
+                    {apollo.status === 'ready'
+                      ? Object.values(apolloByMarket)
+                          .reduce((s, m) => s + m.prospectable, 0)
+                          .toLocaleString()
+                      : '—'}
+                  </td>
+                  <td className="py-3" />
+                  <td className="py-3 tabular-nums font-semibold">
+                    {formatCompact(currentPipeline)}
+                  </td>
+                  <td
+                    className={`py-3 tabular-nums font-bold text-right ${
+                      pipelineGap > 0 ? 'text-amber-400' : 'text-emerald-400'
+                    }`}
+                  >
+                    {formatCompact(pipelineGap)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </PlanSection>
+
+        <PlanSection id="funnel" icon={Zap} title="Funnel · accounts → revenue" description="Accounts worked × meeting rate (capped by SDR capacity) × opp rate × win rate × deal size, against the net-new target.">
+        <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+          <div className="flex flex-wrap items-start justify-end gap-3">
             <div
               className={`text-sm px-3 py-1.5 rounded-lg border ${
                 sdrGap <= 0
@@ -1860,133 +1976,15 @@ export default function GtmPlanningPage() {
               {meetingsLimitedBy === 'SDR capacity' ? ' (SDR capacity is the binding limit today)' : ''}.
             </div>
           ) : null}
-        </section>
-
-        {/* Pipeline by market */}
-        <section id="pipeline-by-market" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 mb-6 space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="font-semibold text-foreground">Pipeline by market</h2>
-              <p className="text-xs text-muted mt-1">
-                Manual qualified pipeline — SF sync later. Needed = market ARR share ×
-                pipeline required for net-new.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={redistributePipelineByArr}
-              className="text-xs px-3 py-1.5 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
-            >
-              Fill to needed by ARR mix
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[640px]">
-              <thead>
-                <tr className="text-left text-muted border-b border-border">
-                  <th className="py-2 pr-3 font-medium">Market</th>
-                  <th className="py-2 pr-3 font-medium">Category</th>
-                  <th className="py-2 pr-3 font-medium">Region</th>
-                  <th className="py-2 pr-3 font-medium">Plan ARR</th>
-                  <th className="py-2 pr-3 font-medium">Needed</th>
-                  <th className="py-2 pr-3 font-medium" title="Apollo accounts excluding current clients and do-not-prospect">
-                    Prospectable
-                  </th>
-                  <th
-                    className="py-2 pr-3 font-medium"
-                    title="Share of prospectable accounts that must become opportunities to hit the needed pipeline"
-                  >
-                    Conv. req.
-                  </th>
-                  <th className="py-2 pr-3 font-medium">Qualified</th>
-                  <th className="py-2 font-medium text-right">Gap</th>
-                </tr>
-              </thead>
-              <tbody>
-                {marketRows.map((row) => {
-                  const share = totalArr > 0 ? row.arr / totalArr : 0;
-                  const needed = pipelineNeeded * share;
-                  const have = state.marketPipeline[row.id] || 0;
-                  const gap = needed - have;
-                  return (
-                    <tr key={row.id} className="border-b border-border/60">
-                      <td className="py-2.5 pr-3 text-foreground">{row.label}</td>
-                      <td className="py-2.5 pr-3 text-muted capitalize">{row.category}</td>
-                      <td className="py-2.5 pr-3 text-muted">
-                        {row.region === 'uk' ? 'UK / RoW' : 'US'}
-                      </td>
-                      <td className="py-2.5 pr-3 tabular-nums">{formatCompact(row.arr)}</td>
-                      <td className="py-2.5 pr-3 tabular-nums text-muted">
-                        {formatCompact(needed)}
-                      </td>
-                      <ApolloCapacityCells
-                        mix={apolloByMarket[row.id]}
-                        status={apollo.status}
-                        pipelineNeeded={needed}
-                        avgDealSize={state.avgDealSize}
-                      />
-                      <td className="py-2.5 pr-3">
-                        <input
-                          type="number"
-                          value={have}
-                          step={50_000}
-                          min={0}
-                          onChange={(e) =>
-                            setMarketPipeline(row.id, parseInt(e.target.value) || 0)
-                          }
-                          className="w-28 px-2 py-1 rounded-md bg-surface-elevated border border-border tabular-nums text-sm"
-                        />
-                      </td>
-                      <td
-                        className={`py-2.5 tabular-nums text-right font-medium ${
-                          gap > 0 ? 'text-amber-400' : 'text-emerald-400'
-                        }`}
-                      >
-                        {gap > 0 ? formatCompact(gap) : `+${formatCompact(Math.abs(gap))}`}
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr>
-                  <td colSpan={3} className="py-3 text-muted">
-                    Total
-                  </td>
-                  <td className="py-3 tabular-nums font-semibold">
-                    {formatCompact(totalArr)}
-                  </td>
-                  <td className="py-3 tabular-nums text-muted">
-                    {formatCompact(pipelineNeeded)}
-                  </td>
-                  <td className="py-3 tabular-nums text-muted">
-                    {apollo.status === 'ready'
-                      ? Object.values(apolloByMarket)
-                          .reduce((s, m) => s + m.prospectable, 0)
-                          .toLocaleString()
-                      : '—'}
-                  </td>
-                  <td className="py-3" />
-                  <td className="py-3 tabular-nums font-semibold">
-                    {formatCompact(currentPipeline)}
-                  </td>
-                  <td
-                    className={`py-3 tabular-nums font-bold text-right ${
-                      pipelineGap > 0 ? 'text-amber-400' : 'text-emerald-400'
-                    }`}
-                  >
-                    {formatCompact(pipelineGap)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <div id="outreach" className="scroll-mt-24">
-        <OutreachPanel outreach={shared?.outreach ?? null} canEdit={Boolean(shared?.canEdit)} onChange={setOutreach} />
         </div>
+        </PlanSection>
 
-        <section id="assumptions" className="scroll-mt-24 bg-accent/5 border border-accent/20 rounded-xl p-5">
-          <h2 className="font-semibold text-foreground mb-3">Model assumptions</h2>
+        <PlanSection id="outreach" icon={CalendarRange} title="Outreach plan" description="Who prospects each target list, at what pace and in what order.">
+        <OutreachPanel outreach={shared?.outreach ?? null} canEdit={Boolean(shared?.canEdit)} onChange={setOutreach} />
+        </PlanSection>
+
+        <PlanSection id="assumptions" icon={CheckCircle2} title="Assumptions" description="The assumptions behind this plan.">
+        <div className="bg-accent/5 border border-accent/20 rounded-xl p-5">
           <ul className="grid sm:grid-cols-2 gap-2 text-sm text-muted">
             {assumptions.map((a) => (
               <li key={a} className="flex gap-2">
@@ -1995,7 +1993,11 @@ export default function GtmPlanningPage() {
               </li>
             ))}
           </ul>
-        </section>
+        </div>
+        </PlanSection>
+        {/* Room below the last section so its contents link can scroll it to the top. */}
+        <div className="h-[60vh]" aria-hidden />
+
           </div>
         </div>
       </div>

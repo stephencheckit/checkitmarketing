@@ -61,11 +61,11 @@ export default function OutreachPanel({
   const input = 'w-full rounded-md border border-border bg-background px-2 py-1 text-sm text-foreground disabled:opacity-70';
 
   return (
-    <section className="bg-surface border border-border rounded-xl p-5 mb-6">
+    <section className="bg-surface border border-border rounded-xl p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <CalendarRange className="w-5 h-5 text-accent" />
-          <h2 className="font-semibold text-foreground">Outreach plan · target lists</h2>
+          <h3 className="font-semibold text-foreground">Target lists</h3>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted">
           <span>Apollo synced {syncedAt ? new Date(syncedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : 'not yet'}</span>

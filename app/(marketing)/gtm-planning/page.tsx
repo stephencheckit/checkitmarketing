@@ -803,7 +803,7 @@ function PlanSection({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 mb-10">
+    <section id={id} className="scroll-mt-[72px] mb-10">
       <div className="mb-3">
         <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Icon className="w-5 h-5 text-accent" />
@@ -1538,7 +1538,7 @@ export default function GtmPlanningPage() {
             />
           </div>
 
-        <div id="industry-focus" className="scroll-mt-24 space-y-4">
+        <div id="industry-focus" className="scroll-mt-[72px] space-y-4">
           <div>
             <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
               <MapPin className="w-5 h-5 text-accent" />
@@ -1732,7 +1732,7 @@ export default function GtmPlanningPage() {
             </div>
           </div>
 
-        <div id="pipeline-by-market" className="scroll-mt-24 bg-surface border border-border rounded-xl p-5 space-y-4">
+        <div id="pipeline-by-market" className="scroll-mt-[72px] bg-surface border border-border rounded-xl p-5 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h3 className="font-semibold text-foreground">Pipeline by market</h3>

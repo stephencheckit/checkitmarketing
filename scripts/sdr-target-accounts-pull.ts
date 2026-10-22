@@ -12,7 +12,7 @@ import { GTM_MARKETS } from '../lib/gtm-markets';
 
 const APOLLO_API = 'https://api.apollo.io/api/v1';
 const OUT = path.join(process.cwd(), '.sdr-data');
-const MARKETS = ['us-medical', 'us-facilities', 'uk-foodservice'];
+const MARKETS = ['us-medical', 'us-facilities', 'uk-foodservice', 'uk-healthcare', 'us-senior'];
 
 async function ap(p: string, body: unknown): Promise<Record<string, unknown>> {
   for (let attempt = 0; attempt < 6; attempt++) {

@@ -2,7 +2,6 @@
   "_comment": "Shared by prune-target-lists.ts (Apollo) and the Excel exports. minEmployees drops small accounts; customerGroups catch customer brands that buy under a different domain from the customer_accounts record (e.g. Compass USA brands when only Compass UK and Restaurant Associates are recorded). Accounts with no headcount are kept: Apollo returns none for several of the largest FM groups (EMCOR, OCS, Elior UK).",
   "minEmployees": 200,
   "dropUnknownSize": false,
-  "expansionListName": "Expansion · Customer groups · 2026-10",
   "customerGroups": {
     "Compass": "compass|eurest|medirest|chartwells|morrison (living|healthcare)|levy restaurants|\\blevy\\b|restaurant associates|bon app[eé]tit|\\bflik\\b|^canteen$|crothall|unidine|touchpoint|food\\+",
     "Sodexo": "sodexo|sodexho|centerplate",
@@ -11,5 +10,9 @@
     "HCA": "\\bhca\\b",
     "OVG": "oak view|\\bovg\\b|spectra",
     "Kedrion": "kedrion|kedplasma"
+  },
+  "expansionLists": {
+    "US": "Expansion · Customers · US · 2026-10",
+    "UK": "Expansion · Customers · UK · 2026-10"
   }
 }

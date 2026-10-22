@@ -18,7 +18,7 @@ const HEADERS = { 'x-api-key': process.env.APOLLO_API_KEY || '', 'Content-Type':
 const RULES = JSON.parse(fs.readFileSync(path.join(__dirname, 'target-list-rules.json'), 'utf8')) as {
   minEmployees: number;
   dropUnknownSize: boolean;
-  expansionListName: string;
+  expansionLists: Record<'US' | 'UK', string>;
   customerGroups: Record<string, string>;
 };
 const LISTS = ['FM, Food Service & Venues · US · 2026-10', 'FM, Food Service & Venues · UK · 2026-10'];
@@ -58,7 +58,6 @@ async function main() {
   const clientStage = new Set(stages.filter((s) => /current client/i.test(s.display_name || s.name || '')).map((s) => s.id));
 
   const labels = ((await request('GET', '/labels')).data as { id: string; name: string; modality: string }[]) || [];
-  let expansionId = labels.find((l) => l.name === RULES.expansionListName && l.modality === 'accounts')?.id;
 
   for (const listName of LISTS) {
     const label = labels.find((l) => l.name === listName && l.modality === 'accounts');
@@ -114,8 +113,10 @@ async function main() {
     console.log(`  remaining: ${accounts.length - customer.length - small.length}`);
 
     if (!APPLY) continue;
+    const expansionName = RULES.expansionLists[listName.includes('· UK ·') ? 'UK' : 'US'];
+    let expansionId = labels.find((l) => l.name === expansionName && l.modality === 'accounts')?.id;
     if (!expansionId) {
-      const created = await request('POST', '/labels', { name: RULES.expansionListName, modality: 'accounts' });
+      const created = await request('POST', '/labels', { name: expansionName, modality: 'accounts' });
       expansionId = (created.data as { label?: { id?: string } })?.label?.id;
     }
     let done = 0;

@@ -3,7 +3,7 @@
 
 export const snapshot = {
   "meta": {
-    "pulledAt": "2026-10-22T13:02+00:00",
+    "pulledAt": "2026-10-22T13:48+00:00",
     "window": "2025-07 to 2026-10",
     "sources": [
       "Apollo: calls, sequence emails, sequences, contact stages, tasks",
@@ -1675,5 +1675,213 @@ export const snapshot = {
     "worked": 19,
     "activeOpp": 19,
     "withContacts": 146
+  },
+  "ukHealthcare": {
+    "list": "NHS & UK Healthcare targets · 2026-10",
+    "targets": 225,
+    "customers": 71,
+    "excluded": 90,
+    "types": [
+      {
+        "type": "Health boards (Scotland, Wales, NI)",
+        "targets": 3,
+        "customers": 4,
+        "largest": "NHS Grampian, HSCNI, Cwm Taf Morgannwg University Health Board"
+      },
+      {
+        "type": "Pathology networks & national bodies",
+        "targets": 11,
+        "customers": 0,
+        "largest": "NHS Education for Scotland, NHS England, NHS Blood and Transplant - Colindale, NHS Supply Chain"
+      },
+      {
+        "type": "Independent labs & diagnostics",
+        "targets": 7,
+        "customers": 0,
+        "largest": "InHealth Group, The Doctors Laboratory, Randox Laboratories Ltd., SYNLAB UK & Ireland"
+      },
+      {
+        "type": "Pharmacy groups & distribution",
+        "targets": 11,
+        "customers": 0,
+        "largest": "Day Lewis Pharmacy, LloydsPharmacy, Knights Pharmacy, Pharmacy2U"
+      },
+      {
+        "type": "Private hospitals",
+        "targets": 10,
+        "customers": 3,
+        "largest": "Ramsey Health Care, Practice Plus Group, The London Clinic, Bupa Cromwell Hospital"
+      },
+      {
+        "type": "NHS acute trusts",
+        "targets": 109,
+        "customers": 49,
+        "largest": "University Hospital of Wales, Blackpool Teaching Hospitals NHS Foundation Trust, Royal Free London NHS Foundation Trust, Newcastle Hospitals NHS Trust"
+      },
+      {
+        "type": "NHS hospital sites",
+        "targets": 32,
+        "customers": 6,
+        "largest": "Prince Charles Hospital, Royal Infirmary Edinburgh, Belfast City Hospital, Yale Hospital"
+      },
+      {
+        "type": "Life sciences (pharma, biotech, devices)",
+        "targets": 42,
+        "customers": 1,
+        "largest": "Sanofi, Hikma Pharmaceuticals, ALMAC, BTL Industries"
+      }
+    ],
+    "excludedBy": {
+      "Exclude: unclassified": 33,
+      "Exclude: care homes (UK food service)": 19,
+      "Exclude: mental health & community": 15,
+      "Exclude: ambulance": 10,
+      "Excluded: under 200 staff": 8,
+      "Exclude: not a healthcare operator": 5
+    },
+    "regions": [
+      {
+        "region": "England",
+        "targets": 149
+      },
+      {
+        "region": "Scotland",
+        "targets": 11
+      },
+      {
+        "region": "Northern Ireland",
+        "targets": 4
+      },
+      {
+        "region": "Wales",
+        "targets": 4
+      }
+    ]
+  },
+  "foodService": {
+    "regions": [
+      {
+        "region": "US",
+        "targets": 539,
+        "subgroups": [
+          {
+            "subgroup": "Contract catering & food service",
+            "targets": 48,
+            "enterprise": 30,
+            "examples": [
+              "Aramark Workplace Solutions Uk Ltd",
+              "Delaware North United Kingdom",
+              "Healthcare Services Group",
+              "HMSHost"
+            ]
+          },
+          {
+            "subgroup": "Facilities services",
+            "targets": 37,
+            "enterprise": 18,
+            "examples": [
+              "C&W Services",
+              "HHS",
+              "SBM Management Services, LP",
+              "ESFM® USA"
+            ]
+          },
+          {
+            "subgroup": "Venues, stadiums & live events",
+            "targets": 119,
+            "enterprise": 16,
+            "examples": [
+              "Ilitch Companies",
+              "Live Nation",
+              "Anschutz Entertainment Group, Inc.",
+              "USA Hockey"
+            ]
+          },
+          {
+            "subgroup": "Senior living & care",
+            "targets": 211,
+            "enterprise": 115,
+            "examples": [
+              "Brookdale Senior Living Inc",
+              "Discovery Senior",
+              "Trilogy Health Services,",
+              "Creative Solutions In HealthCare"
+            ]
+          },
+          {
+            "subgroup": "Leisure, attractions & hospitality",
+            "targets": 124,
+            "enterprise": 46,
+            "examples": [
+              "SeaWorld",
+              "Top Golf",
+              "Lucky Strike Entertainment",
+              "Bowlero"
+            ]
+          }
+        ]
+      },
+      {
+        "region": "UK",
+        "targets": 216,
+        "subgroups": [
+          {
+            "subgroup": "Contract catering & food service",
+            "targets": 47,
+            "enterprise": 19,
+            "examples": [
+              "SSP Group",
+              "WSH Restaurants",
+              "CH&CO",
+              "BaxterStorey"
+            ]
+          },
+          {
+            "subgroup": "Facilities services",
+            "targets": 61,
+            "enterprise": 36,
+            "examples": [
+              "Mitie",
+              "Bidvest Noonan",
+              "ABM UK",
+              "Churchill Group"
+            ]
+          },
+          {
+            "subgroup": "Venues, stadiums & live events",
+            "targets": 56,
+            "enterprise": 8,
+            "examples": [
+              "The Football Association",
+              "chelsea fc",
+              "Liverpool Football Club",
+              "The NEC"
+            ]
+          },
+          {
+            "subgroup": "Senior living & care",
+            "targets": 6,
+            "enterprise": 5,
+            "examples": [
+              "Care UK",
+              "Barchester Healthcare",
+              "HC-One",
+              "MHA (Methodist Homes)"
+            ]
+          },
+          {
+            "subgroup": "Leisure, attractions & hospitality",
+            "targets": 46,
+            "enterprise": 13,
+            "examples": [
+              "Marstons PLC",
+              "Impala",
+              "RBH Management",
+              "Maybourne Hotel Group"
+            ]
+          }
+        ]
+      }
+    ]
   }
 } as const;

@@ -23,7 +23,7 @@ const HEADERS = { 'x-api-key': process.env.APOLLO_API_KEY || '', 'Content-Type':
 const RULES = JSON.parse(fs.readFileSync(path.join(__dirname, 'target-list-rules.json'), 'utf8')) as {
   minEmployees: number;
   dropUnknownSize: boolean;
-  expansionListName: string;
+  expansionLists: Record<'US' | 'UK', string>;
   customerGroups: Record<string, string>;
 };
 const GROUPS = Object.entries(RULES.customerGroups).map(([g, re]) => [g, new RegExp(re, 'i')] as const);
@@ -250,7 +250,7 @@ async function main() {
   }
 
   const labelId = await ensureLabel(LABEL);
-  const expansionId = await ensureLabel(RULES.expansionListName);
+  const expansionId = await ensureLabel(RULES.expansionLists.US);
   let tagged = 0;
   let failed = 0;
   for (const a of final) {

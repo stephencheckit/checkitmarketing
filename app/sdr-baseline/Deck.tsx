@@ -362,6 +362,8 @@ const TOC: Record<string, { group: string; label: string }> = {
   okrs: { group: 'Market & product', label: 'Proposed OKRs' },
   targets: { group: 'Targets & next steps', label: 'Target accounts' },
   'healthcare-plan': { group: 'Targets & next steps', label: 'Healthcare coverage' },
+  nhs: { group: 'Targets & next steps', label: 'NHS target map' },
+  'food-service': { group: 'Targets & next steps', label: 'Food service map' },
   asks: { group: 'Targets & next steps', label: 'Decisions needed' },
   appendix: { group: 'Targets & next steps', label: 'Method' },
 };
@@ -1232,6 +1234,108 @@ const slides: Slide[] = [
           lookalike search is needed before then if the pace holds.
         </Callout>
       </div>
+    ),
+  },
+  {
+    id: 'nhs',
+    eyebrow: 'UK Healthcare · Meg and Tom',
+    title: 'NHS & UK Healthcare: Where We Are, and the White Space',
+    body: snapshot.ukHealthcare ? (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+          <StatCard label="White-space targets" value={fmt(snapshot.ukHealthcare.targets)} sub="UK only · 200+ staff · not a customer" tone="accent" />
+          <StatCard label="Existing customers" value={fmt(snapshot.ukHealthcare.customers)} sub="Meg’s renewal and expansion base" tone="success" />
+          <StatCard
+            label="Acute trust penetration"
+            value={pct(
+              snapshot.ukHealthcare.types.find((t) => t.type === 'NHS acute trusts')?.customers ?? 0,
+              (snapshot.ukHealthcare.types.find((t) => t.type === 'NHS acute trusts')?.customers ?? 0) +
+                (snapshot.ukHealthcare.types.find((t) => t.type === 'NHS acute trusts')?.targets ?? 0)
+            )}
+            sub="Share of acute trusts in Apollo already customers"
+          />
+          <StatCard label="Meg’s NHS opportunities" value="34 → 44" sub="Q3 year on year, per Steve (+33%)" tone="success" />
+        </div>
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full">
+            <thead className="bg-surface/80">
+              <tr>
+                {['Type', 'Targets', 'Customers', 'Largest targets'].map((h) => (
+                  <th key={h} className={th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {snapshot.ukHealthcare.types.map((t) => (
+                <tr key={t.type}>
+                  <td className="px-3 py-1.5 text-sm font-medium text-foreground">{t.type}</td>
+                  <td className="px-3 py-1.5 text-sm text-foreground/90">{t.targets}</td>
+                  <td className="px-3 py-1.5 text-sm text-foreground/90">{t.customers}</td>
+                  <td className="px-3 py-1.5 text-xs text-muted">{t.largest}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Callout tone="accent">
+          <strong>How to work it:</strong> Tom warms white-space trusts before their pharmacy and pathology tenders
+          surface in Contracts Advance; customers stay with Meg for renewal and expansion. Held back:{' '}
+          {fmt(snapshot.ukHealthcare.excluded)} mental health, community, ambulance, duplicate and non-operator records.
+        </Callout>
+      </div>
+    ) : (
+      <p className="text-sm text-muted">UK healthcare data not built.</p>
+    ),
+  },
+  {
+    id: 'food-service',
+    eyebrow: 'Food service · How we define it',
+    title: 'Not Facilities Management: Food Service, in Five Subgroups',
+    body: snapshot.foodService ? (
+      <div className="space-y-4">
+        <Callout tone="accent">
+          We don’t manage buildings. We sell food safety and compliance to whoever runs the food: caterers, venue
+          concessions, dining in senior living and care, and the facilities firms that subcontract it. US and UK are
+          always separate lists; the subgroups are a field within each.
+        </Callout>
+        <div className="overflow-hidden rounded-xl border border-border">
+          <table className="w-full">
+            <thead className="bg-surface/80">
+              <tr>
+                <th className={th}>Subgroup</th>
+                {snapshot.foodService.regions.map((r) => (
+                  <th key={r.region} className={th}>{r.region} · {fmt(r.targets)} targets</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {snapshot.foodService.regions[0].subgroups.map((g, gi) => (
+                <tr key={g.subgroup}>
+                  <td className="px-3 py-2 align-top text-sm font-medium text-foreground">{g.subgroup}</td>
+                  {snapshot.foodService!.regions.map((r) => {
+                    const cell = r.subgroups[gi];
+                    return (
+                      <td key={r.region} className="px-3 py-2 align-top">
+                        <div className="text-sm text-foreground">
+                          {fmt(cell.targets)} <span className="text-xs text-muted">({fmt(cell.enterprise)} with 1,000+ staff)</span>
+                        </div>
+                        <div className="text-xs text-muted">{cell.examples.slice(0, 3).join(', ')}</div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted">
+          Built from the regional FM, Food Service & Venues lists, the US senior living lists and UK care groups;
+          200+ staff, customers moved to the regional expansion lists. Subgroups are assigned from industry and name,
+          so a few will need a human check.
+        </p>
+      </div>
+    ) : (
+      <p className="text-sm text-muted">Food service data not built.</p>
     ),
   },
   {

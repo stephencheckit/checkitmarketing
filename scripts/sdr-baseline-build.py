@@ -486,6 +486,8 @@ snapshot = {
     'targets': target_summary,
     'inbound': inbound,
     'healthcare': healthcare,
+    'ukHealthcare': json.load(open(os.path.join(DATA, 'uk_healthcare_snapshot.json'))) if os.path.exists(os.path.join(DATA, 'uk_healthcare_snapshot.json')) else None,
+    'foodService': json.load(open(os.path.join(DATA, 'food_service_snapshot.json'))) if os.path.exists(os.path.join(DATA, 'food_service_snapshot.json')) else None,
 }
 
 os.makedirs(os.path.dirname(OUT_TS), exist_ok=True)

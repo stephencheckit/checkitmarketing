@@ -89,6 +89,7 @@ function SplitBar({ parts }: { parts: { label: string; value: number; cls: strin
 }
 
 const TOC: Record<string, { group: string; label: string }> = {
+  cover: { group: 'The plan', label: 'Cover' },
   answer: { group: 'The plan', label: 'The answer' },
   start: { group: 'The plan', label: 'Where we start' },
   target: { group: 'The plan', label: 'The target' },
@@ -102,7 +103,15 @@ const TOC: Record<string, { group: string; label: string }> = {
   risk: { group: 'Risks & asks', label: 'Market risk' },
   measurement: { group: 'Risks & asks', label: 'Measurement' },
   decisions: { group: 'Risks & asks', label: 'Decisions' },
+  outro: { group: 'Risks & asks', label: 'Close' },
+  thanks: { group: 'Risks & asks', label: 'Thanks' },
 };
+
+const LIVE_TOOLS = [
+  { href: '/gtm-planning', title: 'GTM Strategy', text: 'Targets, funnel maths and scenarios' },
+  { href: '/gtm-map', title: 'GTM Map', text: 'Market by market coverage' },
+  { href: '/gtm-outreach', title: 'Outreach Plan', text: '12-month list schedule' },
+];
 
 export default function ExecDeck({ data }: { data: ExecData }) {
   const { plan, base, lists, baseline } = data;
@@ -158,8 +167,21 @@ export default function ExecDeck({ data }: { data: ExecData }) {
 
   const slides: Slide[] = [
     {
-      id: 'answer',
+      id: 'cover',
       eyebrow: 'Checkit · FY28 go-to-market plan',
+      title: 'FY28 Go-to-Market Plan',
+      body: (
+        <div className="flex min-h-[40vh] flex-col justify-between gap-10">
+          <p className="max-w-2xl text-xl text-muted">Executive summary: the revenue target, the maths behind it, and how we execute.</p>
+          <div className="text-sm text-muted">
+            Created by <span className="font-semibold text-foreground">Stephen Newman</span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'answer',
+      eyebrow: 'The answer',
       title: `A ${gbp(p.totalArr)} ARR Plan for FY28, and What It Takes to Hit It`,
       body: (
         <div className="space-y-8">
@@ -543,6 +565,41 @@ export default function ExecDeck({ data }: { data: ExecData }) {
           </div>
         </div>
       ),
+    },
+    {
+      id: 'outro',
+      eyebrow: 'Discussion',
+      title: 'Questions and Discussion',
+      body: (
+        <div className="flex min-h-[40vh] flex-col justify-between gap-10">
+          <p className="max-w-2xl text-xl text-muted">
+            {gbp(p.totalArr)} of ARR in FY28. The funnel covers {reachPct}% of the new-logo number at today&apos;s settings
+            {gap > 0 ? `, leaving ${gbp(gap)} to close.` : '.'}
+          </p>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {LIVE_TOOLS.map((t) => (
+              <button
+                key={t.href}
+                onClick={() => live.open({ href: t.href, title: t.title })}
+                className="group rounded-xl border border-border bg-surface/60 p-5 text-left transition-colors hover:border-blue-400/60"
+              >
+                <div className="flex items-center justify-between font-semibold text-foreground">
+                  {t.title}
+                  <ArrowRight className="h-4 w-4 text-blue-400 transition-transform group-hover:translate-x-0.5" />
+                </div>
+                <p className="mt-1 text-sm text-muted">{t.text}</p>
+              </button>
+            ))}
+          </div>
+          <div className="text-sm text-muted">The plan, map and outreach schedule are live in the GTM Tracker and update together.</div>
+        </div>
+      ),
+    },
+    {
+      id: 'thanks',
+      eyebrow: 'Checkit · FY28 go-to-market plan',
+      title: 'THANKS!',
+      body: <div className="min-h-[40vh]" />,
     },
   ];
 

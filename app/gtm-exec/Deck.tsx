@@ -144,9 +144,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       body: (
         <div className="flex min-h-[40vh] flex-col justify-between gap-10">
           <p className="max-w-2xl text-xl text-muted">Executive summary: the revenue target, the maths behind it, and how we execute.</p>
-          <div className="text-sm text-muted">
-            Created by <span className="font-semibold text-foreground">Stephen Newman</span>
-          </div>
         </div>
       ),
     },

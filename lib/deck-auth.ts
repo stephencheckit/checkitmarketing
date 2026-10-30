@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { sql } from './db';
 
 const MAX_AGE_SECONDS = 60 * 60 * 12;
 
@@ -27,17 +28,51 @@ export async function hasDeckAccess(cookie: string) {
   return verifyDeckCookie(cookie, (await cookies()).get(cookie)?.value);
 }
 
+/** "Name=password,Name=password" from an env var: personal passwords, so logins can be told apart. */
+function parseGuests(raw: string | undefined) {
+  return (raw ?? '')
+    .split(',')
+    .map((pair) => pair.split('='))
+    .filter((p) => p.length === 2 && p[0].trim() && p[1].trim())
+    .map(([label, password]) => ({ label: label.trim(), password: password.trim() }));
+}
+
+async function recordDeckLogin(req: NextRequest, deck: string, label: string) {
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS deck_logins (
+        id SERIAL PRIMARY KEY,
+        deck TEXT NOT NULL,
+        label TEXT NOT NULL,
+        ip TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+    await sql`INSERT INTO deck_logins (deck, label, ip, user_agent) VALUES (${deck}, ${label}, ${ip}, ${req.headers.get('user-agent')})`;
+  } catch (err) {
+    console.error('Deck login logging failed:', err);
+  }
+}
+
 /** Password check for a private deck: sets the deck's cookie and redirects back to it. */
-export async function handleDeckLogin(req: NextRequest, opts: { cookie: string; password: string | undefined; path: string }) {
+export async function handleDeckLogin(
+  req: NextRequest,
+  opts: { cookie: string; password: string | undefined; path: string; guestPasswords?: string }
+) {
   const form = await req.formData();
   const submitted = String(form.get('password') ?? '');
   const origin = new URL(req.url).origin;
   const expires = Math.floor(Date.now() / 1000) + MAX_AGE_SECONDS;
   const mac = sign(opts.cookie, expires);
 
-  if (!opts.password || submitted !== opts.password || !mac) {
+  const accepted = [...(opts.password ? [{ label: 'shared', password: opts.password }] : []), ...parseGuests(opts.guestPasswords)];
+  const match = submitted ? accepted.find((a) => a.password === submitted) : undefined;
+  if (!match || !mac) {
     return NextResponse.redirect(`${origin}${opts.path}?error=1`, { status: 303 });
   }
+  await recordDeckLogin(req, opts.path, match.label);
 
   const res = NextResponse.redirect(`${origin}${opts.path}`, { status: 303 });
   res.cookies.set(opts.cookie, `${expires}.${mac}`, {

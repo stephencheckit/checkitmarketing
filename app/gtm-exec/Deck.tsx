@@ -95,7 +95,6 @@ const TOC: Record<string, { group: string; label: string }> = {
   quarters: { group: 'The plan', label: 'Quarterly goals' },
   sources: { group: 'The plan', label: 'Where it comes from' },
   funnel: { group: 'The maths', label: 'The funnel' },
-  levers: { group: 'The maths', label: 'Closing the gap' },
   planner: { group: 'The maths', label: 'GTM Strategy tool' },
   coverage: { group: 'Execution', label: 'Coverage' },
   timeline: { group: 'Execution', label: 'Outreach timeline' },
@@ -105,97 +104,27 @@ const TOC: Record<string, { group: string; label: string }> = {
   decisions: { group: 'Risks & asks', label: 'Decisions' },
   outro: { group: 'Risks & asks', label: 'Interactive tools' },
   thanks: { group: 'Risks & asks', label: 'Thanks' },
-  start: { group: 'Appendix', label: 'Where we start' },
+  start: { group: 'Reference', label: 'Where we start' },
 };
 
-// Pages of the FY28 GTM plan draft (27 Oct), with what doesn't reconcile.
-// Pages 1 and 13 are blank and left out.
-const APPENDIX: { page: number; label: string; notes: string[] }[] = [
-  {
-    page: 2,
-    label: 'FY28 ARR goals',
-    notes: [
-      'The source of this deck’s goals: total, new vs expansion, quarterly phasing by region, GRR and NRR.',
-      'Excludes Com Ops (£500k), which this deck doesn’t model.',
-    ],
-  },
-  {
-    page: 3,
-    label: 'ARR gain by initiative',
-    notes: [
-      'The bars add up to £2.96m; the goal on the previous page is £2.70m. The £260k difference isn’t explained.',
-      '“Current performance” (£1.23m) isn’t defined. Salesforce closed-won was £645k in FY26 and £572k in FY27 to date.',
-    ],
-  },
-  {
-    page: 4,
-    label: 'UK Healthcare',
-    notes: [
-      '222 white-space accounts, close to the 225 on our NHS & UK Healthcare target list.',
-      'Uses 20% and 33% conversion; the planner uses a single 20% win rate.',
-    ],
-  },
-  {
-    page: 5,
-    label: 'Global Commercial',
-    notes: [
-      'The account-list estimate predicts £101k a year, but page 3 credits £310k (5% of a £6.2m pipeline).',
-      '“Tier A using 105k and Tier B&C at 105k” looks like a typo.',
-      '116 ranked accounts vs 755 on our UK and US food service lists; this deck uses our lists.',
-    ],
-  },
-  {
-    page: 6,
-    label: 'NGMM upsell',
-    notes: ['5% of the £5.9m top-40 base is about £295k, consistent with £300k on page 3.'],
-  },
-  {
-    page: 7,
-    label: 'NGMM target accounts',
-    notes: ['£2.67m RoW plus £3.25m US is £5.91m, matching the £5.9m on page 6.'],
-  },
-  {
-    page: 8,
-    label: 'US Healthcare',
-    notes: [
-      'The account-list estimate predicts £300k a year, but page 3 credits £595k.',
-      '382 accounts in tiers A–D vs 239 on our US Healthcare target list; this deck uses our list.',
-    ],
-  },
-  {
-    page: 9,
-    label: 'Strategic accounts',
-    notes: [
-      'Sodexo is labelled “New”, but our Apollo data treats Sodexo as an existing customer group. The other “New” labels need the same check.',
-      'Page 3 credits £340k; no deal size or win rate is shown for it.',
-    ],
-  },
-  {
-    page: 10,
-    label: 'Demand generation',
-    notes: [
-      'These four measures are this deck’s funnel. Meetings and opportunities aren’t reliably logged yet (see Measurement).',
-    ],
-  },
-  {
-    page: 11,
-    label: 'Summary and owners',
-    notes: [
-      '“Brian” is Bryan, who prospects the US Healthcare list in our outreach plan; here US healthcare prioritisation is TBC.',
-      'Jen closes US Healthcare meetings in our outreach plan and is on NGMM here.',
-      'US food service has no closer in either.',
-    ],
-  },
-  {
-    page: 12,
-    label: 'Risks and mitigation',
-    notes: ['The £905k low baseline is £595k US healthcare plus £310k global commercial from page 3.'],
-  },
+// Pages of the FY28 GTM plan draft (27 Oct). Pages 1 and 13 are blank and left out.
+const APPENDIX: { page: number; label: string }[] = [
+  { page: 2, label: 'FY28 ARR goals' },
+  { page: 3, label: 'ARR gain by initiative' },
+  { page: 4, label: 'UK Healthcare' },
+  { page: 5, label: 'Global Commercial' },
+  { page: 6, label: 'NGMM upsell' },
+  { page: 7, label: 'NGMM target accounts' },
+  { page: 8, label: 'US Healthcare' },
+  { page: 9, label: 'Strategic accounts' },
+  { page: 10, label: 'Demand generation' },
+  { page: 11, label: 'Summary and owners' },
+  { page: 12, label: 'Risks and mitigation' },
 ];
 
 const FULL_TOC = {
   ...TOC,
-  ...Object.fromEntries(APPENDIX.map((a) => [`appendix-${a.page}`, { group: 'Appendix: FY28 plan draft', label: a.label }])),
+  ...Object.fromEntries(APPENDIX.map((a) => [`appendix-${a.page}`, { group: 'Reference: FY28 plan draft', label: a.label }])),
 };
 
 const LIVE_TOOLS = [
@@ -205,7 +134,7 @@ const LIVE_TOOLS = [
 ];
 
 export default function ExecDeck({ data }: { data: ExecData }) {
-  const { plan, base, lists, baseline } = data;
+  const { plan, base, lists } = data;
   const live = useLiveView();
   const p = computePlan(plan, { installedUkPct: data.installedUkPct, outreachReach: data.outreachReach });
   const [uk, us] = p.byRegion;
@@ -215,48 +144,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
   const listsWithoutCloser = lists.filter((l) => !l.closer.trim());
   const totalTargets = lists.reduce((s, l) => s + l.accounts, 0);
   const topMarkets = [...p.marketRows].sort((a, b) => b.arr - a.arr).filter((m) => m.arr > 0).slice(0, 6);
-  const winRateNeeded = p.sdrOppsPerYear > 0 && plan.avgDealSize > 0 ? plan.netNew / (p.sdrOppsPerYear * plan.avgDealSize) : null;
-  const dealSizeNeeded = p.winsPerYear > 0 ? plan.netNew / p.winsPerYear : null;
-
-  // A lever already at or past what the target needs is reported as enough:
-  // pushing it further does nothing while another limit binds.
-  const levers: { lever: string; now: string; needed: string | null; note: string }[] = [
-    {
-      lever: 'Accounts worked a year',
-      now: num(p.accountsWorked),
-      needed: p.accountsNeeded > p.accountsWorked ? num(p.accountsNeeded) : null,
-      note: `At a ${plan.accountToMeetingPct}% meeting rate`,
-    },
-    {
-      lever: 'SDR seats',
-      now: String(plan.sdrCount),
-      needed: p.sdrsNeeded > plan.sdrCount ? (Math.ceil(p.sdrsNeeded * 10) / 10).toFixed(1) : null,
-      note: `At ${plan.meetingsPerSdrPerMonth} meetings per SDR a month`,
-    },
-    {
-      lever: 'Account to meeting rate',
-      now: `${plan.accountToMeetingPct}%`,
-      needed:
-        p.meetingRateNeeded !== null && p.meetingRateNeeded * 100 > plan.accountToMeetingPct
-          ? `${Math.round(p.meetingRateNeeded * 100)}%`
-          : null,
-      note: 'Only helps while SDR capacity has room',
-    },
-    {
-      lever: 'Win rate',
-      now: `${plan.closeRatePct}%`,
-      needed: winRateNeeded !== null && winRateNeeded * 100 > plan.closeRatePct ? `${Math.round(winRateNeeded * 100)}%` : null,
-      note: 'Opportunity to closed-won',
-    },
-    {
-      lever: 'Average deal size',
-      now: gbp(plan.avgDealSize),
-      needed: dealSizeNeeded !== null && dealSizeNeeded > plan.avgDealSize ? gbp(dealSizeNeeded) : null,
-      note: 'First-year ARR per new logo',
-    },
-  ];
-  const leversToPull = levers.filter((l) => l.needed !== null).length;
-
   const slides: Slide[] = [
     {
       id: 'cover',
@@ -463,43 +350,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       ),
     },
     {
-      id: 'levers',
-      eyebrow: 'Closing the gap',
-      title: gap > 0 ? `${leversToPull} Levers Can Close ${gbp(gap)}; Here Is What Each Would Need on Its Own` : 'The Levers That Keep the Plan on Track',
-      body: (
-        <div className="space-y-5">
-          <div className="overflow-hidden rounded-xl border border-border">
-            <table className="w-full">
-              <thead className="bg-surface/80">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Lever</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted">Today</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted">Needed alone</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted">Note</th>
-                </tr>
-              </thead>
-              <tbody>
-                {levers.map((l) => (
-                  <tr key={l.lever} className="border-t border-border/60">
-                    <td className="px-4 py-3 text-foreground">{l.lever}</td>
-                    <td className="px-4 py-3 text-right tabular-nums text-foreground/80">{l.now}</td>
-                    <td className={`px-4 py-3 text-right font-semibold tabular-nums ${l.needed ? 'text-lg text-blue-300' : 'text-sm text-green-300'}`}>
-                      {l.needed ?? 'Enough'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted">{l.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Callout tone="warning">
-            Meetings are capped by whichever runs out first, accounts or SDR time. Today the cap is {p.meetingsLimitedBy}, so
-            that is the lever to pull first; realistically the gap closes with a mix.
-          </Callout>
-        </div>
-      ),
-    },
-    {
       id: 'planner',
       eyebrow: 'The model behind these numbers',
       title: 'Every Number Here Comes From the GTM Strategy Planner',
@@ -614,14 +464,8 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       title: 'Apollo, HubSpot and Salesforce Now Sync. Next, Every Meeting Has to Be Logged.',
       body: (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <StatCard label="Apollo, HubSpot, Salesforce" value="Syncing" sub="Connected and syncing" tone="success" />
-            <StatCard
-              label="Meetings logged in HubSpot"
-              value={`${baseline.meetingsInHubspot} of ${baseline.meetingsBooked}`}
-              sub={`Before the sync: booked by phone, for one SDR (data pulled ${baseline.pulledAt})`}
-              tone="warning"
-            />
             <StatCard label="Funnel rates" value="Assumed" sub="Meeting, opportunity and win rates aren’t measured yet" tone="warning" />
           </div>
           <SectionCard title="What’s next" icon={Database}>
@@ -707,7 +551,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     },
     {
       id: 'start',
-      eyebrow: 'Appendix · Starting point',
+      eyebrow: 'Reference · Starting point',
       title: `${num(base.customers)} Customers and ${usd(base.arrUsd)} of ARR to Build From`,
       body: (
         <div className="space-y-6">
@@ -745,22 +589,11 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     },
     ...APPENDIX.map((a) => ({
       id: `appendix-${a.page}`,
-      eyebrow: `Appendix · FY28 plan draft, page ${a.page}`,
+      eyebrow: `Reference · FY28 plan draft, page ${a.page}`,
       title: a.label,
       body: (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/gtm-exec/appendix/${a.page}`} alt={`FY28 plan draft, page ${a.page}`} className="w-full rounded-lg border border-border" />
-          </div>
-          <SectionCard title="Notes" icon={Flag}>
-            <ul className="space-y-2 text-sm text-foreground/90">
-              {a.notes.map((n) => (
-                <li key={n}>{n}</li>
-              ))}
-            </ul>
-          </SectionCard>
-        </div>
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`/api/gtm-exec/appendix/${a.page}`} alt={`FY28 plan draft, page ${a.page}`} className="mx-auto w-full max-w-5xl rounded-lg border border-border" />
       ),
     })),
   ];

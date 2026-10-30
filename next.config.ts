@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingIncludes: {
+    "/api/gtm-exec/appendix/[page]": ["./private/fy28-plan/**"],
+  },
 };
 
 export default nextConfig;

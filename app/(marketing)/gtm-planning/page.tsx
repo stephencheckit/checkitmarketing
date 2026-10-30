@@ -20,16 +20,19 @@ import {
 } from 'lucide-react';
 import {
   DEFAULT_STATE,
+  FY28_GOALS,
   buildReps,
   computePlan,
   distributePipeline,
   equalFocus,
   installedUkShare,
   normalizePlan,
+  scaleQuarterly,
   type Beachhead,
   type Category,
   type Market,
   type PlanState,
+  type Quarters,
   type Region,
   type ScenarioId,
 } from '@/lib/gtm-plan-math';
@@ -172,10 +175,9 @@ const SCENARIOS: {
   {
     id: 'base',
     label: 'Base',
-    blurb: 'Steve model · £1.8m new',
+    blurb: 'FY28 plan · £2.7m',
     patch: {
-      netNew: 1_800_000,
-      expansion: 600_000,
+      ...FY28_GOALS,
       medicalPct: 50,
       closeRatePct: 20,
       avgDealSize: 50_000,
@@ -626,6 +628,8 @@ const PLANNER_SECTIONS: { group: string; items: { id: string; label: string }[] 
     items: [
       { id: 'scenario', label: 'Scenario & targets' },
       { id: 'arr-mix', label: 'ARR mix' },
+      { id: 'quarterly', label: 'Quarterly goals' },
+      { id: 'retention', label: 'Retention' },
       { id: 'reps', label: 'Rep quotas' },
     ],
   },
@@ -876,6 +880,10 @@ export default function GtmPlanningPage() {
     meetingRateNeeded,
     accountsNeeded,
     sdrsNeeded,
+    quarterTotals,
+    regionGoals,
+    quarterlyDelta,
+    quartersBalanced,
   } = computePlan(state, { installedUkPct, outreachReach });
   const medicalMarkets = marketRows.filter((m) => m.category === 'medical');
   const commercialMarkets = marketRows.filter((m) => m.category === 'commercial');
@@ -940,6 +948,14 @@ export default function GtmPlanningPage() {
         ...next,
         reps: buildReps(next.includeOpenHire, next.netNew + next.expansion),
       };
+    });
+  };
+
+  const setQuarter = (region: Region, q: number, value: number) => {
+    setState((prev) => {
+      const row = [...prev.quarterly[region]] as Quarters;
+      row[q] = Math.max(0, value);
+      return markCustom({ ...prev, quarterly: { ...prev.quarterly, [region]: row } });
     });
   };
 
@@ -1053,15 +1069,22 @@ export default function GtmPlanningPage() {
 
   const assumptions = useMemo(
     () => [
-      '£1.8m net-new / new-logo ARR target (base)',
-      '£600k expansion from existing customers (historical)',
-      `${activeReps.length} AE seats × ~£600k new+expansion`,
+      `${formatCompact(state.netNew)} net-new / new-logo ARR target`,
+      `${formatCompact(state.expansion)} expansion from existing customers`,
+      `${activeReps.length} AE seats × ~${formatCompact(newPlusExpansion / Math.max(activeReps.length, 1))} new+expansion`,
+      `GRR ${state.grrTargetPct}% · NRR ${state.nrrTargetPct}% · new terminations under ${formatCompact(state.terminationCap)}`,
       `Medical ${medicalPct}% / Commercial ${commercialPct}%`,
       `Opp→close ${state.closeRatePct}% ≈ ${coverageMultiple.toFixed(1)}:1 coverage`,
       `SDR: ${state.sdrCount} × ${state.meetingsPerSdrPerMonth} mtgs/mo → ${state.meetingToOppPct}% opp`,
       `New logos: UK ${Math.round(byRegion[0].logos)} · US ${Math.round(byRegion[1].logos)} (net new UK ${split.netNew}% / US ${100 - split.netNew}%)`,
     ],
     [
+      state.netNew,
+      state.expansion,
+      state.grrTargetPct,
+      state.nrrTargetPct,
+      state.terminationCap,
+      newPlusExpansion,
       activeReps.length,
       medicalPct,
       commercialPct,
@@ -1189,7 +1212,7 @@ export default function GtmPlanningPage() {
               step={50_000}
               onChange={(v) => setArrType('netNew', v)}
               display={formatGBP(state.netNew)}
-              hint="Steve model: ~£1.8m new-logo ARR"
+              hint={`FY28 plan: ${formatGBP(FY28_GOALS.netNew)} new business`}
             />
             <SliderRow
               label="Expansion"
@@ -1199,7 +1222,7 @@ export default function GtmPlanningPage() {
               step={25_000}
               onChange={(v) => setArrType('expansion', v)}
               display={formatGBP(state.expansion)}
-              hint="Historical ~£600k from existing customers"
+              hint={`FY28 plan: ${formatGBP(FY28_GOALS.expansion)} from existing customers`}
             />
             <SliderRow
               label="Renewal / retained base"
@@ -1217,6 +1240,108 @@ export default function GtmPlanningPage() {
                 { label: 'Expansion', value: state.expansion, className: 'bg-sky-500' },
                 { label: 'Renewal', value: state.renewal, className: 'bg-emerald-500' },
               ]}
+            />
+          </div>
+        </PlanSection>
+
+        <PlanSection id="quarterly" icon={CalendarRange} title="Quarterly goals" description="ARR goal by quarter and region; the quarters should add up to total ARR.">
+          <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+            <div
+              className={`flex flex-wrap items-center justify-between gap-2 text-sm rounded-lg px-3 py-2 border ${
+                quartersBalanced
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                {quartersBalanced ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                {quartersBalanced
+                  ? `Quarters = total ARR (${formatGBP(totalArr)})`
+                  : `Quarters are ${formatGBP(Math.abs(quarterlyDelta))} ${quarterlyDelta < 0 ? 'short of' : 'over'} total ARR`}
+              </span>
+              {!quartersBalanced ? (
+                <button
+                  type="button"
+                  onClick={() => setState((p) => markCustom({ ...p, quarterly: scaleQuarterly(p.quarterly, totalArr) }))}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-surface-elevated border border-border text-muted hover:text-foreground"
+                >
+                  Scale to {formatCompact(totalArr)}
+                </button>
+              ) : null}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[560px]">
+                <thead>
+                  <tr className="text-left text-muted border-b border-border">
+                    <th className="py-2 pr-3 font-medium">Region</th>
+                    {['Q1', 'Q2', 'Q3', 'Q4'].map((q) => (
+                      <th key={q} className="py-2 pr-3 font-medium">{q}</th>
+                    ))}
+                    <th className="py-2 font-medium text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(['uk', 'us'] as Region[]).map((region) => (
+                    <tr key={region} className="border-b border-border/60">
+                      <td className="py-2.5 pr-3 text-foreground">{region === 'uk' ? 'UK / RoW' : 'US'}</td>
+                      {state.quarterly[region].map((v, q) => (
+                        <td key={q} className="py-2.5 pr-3">
+                          <input
+                            type="number"
+                            value={v}
+                            step={1_000}
+                            min={0}
+                            onChange={(e) => setQuarter(region, q, parseInt(e.target.value) || 0)}
+                            className="w-28 px-2 py-1 rounded-md bg-surface-elevated border border-border tabular-nums text-sm"
+                          />
+                        </td>
+                      ))}
+                      <td className="py-2.5 text-right tabular-nums font-medium">{formatCompact(regionGoals[region])}</td>
+                    </tr>
+                  ))}
+                  <tr>
+                    <td className="py-3 text-muted">Total</td>
+                    {quarterTotals.map((v, q) => (
+                      <td key={q} className="py-3 pr-3 tabular-nums font-semibold">{formatCompact(v)}</td>
+                    ))}
+                    <td className="py-3 text-right tabular-nums font-bold">{formatCompact(regionGoals.uk + regionGoals.us)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </PlanSection>
+
+        <PlanSection id="retention" icon={RotateCcw} title="Retention" description="Retention targets for the installed base.">
+          <div className="bg-surface border border-border rounded-xl p-5 grid md:grid-cols-3 gap-5">
+            <SliderRow
+              label="Gross revenue retention"
+              value={state.grrTargetPct}
+              min={80}
+              max={100}
+              step={1}
+              onChange={(v) => setState((p) => markCustom({ ...p, grrTargetPct: v }))}
+              display={`${state.grrTargetPct}%`}
+              hint="Includes notified terminations"
+            />
+            <SliderRow
+              label="Net revenue retention"
+              value={state.nrrTargetPct}
+              min={90}
+              max={130}
+              step={1}
+              onChange={(v) => setState((p) => markCustom({ ...p, nrrTargetPct: v }))}
+              display={`${state.nrrTargetPct}%`}
+            />
+            <SliderRow
+              label="New terminations cap"
+              value={state.terminationCap}
+              min={0}
+              max={1_000_000}
+              step={25_000}
+              onChange={(v) => setState((p) => markCustom({ ...p, terminationCap: v }))}
+              display={formatGBP(state.terminationCap)}
+              hint="The GRR target holds only below this"
             />
           </div>
         </PlanSection>

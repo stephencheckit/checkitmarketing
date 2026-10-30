@@ -90,9 +90,9 @@ function SplitBar({ parts }: { parts: { label: string; value: number; cls: strin
 
 const TOC: Record<string, { group: string; label: string }> = {
   cover: { group: 'The plan', label: 'Cover' },
-  answer: { group: 'The plan', label: 'The answer' },
-  start: { group: 'The plan', label: 'Where we start' },
+  answer: { group: 'The plan', label: 'The exercise' },
   target: { group: 'The plan', label: 'The target' },
+  quarters: { group: 'The plan', label: 'Quarterly goals' },
   sources: { group: 'The plan', label: 'Where it comes from' },
   funnel: { group: 'The maths', label: 'The funnel' },
   levers: { group: 'The maths', label: 'Closing the gap' },
@@ -103,8 +103,99 @@ const TOC: Record<string, { group: string; label: string }> = {
   risk: { group: 'Risks & asks', label: 'Market risk' },
   measurement: { group: 'Risks & asks', label: 'Measurement' },
   decisions: { group: 'Risks & asks', label: 'Decisions' },
-  outro: { group: 'Risks & asks', label: 'Close' },
+  outro: { group: 'Risks & asks', label: 'Interactive tools' },
   thanks: { group: 'Risks & asks', label: 'Thanks' },
+  start: { group: 'Appendix', label: 'Where we start' },
+};
+
+// Pages of the FY28 GTM plan draft (27 Oct), with what doesn't reconcile.
+// Pages 1 and 13 are blank and left out.
+const APPENDIX: { page: number; label: string; notes: string[] }[] = [
+  {
+    page: 2,
+    label: 'FY28 ARR goals',
+    notes: [
+      'The source of this deck’s goals: total, new vs expansion, quarterly phasing by region, GRR and NRR.',
+      'Excludes Com Ops (£500k), which this deck doesn’t model.',
+    ],
+  },
+  {
+    page: 3,
+    label: 'ARR gain by initiative',
+    notes: [
+      'The bars add up to £2.96m; the goal on the previous page is £2.70m. The £260k difference isn’t explained.',
+      '“Current performance” (£1.23m) isn’t defined. Salesforce closed-won was £645k in FY26 and £572k in FY27 to date.',
+    ],
+  },
+  {
+    page: 4,
+    label: 'UK Healthcare',
+    notes: [
+      '222 white-space accounts, close to the 225 on our NHS & UK Healthcare target list.',
+      'Uses 20% and 33% conversion; the planner uses a single 20% win rate.',
+    ],
+  },
+  {
+    page: 5,
+    label: 'Global Commercial',
+    notes: [
+      'The account-list estimate predicts £101k a year, but page 3 credits £310k (5% of a £6.2m pipeline).',
+      '“Tier A using 105k and Tier B&C at 105k” looks like a typo.',
+      '116 ranked accounts vs 755 on our UK and US food service lists; this deck uses our lists.',
+    ],
+  },
+  {
+    page: 6,
+    label: 'NGMM upsell',
+    notes: ['5% of the £5.9m top-40 base is about £295k, consistent with £300k on page 3.'],
+  },
+  {
+    page: 7,
+    label: 'NGMM target accounts',
+    notes: ['£2.67m RoW plus £3.25m US is £5.91m, matching the £5.9m on page 6.'],
+  },
+  {
+    page: 8,
+    label: 'US Healthcare',
+    notes: [
+      'The account-list estimate predicts £300k a year, but page 3 credits £595k.',
+      '382 accounts in tiers A–D vs 239 on our US Healthcare target list; this deck uses our list.',
+    ],
+  },
+  {
+    page: 9,
+    label: 'Strategic accounts',
+    notes: [
+      'Sodexo is labelled “New”, but our Apollo data treats Sodexo as an existing customer group. The other “New” labels need the same check.',
+      'Page 3 credits £340k; no deal size or win rate is shown for it.',
+    ],
+  },
+  {
+    page: 10,
+    label: 'Demand generation',
+    notes: [
+      'These four measures are this deck’s funnel. Meetings and opportunities aren’t reliably logged yet (see Measurement).',
+    ],
+  },
+  {
+    page: 11,
+    label: 'Summary and owners',
+    notes: [
+      '“Brian” is Bryan, who prospects the US Healthcare list in our outreach plan; here US healthcare prioritisation is TBC.',
+      'Jen closes US Healthcare meetings in our outreach plan and is on NGMM here.',
+      'US food service has no closer in either.',
+    ],
+  },
+  {
+    page: 12,
+    label: 'Risks and mitigation',
+    notes: ['The £905k low baseline is £595k US healthcare plus £310k global commercial from page 3.'],
+  },
+];
+
+const FULL_TOC = {
+  ...TOC,
+  ...Object.fromEntries(APPENDIX.map((a) => [`appendix-${a.page}`, { group: 'Appendix: FY28 plan draft', label: a.label }])),
 };
 
 const LIVE_TOOLS = [
@@ -120,6 +211,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
   const [uk, us] = p.byRegion;
   const reachPct = pctOf(p.sdrArrCapacity, plan.netNew);
   const gap = Math.max(0, p.sdrGap);
+  const hasOpenSeat = p.activeReps.some((r) => r.isOpen);
   const listsWithoutCloser = lists.filter((l) => !l.closer.trim());
   const totalTargets = lists.reduce((s, l) => s + l.accounts, 0);
   const topMarkets = [...p.marketRows].sort((a, b) => b.arr - a.arr).filter((m) => m.arr > 0).slice(0, 6);
@@ -181,7 +273,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     },
     {
       id: 'answer',
-      eyebrow: 'The answer',
+      eyebrow: 'The exercise',
       title: `A ${gbp(p.totalArr)} ARR Plan for FY28, and What It Takes to Hit It`,
       body: (
         <div className="space-y-8">
@@ -210,49 +302,9 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       ),
     },
     {
-      id: 'start',
-      eyebrow: 'Starting point',
-      title: `${num(base.customers)} Customers and ${usd(base.arrUsd)} of ARR to Build From`,
-      body: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <StatCard label="Active customers" value={num(base.customers)} />
-            <StatCard label="Customer ARR" value={usd(base.arrUsd)} sub="Recorded in USD" />
-            <StatCard
-              label="Not yet mapped to a market"
-              value={usd(base.unattributedUsd)}
-              sub={`${num(base.unattributedCustomers)} customers`}
-              tone="warning"
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <SectionCard title="Medical vs commercial" icon={Building2}>
-              <SplitBar
-                parts={[
-                  { label: 'Medical', value: base.medicalUsd, cls: 'bg-blue-500', display: usd(base.medicalUsd) },
-                  { label: 'Commercial', value: base.commercialUsd, cls: 'bg-teal-400', display: usd(base.commercialUsd) },
-                ]}
-              />
-            </SectionCard>
-            <SectionCard title="UK vs US" icon={Compass}>
-              <SplitBar
-                parts={[
-                  { label: 'UK', value: base.ukUsd, cls: 'bg-indigo-400', display: usd(base.ukUsd) },
-                  { label: 'US', value: base.usUsd, cls: 'bg-sky-400', display: usd(base.usUsd) },
-                ]}
-              />
-            </SectionCard>
-          </div>
-          <Callout tone="accent">
-            Expansion is planned from where this base sits; new logos follow the market focus on the next slides.
-          </Callout>
-        </div>
-      ),
-    },
-    {
       id: 'target',
       eyebrow: 'The target',
-      title: `${gbp(p.newPlusExpansion)} Across ${p.activeReps.length} Quota-Carrying Seats`,
+      title: `${gbp(p.newPlusExpansion)} Across ${p.activeReps.length}${hasOpenSeat ? '*' : ''} Quota-Carrying Seats`,
       body: (
         <div className="space-y-6">
           <SectionCard title="ARR mix" icon={Target}>
@@ -269,8 +321,61 @@ export default function ExecDeck({ data }: { data: ExecData }) {
               <StatCard key={r.id} label={r.isOpen ? `${r.name} · to hire` : r.name} value={gbp(r.quota)} sub={`${pctOf(r.quota, p.newPlusExpansion)}% of quota`} tone={r.isOpen ? 'warning' : 'accent'} />
             ))}
           </div>
+          {hasOpenSeat ? (
+            <div className="text-sm text-muted">* One seat is open headcount, and one of the filled seats splits time with other work.</div>
+          ) : null}
           {!p.repsBalanced ? (
             <Callout tone="warning">Quotas add up to {gbp(p.repTotal)}, {gbp(Math.abs(p.repDelta))} {p.repDelta < 0 ? 'short of' : 'over'} the ARR target.</Callout>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      id: 'quarters',
+      eyebrow: 'The target',
+      title: `${gbp(p.regionGoals.us)} From the US, ${gbp(p.regionGoals.uk)} From UK and RoW, Phased by Quarter`,
+      body: (
+        <div className="space-y-6">
+          <div className="overflow-hidden rounded-xl border border-border">
+            <table className="w-full">
+              <thead className="bg-surface/80">
+                <tr>
+                  {['Region', 'Q1', 'Q2', 'Q3', 'Q4', 'FY28'].map((h, i) => (
+                    <th key={h} className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted ${i ? 'text-right' : 'text-left'}`}>
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(['uk', 'us'] as const).map((region) => (
+                  <tr key={region} className="border-t border-border/60">
+                    <td className="px-4 py-3 text-foreground">{region === 'uk' ? 'UK / RoW' : 'US'}</td>
+                    {plan.quarterly[region].map((v, q) => (
+                      <td key={q} className="px-4 py-3 text-right tabular-nums text-foreground/80">{gbp(v)}</td>
+                    ))}
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">{gbp(p.regionGoals[region])}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-border bg-surface/60">
+                  <td className="px-4 py-3 font-semibold text-foreground">Total</td>
+                  {p.quarterTotals.map((v, q) => (
+                    <td key={q} className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">{gbp(v)}</td>
+                  ))}
+                  <td className="px-4 py-3 text-right font-bold tabular-nums text-foreground">{gbp(p.regionGoals.uk + p.regionGoals.us)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatCard label="Gross revenue retention" value={`${plan.grrTargetPct}%`} sub="Includes notified terminations" />
+            <StatCard label="Net revenue retention" value={`${plan.nrrTargetPct}%`} />
+            <StatCard label="New terminations" value={`< ${gbp(plan.terminationCap)}`} sub="For the GRR target to hold" tone="warning" />
+          </div>
+          {!p.quartersBalanced ? (
+            <Callout tone="warning">
+              Quarters add up to {gbp(p.regionGoals.uk + p.regionGoals.us)}, {gbp(Math.abs(p.quarterlyDelta))} {p.quarterlyDelta < 0 ? 'short of' : 'over'} the ARR target.
+            </Callout>
           ) : null}
         </div>
       ),
@@ -506,27 +611,26 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     {
       id: 'measurement',
       eyebrow: 'Measurement',
-      title: 'We Can Measure the Effort. We Can’t Yet Measure the Outcome.',
+      title: 'Apollo, HubSpot and Salesforce Now Sync. Next, Every Meeting Has to Be Logged.',
       body: (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatCard label="Apollo, HubSpot, Salesforce" value="Syncing" sub="Connected and syncing" tone="success" />
             <StatCard
               label="Meetings logged in HubSpot"
               value={`${baseline.meetingsInHubspot} of ${baseline.meetingsBooked}`}
-              sub="Booked by phone, for one SDR"
-              tone="error"
+              sub={`Before the sync: booked by phone, for one SDR (data pulled ${baseline.pulledAt})`}
+              tone="warning"
             />
-            <StatCard label="Opportunities in Apollo" value={String(baseline.apolloOpportunities)} sub="Apollo isn’t linked to Salesforce" tone="error" />
             <StatCard label="Funnel rates" value="Assumed" sub="Meeting, opportunity and win rates aren’t measured yet" tone="warning" />
           </div>
-          <SectionCard title="What fixes it" icon={Database}>
+          <SectionCard title="What’s next" icon={Database}>
             <ul className="space-y-2 text-sm text-foreground/90">
-              <li>Log every SDR meeting in Salesforce, and connect Apollo to Salesforce.</li>
+              <li>Train SDRs on the new “meeting scheduled date” process, so every meeting is dated and counted.</li>
               <li>Agree what counts as a meeting held and a qualified opportunity, the same way in every system.</li>
-              <li>Report cost per qualified opportunity monthly once the above is in place.</li>
+              <li>Report cost per qualified opportunity monthly once the rates are measured.</li>
             </ul>
           </SectionCard>
-          <div className="text-sm text-muted">From the SDR baseline, data pulled {baseline.pulledAt}.</div>
         </div>
       ),
     },
@@ -543,7 +647,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
             ...(listsWithoutCloser.length
               ? [{ icon: Users, title: 'Closers for uncovered lists', text: `${listsWithoutCloser.map((l) => l.label).join(', ')} ${listsWithoutCloser.length === 1 ? 'has' : 'have'} no one to take the meetings.` }]
               : []),
-            { icon: CalendarCheck, title: 'Measurement as a priority', text: 'Meetings in Salesforce and Apollo connected, so next quarter’s plan runs on actual rates.' },
+            { icon: CalendarCheck, title: 'Measurement as a priority', text: 'SDRs trained on the meeting scheduled date process, so next quarter’s plan runs on actual rates.' },
             { icon: Cpu, title: 'Sensor supply after DT', text: 'Agree the supply plan and a second-source sensor for the commercial range.' },
             { icon: Flag, title: 'People costs from finance', text: 'SDR and AE costs, so the plan can show cost per qualified opportunity and payback.' },
           ].map((d) => (
@@ -568,8 +672,8 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     },
     {
       id: 'outro',
-      eyebrow: 'Discussion',
-      title: 'Questions and Discussion',
+      eyebrow: 'Interactive tools',
+      title: 'Interactive Tools',
       body: (
         <div className="flex min-h-[40vh] flex-col justify-between gap-10">
           <p className="max-w-2xl text-xl text-muted">
@@ -601,11 +705,69 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       title: 'THANKS!',
       body: <div className="min-h-[40vh]" />,
     },
+    {
+      id: 'start',
+      eyebrow: 'Appendix · Starting point',
+      title: `${num(base.customers)} Customers and ${usd(base.arrUsd)} of ARR to Build From`,
+      body: (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <StatCard label="Active customers" value={num(base.customers)} />
+            <StatCard label="Customer ARR" value={usd(base.arrUsd)} sub="Recorded in USD" />
+            <StatCard
+              label="Not yet mapped to a market"
+              value={usd(base.unattributedUsd)}
+              sub={`${num(base.unattributedCustomers)} customers`}
+              tone="warning"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <SectionCard title="Medical vs commercial" icon={Building2}>
+              <SplitBar
+                parts={[
+                  { label: 'Medical', value: base.medicalUsd, cls: 'bg-blue-500', display: usd(base.medicalUsd) },
+                  { label: 'Commercial', value: base.commercialUsd, cls: 'bg-teal-400', display: usd(base.commercialUsd) },
+                ]}
+              />
+            </SectionCard>
+            <SectionCard title="UK vs US" icon={Compass}>
+              <SplitBar
+                parts={[
+                  { label: 'UK', value: base.ukUsd, cls: 'bg-indigo-400', display: usd(base.ukUsd) },
+                  { label: 'US', value: base.usUsd, cls: 'bg-sky-400', display: usd(base.usUsd) },
+                ]}
+              />
+            </SectionCard>
+          </div>
+          <Callout tone="accent">Expansion is planned from where this base sits.</Callout>
+        </div>
+      ),
+    },
+    ...APPENDIX.map((a) => ({
+      id: `appendix-${a.page}`,
+      eyebrow: `Appendix · FY28 plan draft, page ${a.page}`,
+      title: a.label,
+      body: (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="md:col-span-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/api/gtm-exec/appendix/${a.page}`} alt={`FY28 plan draft, page ${a.page}`} className="w-full rounded-lg border border-border" />
+          </div>
+          <SectionCard title="Notes" icon={Flag}>
+            <ul className="space-y-2 text-sm text-foreground/90">
+              {a.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </SectionCard>
+        </div>
+      ),
+    })),
   ];
 
   return (
     <>
-      <DeckShell slides={slides} toc={TOC} title="GTM Plan" subtitle="FY28 · executive summary" />
+      <DeckShell slides={slides} toc={FULL_TOC} title="GTM Plan" subtitle="FY28 · executive summary" />
       <LiveOverlay view={live.view} onClose={live.close} />
     </>
   );

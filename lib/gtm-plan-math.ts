@@ -26,6 +26,9 @@ export type Market = {
   focusPct: number; // within category; category markets sum to 100
 };
 
+/** ARR goal for Q1–Q4. */
+export type Quarters = [number, number, number, number];
+
 export type PlanState = {
   scenario: ScenarioId;
   includeOpenHire: boolean;
@@ -52,6 +55,12 @@ export type PlanState = {
   accountsWorked: number | null;
   /** Share of prospected accounts that take a first meeting. */
   accountToMeetingPct: number;
+  /** Quarterly ARR goals by region; together they should add up to total ARR. */
+  quarterly: Record<Region, Quarters>;
+  grrTargetPct: number;
+  nrrTargetPct: number;
+  /** New terminations the GRR target can absorb. */
+  terminationCap: number;
 };
 
 export function equalFocus(markets: Market[], category: Category): Market[] {
@@ -129,11 +138,24 @@ function seedMarkets(): Market[] {
 const DEFAULT_PIPELINE = 1_900_000;
 const DEFAULT_MARKETS = seedMarkets();
 
+// FY28 goals from the GTM plan draft of 27 Oct 2026.
+export const FY28_GOALS = {
+  netNew: 1_010_929,
+  expansion: 1_689_072,
+  quarterly: {
+    uk: [373_889, 392_538, 344_809, 388_765] as Quarters,
+    us: [199_689, 293_396, 406_915, 300_000] as Quarters,
+  },
+  grrTargetPct: 95,
+  nrrTargetPct: 105,
+  terminationCap: 450_000,
+};
+
 export const DEFAULT_STATE: PlanState = {
   scenario: 'base',
   includeOpenHire: true,
-  netNew: 1_800_000,
-  expansion: 600_000,
+  netNew: FY28_GOALS.netNew,
+  expansion: FY28_GOALS.expansion,
   renewal: 0,
   medicalPct: 50,
   closeRatePct: 20,
@@ -148,11 +170,24 @@ export const DEFAULT_STATE: PlanState = {
   sdrCount: 2,
   meetingsPerSdrPerMonth: 11,
   meetingToOppPct: 50,
-  reps: buildReps(true, 2_400_000),
+  reps: buildReps(true, FY28_GOALS.netNew + FY28_GOALS.expansion),
   regionSplit: { netNew: null, expansion: null, renewal: null },
   accountsWorked: null,
   accountToMeetingPct: 25,
+  quarterly: FY28_GOALS.quarterly,
+  grrTargetPct: FY28_GOALS.grrTargetPct,
+  nrrTargetPct: FY28_GOALS.nrrTargetPct,
+  terminationCap: FY28_GOALS.terminationCap,
 };
+
+/** Rescale the quarterly goals to a new total, keeping their regional and quarterly shape. */
+export function scaleQuarterly(quarterly: Record<Region, Quarters>, total: number): Record<Region, Quarters> {
+  const cells = [...quarterly.uk, ...quarterly.us];
+  const sum = cells.reduce((s, v) => s + v, 0);
+  const scaled = cells.map((v) => Math.round(sum > 0 ? (v / sum) * total : total / cells.length));
+  scaled[scaled.length - 1] += Math.round(total) - scaled.reduce((s, v) => s + v, 0);
+  return { uk: scaled.slice(0, 4) as Quarters, us: scaled.slice(4) as Quarters };
+}
 
 /** A saved plan merged over the defaults, or null if it isn't a usable plan. */
 export function normalizePlan(parsed: Partial<PlanState> | null | undefined): PlanState | null {
@@ -164,6 +199,7 @@ export function normalizePlan(parsed: Partial<PlanState> | null | undefined): Pl
     markets: parsed.markets,
     marketPipeline: { ...DEFAULT_STATE.marketPipeline, ...parsed.marketPipeline },
     regionSplit: { ...DEFAULT_STATE.regionSplit, ...parsed.regionSplit },
+    quarterly: { ...DEFAULT_STATE.quarterly, ...parsed.quarterly },
   };
 }
 
@@ -249,6 +285,14 @@ export function computePlan(
   const accountsNeeded = meetingsNeeded / Math.max(meetingRate, 0.01);
   const sdrsNeeded = meetingsNeeded / Math.max(1, state.meetingsPerSdrPerMonth * 12);
 
+  const quarterTotals = [0, 1, 2, 3].map((q) => state.quarterly.uk[q] + state.quarterly.us[q]);
+  const regionGoals = {
+    uk: state.quarterly.uk.reduce((s, v) => s + v, 0),
+    us: state.quarterly.us.reduce((s, v) => s + v, 0),
+  };
+  const quarterlyDelta = regionGoals.uk + regionGoals.us - totalArr;
+  const quartersBalanced = Math.abs(quarterlyDelta) < 1;
+
   return {
     activeReps,
     newPlusExpansion,
@@ -287,5 +331,9 @@ export function computePlan(
     meetingRateNeeded,
     accountsNeeded,
     sdrsNeeded,
+    quarterTotals,
+    regionGoals,
+    quarterlyDelta,
+    quartersBalanced,
   };
 }

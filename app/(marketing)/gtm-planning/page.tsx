@@ -1798,6 +1798,24 @@ export default function GtmPlanningPage() {
             </div>
           </div>
 
+          <div className="text-sm font-medium text-foreground">Ideal funnel to hit the {formatCompact(state.netNew)} target</div>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+            {[
+              { label: 'Accounts to work', value: Math.ceil(accountsNeeded).toLocaleString(), sub: `${state.accountToMeetingPct}% book a meeting` },
+              { label: 'First meetings', value: Math.ceil(meetingsNeeded).toLocaleString(), sub: `${state.meetingToOppPct}% become opportunities` },
+              { label: 'Opportunities', value: oppsNeeded.toLocaleString(), sub: `${state.closeRatePct}% are won` },
+              { label: 'Wins (new logos)', value: Math.ceil(winsNeeded).toLocaleString(), sub: `at ${formatGBP(state.avgDealSize)} a deal` },
+              { label: 'Net-new ARR', value: formatCompact(state.netNew), sub: 'The new-logo target' },
+            ].map((stage, i) => (
+              <div key={stage.label} className="relative rounded-lg bg-accent/10 border border-accent/30 p-3">
+                <div className="text-xs text-muted">{i + 1}. {stage.label}</div>
+                <div className="text-xl font-semibold tabular-nums text-foreground">{stage.value}</div>
+                <div className="text-[11px] text-muted">{stage.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-sm font-medium text-foreground">Forward from current activity</div>
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
             {[
               { label: 'Accounts worked', value: Math.round(accountsWorked).toLocaleString(), sub: state.accountsWorked === null ? 'From the outreach plan' : 'Set manually' },

@@ -239,9 +239,12 @@ export function computePlan(
   const ukArr = marketRows.filter((m) => m.region === 'uk').reduce((s, m) => s + m.arr, 0);
   const ukPct = totalArr > 0 ? Math.round((ukArr / totalArr) * 100) : 0;
 
+  const quarterlyUk = state.quarterly.uk.reduce((s, v) => s + v, 0);
+  const quarterlySum = quarterlyUk + state.quarterly.us.reduce((s, v) => s + v, 0);
+  const quarterlyUkPct = quarterlySum > 0 ? (quarterlyUk / quarterlySum) * 100 : null;
   const split = {
-    netNew: state.regionSplit.netNew ?? ukPct,
-    expansion: state.regionSplit.expansion ?? inputs.installedUkPct ?? ukPct,
+    netNew: state.regionSplit.netNew ?? quarterlyUkPct ?? ukPct,
+    expansion: state.regionSplit.expansion ?? quarterlyUkPct ?? inputs.installedUkPct ?? ukPct,
     renewal: state.regionSplit.renewal ?? inputs.installedUkPct ?? ukPct,
   };
   const byRegion = (['uk', 'us'] as const).map((region) => {

@@ -270,7 +270,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     {
       id: 'sources',
       eyebrow: 'Where it comes from',
-      title: `${p.medicalPct}% Medical, ${p.commercialPct}% Commercial; ${Math.round(uk.logos + us.logos)} New Logos Across Two Regions`,
+      title: `${Math.round(uk.logos + us.logos)} New Logos Across Two Regions`,
       body: (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
           <div className="md:col-span-3">
@@ -297,7 +297,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
           </div>
           <div className="space-y-4 md:col-span-2">
             {[uk, us].map((r) => (
-              <SectionCard key={r.region} title={r.region === 'uk' ? 'UK' : 'US'} icon={Compass}>
+              <SectionCard key={r.region} title={r.region === 'uk' ? 'UK / RoW' : 'US'} icon={Compass}>
                 <div className="text-3xl font-bold text-foreground">{Math.round(r.logos)} new logos</div>
                 <div className="mt-1 text-sm text-muted">
                   {gbp(r.netNew)} new · {gbp(r.expansion)} expansion

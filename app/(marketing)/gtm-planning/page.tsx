@@ -1076,7 +1076,7 @@ export default function GtmPlanningPage() {
       `Medical ${medicalPct}% / Commercial ${commercialPct}%`,
       `Opp→close ${state.closeRatePct}% ≈ ${coverageMultiple.toFixed(1)}:1 coverage`,
       `SDR: ${state.sdrCount} × ${state.meetingsPerSdrPerMonth} mtgs/mo → ${state.meetingToOppPct}% opp`,
-      `New logos: UK ${Math.round(byRegion[0].logos)} · US ${Math.round(byRegion[1].logos)} (net new UK ${split.netNew}% / US ${100 - split.netNew}%)`,
+      `New logos: UK ${Math.round(byRegion[0].logos)} · US ${Math.round(byRegion[1].logos)} (net new UK ${Math.round(split.netNew)}% / US ${100 - Math.round(split.netNew)}%)`,
     ],
     [
       state.netNew,
@@ -1568,8 +1568,8 @@ export default function GtmPlanningPage() {
               max={100}
               step={5}
               onChange={(v) => setRegionSplit('netNew', v)}
-              display={`UK ${split.netNew}% · US ${100 - split.netNew}%`}
-              hint={state.regionSplit.netNew === null ? 'From market focus' : `Set manually · market focus says UK ${ukPct}%`}
+              display={`UK ${Math.round(split.netNew)}% · US ${100 - Math.round(split.netNew)}%`}
+              hint={state.regionSplit.netNew === null ? 'From the quarterly goals' : `Set manually · market focus says UK ${ukPct}%`}
             />
             <SliderRow
               label="Expansion · UK share"
@@ -1578,8 +1578,8 @@ export default function GtmPlanningPage() {
               max={100}
               step={5}
               onChange={(v) => setRegionSplit('expansion', v)}
-              display={`UK ${split.expansion}% · US ${100 - split.expansion}%`}
-              hint={state.regionSplit.expansion === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
+              display={`UK ${Math.round(split.expansion)}% · US ${100 - Math.round(split.expansion)}%`}
+              hint={state.regionSplit.expansion === null ? 'From the quarterly goals' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
             />
             <SliderRow
               label="Renewal · UK share"
@@ -1588,7 +1588,7 @@ export default function GtmPlanningPage() {
               max={100}
               step={5}
               onChange={(v) => setRegionSplit('renewal', v)}
-              display={`UK ${split.renewal}% · US ${100 - split.renewal}%`}
+              display={`UK ${Math.round(split.renewal)}% · US ${100 - Math.round(split.renewal)}%`}
               hint={state.regionSplit.renewal === null ? 'From installed customer ARR' : `Set manually · installed base is UK ${installedUkPct ?? '—'}%`}
             />
             <table className="w-full text-xs">

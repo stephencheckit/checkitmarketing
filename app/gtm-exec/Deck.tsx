@@ -7,10 +7,8 @@ import {
   Cpu,
   Database,
   Flag,
-  Gauge,
   Map as MapIcon,
   ShieldAlert,
-  SlidersHorizontal,
   Target,
   Users,
 } from 'lucide-react';
@@ -131,8 +129,14 @@ export default function ExecDeck({ data }: { data: ExecData }) {
   const live = useLiveView();
   const p = computePlan(plan, { installedUkPct: data.installedUkPct, outreachReach: data.outreachReach });
   const [uk, us] = p.byRegion;
-  const reachPct = pctOf(p.sdrArrCapacity, plan.netNew);
-  const gap = Math.max(0, p.sdrGap);
+  const ideal = {
+    accounts: Math.ceil(p.accountsNeeded),
+    meetings: Math.ceil(p.meetingsNeeded),
+    opps: p.oppsNeeded,
+    wins: Math.ceil(p.winsNeeded),
+    meetingsPerMonth: Math.ceil(p.meetingsNeeded / 12),
+    meetingsPerSdrPerMonth: Math.ceil(p.meetingsNeeded / 12 / Math.max(1, plan.sdrCount)),
+  };
   const hasOpenSeat = p.activeReps.some((r) => r.isOpen);
   const listsWithoutCloser = lists.filter((l) => !l.closer.trim());
   const totalTargets = lists.reduce((s, l) => s + l.accounts, 0);
@@ -154,20 +158,15 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       body: (
         <div className="space-y-8">
           <p className="max-w-3xl text-lg text-muted">
-            The plan asks for {gbp(plan.netNew)} from new logos and {gbp(plan.expansion)} from existing customers. At
-            today&apos;s settings the outbound funnel delivers {gbp(p.sdrArrCapacity)} of the new-logo number. This deck
+            The plan asks for {gbp(plan.netNew)} from new logos and {gbp(plan.expansion)} from existing customers. Working
+            back from the new-logo number, that takes {num(ideal.meetings)} first meetings a year. This deck
             covers where the revenue comes from, the maths behind it, and how we execute.
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <StatCard label="Target ARR" value={gbp(p.totalArr)} sub="New logos plus expansion" />
             <StatCard label="New logos" value={gbp(plan.netNew)} sub={`${Math.round(p.winsNeeded)} wins at ${gbp(plan.avgDealSize)}`} />
             <StatCard label="Expansion" value={gbp(plan.expansion)} sub="From the installed base" tone="success" />
-            <StatCard
-              label="Funnel reaches"
-              value={`${reachPct}%`}
-              sub={gap > 0 ? `${gbp(gap)} short of the new-logo target` : 'Covers the new-logo target'}
-              tone={gap > 0 ? 'warning' : 'success'}
-            />
+            <StatCard label="First meetings needed" value={num(ideal.meetings)} sub={`About ${ideal.meetingsPerMonth} a month`} />
           </div>
           <div className="text-sm text-muted">
             {data.planIsDefault
@@ -281,16 +280,17 @@ export default function ExecDeck({ data }: { data: ExecData }) {
     {
       id: 'funnel',
       eyebrow: 'The maths',
-      title: gap > 0 ? `The Outbound Funnel Reaches ${gbp(p.sdrArrCapacity)} of ${gbp(plan.netNew)}` : `The Outbound Funnel Covers the ${gbp(plan.netNew)} Target`,
+      title: `The Ideal Funnel to Hit the ${gbp(plan.netNew)} Target`,
       body: (
         <div className="space-y-6">
+          <p className="max-w-3xl text-lg text-muted">Worked back from the new-logo target, one step at a time.</p>
           <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-9">
             {[
-              { label: 'Accounts worked', value: num(p.accountsWorked), sub: plan.accountsWorked === null ? 'from the outreach plan' : 'set in the plan' },
-              { label: 'Meetings', value: num(p.meetingsPerYear), sub: `limited by ${p.meetingsLimitedBy}` },
-              { label: 'Opportunities', value: num(p.sdrOppsPerYear), sub: `${plan.meetingToOppPct}% of meetings` },
-              { label: 'Wins', value: num(p.winsPerYear), sub: `${plan.closeRatePct}% win rate` },
-              { label: 'New ARR', value: gbp(p.sdrArrCapacity), sub: `at ${gbp(plan.avgDealSize)} a deal` },
+              { label: 'Accounts to work', value: num(ideal.accounts), sub: `${plan.accountToMeetingPct}% book a meeting` },
+              { label: 'First meetings', value: num(ideal.meetings), sub: `${plan.meetingToOppPct}% become opportunities` },
+              { label: 'Opportunities', value: num(ideal.opps), sub: `${plan.closeRatePct}% are won` },
+              { label: 'Wins', value: num(ideal.wins), sub: `at ${gbp(plan.avgDealSize)} a deal` },
+              { label: 'New ARR', value: gbp(plan.netNew), sub: 'the new-logo target' },
             ].flatMap((s, i, arr) => [
               <div key={s.label} className="rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 md:col-span-1">
                 <div className="text-xs uppercase tracking-wider text-muted">{s.label}</div>
@@ -304,20 +304,13 @@ export default function ExecDeck({ data }: { data: ExecData }) {
               ) : null,
             ])}
           </div>
-          <SectionCard title="Against the new-logo target" icon={Gauge}>
-            <SplitBar
-              parts={[
-                { label: 'Funnel delivers', value: Math.min(p.sdrArrCapacity, plan.netNew), cls: 'bg-blue-500', display: gbp(p.sdrArrCapacity) },
-                ...(gap > 0 ? [{ label: 'Gap', value: gap, cls: 'bg-yellow-500/70', display: gbp(gap) }] : []),
-              ]}
-            />
-          </SectionCard>
-          <Callout tone="accent">
-            Hitting {gbp(plan.netNew)} takes {num(p.winsNeeded)} wins, {num(p.oppsNeeded)} opportunities and {num(p.meetingsNeeded)} first
-            meetings a year at these rates.
-          </Callout>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <StatCard label="First meetings a month" value={num(ideal.meetingsPerMonth)} sub="Every month of the year" />
+            <StatCard label="Per SDR" value={`${ideal.meetingsPerSdrPerMonth} a month`} sub={`With ${plan.sdrCount} SDRs`} />
+          </div>
           <div className="text-sm text-muted">
-            Meeting, opportunity and win rates are assumptions until SDR meetings are logged consistently (see Measurement).
+            These are the rates the target needs, not measured rates. Once SDR meetings are logged consistently (see Measurement), we
+            track actuals against them.
           </div>
         </div>
       ),
@@ -458,9 +451,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       body: (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {[
-            ...(gap > 0
-              ? [{ icon: SlidersHorizontal, title: `Close the ${gbp(gap)} gap`, text: `Choose the mix: more SDR capacity, more accounts, or better conversion. The funnel is ${p.meetingsLimitedBy}-limited today.` }]
-              : []),
             ...(listsWithoutCloser.length
               ? [{ icon: Users, title: 'Closers for uncovered lists', text: `${listsWithoutCloser.map((l) => l.label).join(', ')} ${listsWithoutCloser.length === 1 ? 'has' : 'have'} no one to take the meetings.` }]
               : []),
@@ -494,8 +484,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       body: (
         <div className="flex min-h-[40vh] flex-col justify-between gap-10">
           <p className="max-w-2xl text-xl text-muted">
-            {gbp(p.totalArr)} of ARR in FY28. The funnel covers {reachPct}% of the new-logo number at today&apos;s settings
-            {gap > 0 ? `, leaving ${gbp(gap)} to close.` : '.'}
+            {gbp(p.totalArr)} of ARR in FY28, starting with {num(ideal.meetings)} first meetings a year.
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {LIVE_TOOLS.map((t) => (

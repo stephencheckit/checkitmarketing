@@ -57,11 +57,6 @@ const gbp = (n: number) => {
   if (Math.abs(n) >= 1_000) return `£${Math.round(n / 1_000)}k`;
   return `£${Math.round(n)}`;
 };
-const usd = (n: number) => {
-  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}m`;
-  if (Math.abs(n) >= 1_000) return `$${Math.round(n / 1_000)}k`;
-  return `$${Math.round(n)}`;
-};
 const num = (n: number) => Math.round(n).toLocaleString('en-GB');
 const pctOf = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
 const date = (iso: string | null) =>
@@ -104,7 +99,6 @@ const TOC: Record<string, { group: string; label: string }> = {
   decisions: { group: 'Risks & asks', label: 'Decisions' },
   outro: { group: 'Risks & asks', label: 'Interactive tools' },
   thanks: { group: 'Risks & asks', label: 'Thanks' },
-  start: { group: 'Reference', label: 'Where we start' },
 };
 
 // Pages of the FY28 GTM plan draft (27 Oct). Pages 1 and 13 are blank and left out.
@@ -134,7 +128,7 @@ const LIVE_TOOLS = [
 ];
 
 export default function ExecDeck({ data }: { data: ExecData }) {
-  const { plan, base, lists } = data;
+  const { plan, lists } = data;
   const live = useLiveView();
   const p = computePlan(plan, { installedUkPct: data.installedUkPct, outreachReach: data.outreachReach });
   const [uk, us] = p.byRegion;
@@ -548,44 +542,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       eyebrow: 'Checkit · FY28 go-to-market plan',
       title: 'THANKS!',
       body: <div className="min-h-[40vh]" />,
-    },
-    {
-      id: 'start',
-      eyebrow: 'Reference · Starting point',
-      title: `${num(base.customers)} Customers and ${usd(base.arrUsd)} of ARR to Build From`,
-      body: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <StatCard label="Active customers" value={num(base.customers)} />
-            <StatCard label="Customer ARR" value={usd(base.arrUsd)} sub="Recorded in USD" />
-            <StatCard
-              label="Not yet mapped to a market"
-              value={usd(base.unattributedUsd)}
-              sub={`${num(base.unattributedCustomers)} customers`}
-              tone="warning"
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <SectionCard title="Medical vs commercial" icon={Building2}>
-              <SplitBar
-                parts={[
-                  { label: 'Medical', value: base.medicalUsd, cls: 'bg-blue-500', display: usd(base.medicalUsd) },
-                  { label: 'Commercial', value: base.commercialUsd, cls: 'bg-teal-400', display: usd(base.commercialUsd) },
-                ]}
-              />
-            </SectionCard>
-            <SectionCard title="UK vs US" icon={Compass}>
-              <SplitBar
-                parts={[
-                  { label: 'UK', value: base.ukUsd, cls: 'bg-indigo-400', display: usd(base.ukUsd) },
-                  { label: 'US', value: base.usUsd, cls: 'bg-sky-400', display: usd(base.usUsd) },
-                ]}
-              />
-            </SectionCard>
-          </div>
-          <Callout tone="accent">Expansion is planned from where this base sits.</Callout>
-        </div>
-      ),
     },
     ...APPENDIX.map((a) => ({
       id: `appendix-${a.page}`,

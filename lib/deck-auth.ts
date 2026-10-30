@@ -40,7 +40,7 @@ function parseGuests(raw: string | undefined) {
 async function recordDeckLogin(req: NextRequest, deck: string, label: string) {
   try {
     await sql`
-      CREATE TABLE IF NOT EXISTS deck_logins (
+      CREATE TABLE IF NOT EXISTS deck_login_events (
         id SERIAL PRIMARY KEY,
         deck TEXT NOT NULL,
         label TEXT NOT NULL,
@@ -50,7 +50,7 @@ async function recordDeckLogin(req: NextRequest, deck: string, label: string) {
       )
     `;
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
-    await sql`INSERT INTO deck_logins (deck, label, ip, user_agent) VALUES (${deck}, ${label}, ${ip}, ${req.headers.get('user-agent')})`;
+    await sql`INSERT INTO deck_login_events (deck, label, ip, user_agent) VALUES (${deck}, ${label}, ${ip}, ${req.headers.get('user-agent')})`;
   } catch (err) {
     console.error('Deck login logging failed:', err);
   }

@@ -2,7 +2,6 @@
 
 import {
   ArrowRight,
-  Building2,
   CalendarCheck,
   Compass,
   Cpu,
@@ -137,7 +136,6 @@ export default function ExecDeck({ data }: { data: ExecData }) {
   const hasOpenSeat = p.activeReps.some((r) => r.isOpen);
   const listsWithoutCloser = lists.filter((l) => !l.closer.trim());
   const totalTargets = lists.reduce((s, l) => s + l.accounts, 0);
-  const topMarkets = [...p.marketRows].sort((a, b) => b.arr - a.arr).filter((m) => m.arr > 0).slice(0, 6);
   const slides: Slide[] = [
     {
       id: 'cover',
@@ -161,7 +159,7 @@ export default function ExecDeck({ data }: { data: ExecData }) {
           <p className="max-w-3xl text-lg text-muted">
             The plan asks for {gbp(plan.netNew)} from new logos and {gbp(plan.expansion)} from existing customers. At
             today&apos;s settings the outbound funnel delivers {gbp(p.sdrArrCapacity)} of the new-logo number. This deck
-            covers where the revenue comes from, the maths behind it, and what closes the gap.
+            covers where the revenue comes from, the maths behind it, and how we execute.
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             <StatCard label="Target ARR" value={gbp(p.totalArr)} sub="New logos plus expansion" />
@@ -266,39 +264,20 @@ export default function ExecDeck({ data }: { data: ExecData }) {
       eyebrow: 'Where it comes from',
       title: `${Math.round(uk.logos + us.logos)} New Logos Across Two Regions`,
       body: (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-          <div className="md:col-span-3">
-            <SectionCard title="Largest markets in the plan" icon={Building2}>
-              <div className="space-y-3">
-                {topMarkets.map((m) => (
-                  <div key={m.id}>
-                    <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="text-foreground">
-                        {m.label} <span className="text-xs uppercase text-muted">{m.region}</span>
-                      </span>
-                      <span className="font-semibold text-foreground">{gbp(m.arr)}</span>
-                    </div>
-                    <div className="mt-1 h-2 rounded-full bg-border/40">
-                      <div className={`h-2 rounded-full ${m.category === 'medical' ? 'bg-blue-500' : 'bg-teal-400'}`} style={{ width: `${(m.arr / topMarkets[0].arr) * 100}%` }} />
-                    </div>
-                    {m.beachheads.length ? (
-                      <div className="mt-1 text-xs text-muted">Proof points: {m.beachheads.slice(0, 3).map((b) => b.name).join(', ')}</div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          </div>
-          <div className="space-y-4 md:col-span-2">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {[uk, us].map((r) => (
               <SectionCard key={r.region} title={r.region === 'uk' ? 'UK / RoW' : 'US'} icon={Compass}>
-                <div className="text-3xl font-bold text-foreground">{Math.round(r.logos)} new logos</div>
+                <div className="text-3xl font-bold text-foreground">{gbp(r.netNew + r.expansion)}</div>
                 <div className="mt-1 text-sm text-muted">
                   {gbp(r.netNew)} new · {gbp(r.expansion)} expansion
                 </div>
+                <div className="mt-4 text-xl font-semibold text-foreground">{Math.round(r.logos)} new logos</div>
+                <div className="text-sm text-muted">at {gbp(plan.avgDealSize)} a deal</div>
               </SectionCard>
             ))}
           </div>
+          <div className="text-sm text-muted">Region split follows the quarterly goals.</div>
         </div>
       ),
     },
@@ -340,6 +319,9 @@ export default function ExecDeck({ data }: { data: ExecData }) {
             Hitting {gbp(plan.netNew)} takes {num(p.winsNeeded)} wins, {num(p.oppsNeeded)} opportunities and {num(p.meetingsNeeded)} first
             meetings a year at these rates.
           </Callout>
+          <div className="text-sm text-muted">
+            Meeting, opportunity and win rates are assumptions until SDR meetings are logged consistently (see Measurement).
+          </div>
         </div>
       ),
     },

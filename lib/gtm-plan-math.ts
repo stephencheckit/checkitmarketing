@@ -103,8 +103,8 @@ export function distributePipeline(
 export function buildReps(includeOpen: boolean, targetNewExp: number): Rep[] {
   const base: Rep[] = [
     { id: 'jen', name: 'Jen', quota: 0, isOpen: false },
-    { id: 'ae-2', name: 'Meg', quota: 0, isOpen: false },
-    { id: 'ae-3', name: 'AE 3', quota: 0, isOpen: false },
+    { id: 'ae-2', name: 'April', quota: 0, isOpen: false },
+    { id: 'ae-3', name: 'Meg', quota: 0, isOpen: false },
     { id: 'open', name: 'Open hire', quota: 0, isOpen: true },
   ];
   const active = includeOpen ? base : base.filter((r) => !r.isOpen);

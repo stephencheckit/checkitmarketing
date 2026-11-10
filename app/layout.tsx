@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-url';
 import type { Metadata } from "next";
 import { League_Spartan } from "next/font/google";
 import "./globals.css";
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     shortcut: "/checkit-favicon.webp",
     apple: "/checkit-favicon.webp",
   },
-  metadataBase: new URL('https://checkit-marketing.vercel.app'),
+  metadataBase: new URL(SITE_URL),
 };
 
 // Organization and WebSite structured data for AI search engines
@@ -29,8 +30,8 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Checkit',
-  url: 'https://checkit-marketing.vercel.app',
-  logo: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg',
+  url: SITE_URL,
+  logo: `${SITE_URL}/checkit-logo-horizontal-standard-rgb-white.svg`,
   description: 'Checkit delivers intelligent compliance and monitoring solutions combining IoT sensors, mobile apps, and cloud analytics for operational excellence.',
   sameAs: [
     'https://www.linkedin.com/company/checkit-ltd',
@@ -66,7 +67,7 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Checkit',
-  url: 'https://checkit-marketing.vercel.app',
+  url: SITE_URL,
   description: 'Intelligent compliance and monitoring platform for multi-site operations.',
   publisher: {
     '@type': 'Organization',

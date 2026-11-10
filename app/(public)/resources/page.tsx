@@ -1,8 +1,13 @@
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { FileText, ArrowRight, Calendar, Clock } from 'lucide-react';
 import { getPublishedArticleCards } from '@/lib/db';
 
 export const dynamic = 'force-dynamic'; // Always fetch fresh content from DB
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
 export default async function ResourcesPage() {
   const articles = await getPublishedArticleCards(500);

@@ -1,5 +1,6 @@
 'use client';
 
+import { SITE_URL } from '@/lib/site-url';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Script from 'next/script';
 import { 
@@ -33,7 +34,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Morningstar Senior Living: Modernizing Food Safety & Compliance at Scale',
   description: 'How Morningstar Senior Living transformed food safety compliance across 41 communities with Checkit\'s digital platform, reducing admin time and improving audit readiness.',
-  image: 'https://checkit-marketing.vercel.app/morningstar-of-arvada.jpg',
+  image: `${SITE_URL}/morningstar-of-arvada.jpg`,
   author: {
     '@type': 'Organization',
     name: 'Checkit'
@@ -43,14 +44,14 @@ const articleSchema = {
     name: 'Checkit',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg'
+      url: `${SITE_URL}/checkit-logo-horizontal-standard-rgb-white.svg`
     }
   },
   datePublished: '2024-06-01',
   dateModified: '2026-01-01',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': 'https://checkit-marketing.vercel.app/case-studies/morningstar'
+    '@id': `${SITE_URL}/case-studies/morningstar`
   },
   about: {
     '@type': 'Organization',

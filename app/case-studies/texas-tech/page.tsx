@@ -1,5 +1,6 @@
 'use client';
 
+import { SITE_URL } from '@/lib/site-url';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Script from 'next/script';
 import { 
@@ -33,7 +34,7 @@ const articleSchema = {
   '@type': 'Article',
   headline: 'Texas Tech & OVG Hospitality: Protecting Revenue & Guest Experience at Scale',
   description: 'How OVG Hospitality at Texas Tech achieved ROI within 2 months using Checkit for temperature monitoring and food safety compliance in college football hospitality.',
-  image: 'https://checkit-marketing.vercel.app/Jones.jpg',
+  image: `${SITE_URL}/Jones.jpg`,
   author: {
     '@type': 'Organization',
     name: 'Checkit'
@@ -43,14 +44,14 @@ const articleSchema = {
     name: 'Checkit',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://checkit-marketing.vercel.app/checkit-logo-horizontal-standard-rgb-white.svg'
+      url: `${SITE_URL}/checkit-logo-horizontal-standard-rgb-white.svg`
     }
   },
   datePublished: '2024-09-01',
   dateModified: '2026-01-01',
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': 'https://checkit-marketing.vercel.app/case-studies/texas-tech'
+    '@id': `${SITE_URL}/case-studies/texas-tech`
   },
   about: [
     {

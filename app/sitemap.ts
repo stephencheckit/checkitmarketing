@@ -1,7 +1,8 @@
+import { SITE_URL } from '@/lib/site-url';
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://checkit-marketing.vercel.app'; // Update this to your actual domain
+  const baseUrl = SITE_URL;
   
   // Last modified date - use current date for now
   const lastModified = new Date();

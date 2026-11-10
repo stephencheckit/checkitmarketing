@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-url';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     description: 'Real results from real operations - see how organizations achieve compliance and ROI with Checkit.',
   },
   alternates: {
-    canonical: 'https://checkit-marketing.vercel.app/case-studies',
+    canonical: `${SITE_URL}/case-studies`,
   },
 };
 

@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-url';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { 
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     description: 'Food safety and compliance solutions designed for senior living communities.',
   },
   alternates: {
-    canonical: 'https://checkit-marketing.vercel.app/industries/senior-living',
+    canonical: `${SITE_URL}/industries/senior-living`,
   },
 };
 

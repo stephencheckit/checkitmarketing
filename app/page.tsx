@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site-url';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import HomeNav from '@/components/HomeNav';
@@ -71,7 +72,7 @@ export const metadata: Metadata = {
     title: 'Checkit V6 | Intelligent Compliance Platform',
     description: 'Transform operations with intelligent compliance. IoT sensors, mobile apps, and cloud analytics for automated monitoring and real-time visibility.',
     type: 'website',
-    url: 'https://checkit-marketing.vercel.app',
+    url: SITE_URL,
     images: ['/checkit v6-1.webp'],
   },
   twitter: {
@@ -80,7 +81,7 @@ export const metadata: Metadata = {
     description: 'Transform operations with intelligent compliance. IoT sensors, mobile apps, and cloud analytics.',
   },
   alternates: {
-    canonical: 'https://checkit-marketing.vercel.app',
+    canonical: SITE_URL,
   },
 };
 

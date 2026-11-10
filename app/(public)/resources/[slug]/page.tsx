@@ -15,12 +15,13 @@ export async function generateMetadata({ params }: PageProps) {
   const article = await getPublishedArticleBySlug(slug);
   
   if (!article) {
-    return { title: 'Article Not Found' };
+    return { title: 'Article Not Found', robots: { index: false, follow: true } };
   }
 
   return {
     title: `${article.title} | Checkit Resources`,
     description: article.meta_description || article.excerpt || `Learn about ${article.title}`,
+    robots: { index: false, follow: true },
   };
 }
 
